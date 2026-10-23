@@ -28,10 +28,31 @@
 
         #status-msg { display: none; color: #fff; text-align: center; margin-top: 40vh; position: relative; z-index: 10; }
 
-        /* ESTILO DO CONTROLE P2 */
-        .p2-btn { position: absolute; width: 55px; height: 55px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: Arial, sans-serif; z-index: 9999; user-select: none; backdrop-filter: blur(2px); font-size: 14px; }
-        .p2-sys-btn { width: 70px; height: 35px; border-radius: 15px; font-size: 12px; }
+        /* ==========================================================
+           REGRAS EXCLUSIVAS DE LAYOUT DO JOGADOR 2
+           ========================================================== */
+        .p2-btn { position: absolute; width: 55px; height: 55px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: Arial, sans-serif; z-index: 9999; user-select: none; backdrop-filter: blur(2px); font-size: 16px; }
+        .p2-sys-btn { width: 80px; height: 35px; border-radius: 10px; font-size: 12px; font-family: 'Courier New', Courier, monospace; }
         .p2-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
+        #joystick-zone { position: absolute; width: 130px; height: 130px; z-index: 9999; }
+
+        /* MODO VERTICAL (PORTRAIT) */
+        @media screen and (orientation: portrait) {
+            #joystick-zone { bottom: 100px; left: 15px; }
+            #p2-btn-b { bottom: 100px; right: 80px; }
+            #p2-btn-a { bottom: 155px; right: 25px; }
+            #p2-btn-select { top: 25px; left: 20px; }
+            #p2-btn-start { top: 25px; right: 20px; }
+        }
+
+        /* MODO HORIZONTAL (LANDSCAPE) */
+        @media screen and (orientation: landscape) {
+            #joystick-zone { bottom: 20px; left: 20px; }
+            #p2-btn-b { bottom: 20px; right: 90px; }
+            #p2-btn-a { bottom: 75px; right: 30px; }
+            #p2-btn-select { top: 20px; left: 25%; transform: translateX(-50%); }
+            #p2-btn-start { top: 20px; right: 25%; transform: translateX(50%); }
+        }
     </style>
 </head>
 <body>
@@ -59,7 +80,6 @@
 
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Biblioteca de Joystick Virtual -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
 
     <script>
@@ -71,7 +91,7 @@
 
         if (salaDoAmigo) {
             // =====================================
-            // LÓGICA DO JOGADOR 2 (CELULAR CLIENTE)
+            // CLIENTE: CELULAR DO JOGADOR 2
             // =====================================
             document.getElementById('power-screen').style.display = 'none';
             document.getElementById('loading-overlay').style.display = 'flex';
@@ -88,21 +108,23 @@
                     gameDiv.style.height = '100vh';
                     gameDiv.style.background = '#000';
                     
-                    // Layout elevado e com área para o Analógico
+                    // Injeção da interface nativa controlada por CSS
                     gameDiv.innerHTML = `
-                        <div id="joystick-zone" style="position:absolute; bottom: 120px; left: 80px; width: 120px; height: 120px; z-index: 9999;"></div>
-                        
-                        <!-- Botões de Ação reposicionados e mapeamento A/B invertido -->
-                        <div id="p2-btn-x" class="p2-btn" data-pad="3" style="bottom: 210px; right: 80px;">X</div>
-                        <div id="p2-btn-y" class="p2-btn" data-pad="2" style="bottom: 155px; right: 135px;">Y</div>
-                        <div id="p2-btn-b" class="p2-btn" data-pad="1" style="bottom: 100px; right: 80px;">B</div>
-                        <div id="p2-btn-a" class="p2-btn" data-pad="0" style="bottom: 155px; right: 25px;">A</div>
-                        
-                        <div id="p2-btn-select" class="p2-btn p2-sys-btn" data-pad="8" style="top: 15px; left: 15px;">Select</div>
-                        <div id="p2-btn-start" class="p2-btn p2-sys-btn" data-pad="9" style="top: 15px; right: 15px;">Start</div>
+                        <div id="joystick-zone"></div>
+                        <div id="p2-btn-b" class="p2-btn" data-pad="1">B</div>
+                        <div id="p2-btn-a" class="p2-btn" data-pad="0">A</div>
+                        <div id="p2-btn-select" class="p2-btn p2-sys-btn" data-pad="8">Select</div>
+                        <div id="p2-btn-start" class="p2-btn p2-sys-btn" data-pad="9">Start</div>
                     `;
                     
-                    injetarLayoutTatico(sys);
+                    // Ajuste de Ficha para sistemas Arcade
+                    if (sys === 'fbneo' || sys === 'mame2003') {
+                        const btnFicha = document.getElementById('p2-btn-select');
+                        btnFicha.innerText = 'FICHA';
+                        btnFicha.style.backgroundColor = '#cba800';
+                        btnFicha.style.color = '#000';
+                        btnFicha.style.border = 'none';
+                    }
 
                     // Inicializa o Joystick Analógico
                     const joystick = nipplejs.create({
@@ -113,21 +135,41 @@
                         size: 110
                     });
 
-                    // Envia os eixos X e Y do joystick
+                    // Tradutor Analógico -> D-Pad Direcional
+                    let activeDpad = { 12: 0, 13: 0, 14: 0, 15: 0 };
+                    
                     joystick.on('move', function(evt, data) {
-                        const force = Math.min(data.distance / 55, 1);
-                        const x = Math.cos(data.angle.radian) * force;
-                        const y = (Math.sin(data.angle.radian) * force) * -1; // Y inverte para Gamepad API
-                        conexao.send({ axis: 0, val: x });
-                        conexao.send({ axis: 1, val: y });
+                        const x = Math.cos(data.angle.radian);
+                        const y = Math.sin(data.angle.radian);
+                        
+                        // Determina a direção (limiar de 0.4 permite movimentos na diagonal)
+                        const newDpad = {
+                            12: y > 0.4 ? 1 : 0,  // Cima
+                            13: y < -0.4 ? 1 : 0, // Baixo
+                            14: x < -0.4 ? 1 : 0, // Esquerda
+                            15: x > 0.4 ? 1 : 0   // Direita
+                        };
+                        
+                        // Dispara apenas quando há alteração na direção
+                        for (let btn in newDpad) {
+                            if (newDpad[btn] !== activeDpad[btn]) {
+                                conexao.send({ b: parseInt(btn), s: newDpad[btn] });
+                                activeDpad[btn] = newDpad[btn];
+                            }
+                        }
                     });
 
+                    // Soltar o joystick reseta todos os direcionais
                     joystick.on('end', function() {
-                        conexao.send({ axis: 0, val: 0 });
-                        conexao.send({ axis: 1, val: 0 });
+                        for (let btn in activeDpad) {
+                            if (activeDpad[btn] === 1) {
+                                conexao.send({ b: parseInt(btn), s: 0 });
+                                activeDpad[btn] = 0;
+                            }
+                        }
                     });
 
-                    // Envia os cliques dos botões de ação
+                    // Envio nativo dos botões de ação
                     const botoes = gameDiv.querySelectorAll('.p2-btn');
                     botoes.forEach(btn => {
                         const padIndex = btn.getAttribute('data-pad');
@@ -147,7 +189,7 @@
         
         } else if (sys && dataId) {
             // =====================================
-            // LÓGICA DO JOGADOR 1 (PC / HOST)
+            // HOST: COMPUTADOR DO JOGADOR 1
             // =====================================
             const idGamepad = 'Xbox 360 Controller (XInput STANDARD GAMEPAD)';
             window.fakeP1 = { id: idGamepad, index: 0, connected: true, timestamp: Date.now(), mapping: 'standard', axes: [0,0,0,0], buttons: Array(17).fill().map(()=>({pressed:false, value:0})) };
@@ -199,7 +241,6 @@
                             document.getElementById('tela-convite').style.display = 'none';
                         });
                         
-                        // Atualiza a memória P2 escutando botões e eixos analógicos
                         conexao.on('data', function(dados) {
                             if (dados.b !== undefined) {
                                 const btnIndex = dados.b;
@@ -207,8 +248,6 @@
                                     window.fakeP2.buttons[btnIndex].pressed = (dados.s === 1);
                                     window.fakeP2.buttons[btnIndex].value = dados.s;
                                 }
-                            } else if (dados.axis !== undefined) {
-                                window.fakeP2.axes[dados.axis] = dados.val;
                             }
                             window.fakeP2.timestamp = Date.now();
                         });
@@ -224,14 +263,14 @@
         function mostrarConvite() { document.getElementById('tela-convite').style.display = 'block'; }
 
         // ==========================================================
-        // MOTOR REATIVO DE LAYOUT DO JOGADOR (INTACTO)
+        // MOTOR REATIVO DE LAYOUT DO JOGADOR 1 (INTACTO)
         // ==========================================================
         function injetarLayoutTatico(coreName) {
             setInterval(() => {
                 const gameContainer = document.getElementById('game');
                 if (!gameContainer) return;
                 
-                const virtualButtons = Array.from(gameContainer.querySelectorAll('div, span, .p2-btn'));
+                const virtualButtons = Array.from(gameContainer.querySelectorAll('div, span'));
                 let btnEsq = null, btnDir = null, btnSelect = null, btnStart = null, btnResetar = null;
                 let btnX = null, btnY = null;
                 
@@ -335,15 +374,6 @@
                             btnStart.style.setProperty('bottom', 'auto', 'important');
                             btnStart.style.setProperty('left', 'auto', 'important');
                         }
-                        
-                        // Modificação visual para o Select virar FICHA no P2 também
-                        if (btnSelect.id === 'p2-btn-select') {
-                            btnSelect.innerText = 'FICHA';
-                            btnSelect.style.backgroundColor = '#cba800';
-                            btnSelect.style.color = '#000';
-                            btnSelect.style.border = 'none';
-                        }
-                        
                         [btnSelect, btnStart].forEach(btn => {
                             btn.style.setProperty('margin', '0', 'important');
                             btn.style.setProperty('transform', 'none', 'important');
