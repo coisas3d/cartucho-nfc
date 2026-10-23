@@ -2,14 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    
-    <!-- Bloqueio de Zoom e Escala Extrema -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    
-    <!-- Link para o Manifesto Nativo -->
     <link rel="manifest" href="manifest.json">
-    
-    <!-- Meta-tags de Imersão para iOS (Apple) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Sistema">
@@ -17,22 +11,10 @@
     <title>Sistema de Execução</title>
     
     <style>
-        /* Desativa seleções de texto acidentais durante o jogo */
         body, html { 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100%; 
-            background-color: #000; 
-            overflow: hidden; 
-            font-family: 'Courier New', Courier, monospace;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            touch-action: none; 
+            margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; touch-action: none; 
         }
-        
         #game-container { width: 100vw; height: 100vh; position: relative; z-index: 1; }
         
         #power-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
@@ -61,27 +43,60 @@
     <div id="game-container"><div id="game"></div></div>
     <div id="status-msg">Acesso Negado ou Dados Ausentes.</div>
 
+    <!-- BOTÃO FLUTUANTE PARA CONVIDAR -->
+    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+      Convidar P2
+    </button>
+
+    <!-- TELA DO QR CODE (ESCONDIDA) -->
+    <div id="tela-convite" style="display: none; position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0); background: white; padding: 20px; text-align: center; z-index: 9999; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);">
+        <h2 style="color: black; margin-top: 0;">Convide o Jogador 2</h2>
+        <p style="color: black;">Peça para seu amigo escanear com a câmera</p>
+        <div id="meu-qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+        <button onclick="document.getElementById('tela-convite').style.display='none'" style="padding: 10px; font-size: 16px; cursor: pointer;">Fechar</button>
+    </div>
+
+    <!-- BIBLIOTECAS -->
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        
         const sys = urlParams.get('c');
         const dataId = urlParams.get('id');
+        const salaDoAmigo = urlParams.get('sala');
+        let peer;
 
-        if (sys && dataId) {
+        if (salaDoAmigo) {
+            // ==========================================
+            // CELULAR 2 (CONTROLE P2)
+            // ==========================================
+            document.getElementById('power-screen').style.display = 'none';
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.querySelector('.loader-text').innerText = "CONECTANDO AO HOST...";
+
+            peer = new Peer();
+            peer.on('open', function() {
+                const conexao = peer.connect(salaDoAmigo);
+                conexao.on('open', function() {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    alert("Você entrou como Jogador 2!");
+                });
+            });
+
+        } else if (sys && dataId) {
+            // ==========================================
+            // CELULAR 1 (HOST)
+            // ==========================================
             document.getElementById('power-btn').addEventListener('click', function() {
-                
-                // INJEÇÃO TÁTICA: FORÇAR TELA CHEIA (FULLSCREEN API)
                 const docElm = document.documentElement;
-                if (docElm.requestFullscreen) {
-                    docElm.requestFullscreen().catch(err => console.warn(err));
-                } else if (docElm.webkitRequestFullscreen) { /* Safari / iOS */
-                    docElm.webkitRequestFullscreen();
-                }
+                if (docElm.requestFullscreen) docElm.requestFullscreen().catch(err => console.warn(err));
+                else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
                 
                 document.getElementById('power-screen').style.display = 'none';
                 document.getElementById('loading-overlay').style.display = 'flex';
+                document.getElementById('btn-convidar').style.display = 'block';
                 
-                // Trava de segurança
                 setTimeout(function() {
                     const overlay = document.getElementById('loading-overlay');
                     if (overlay) overlay.style.display = 'none';
@@ -103,11 +118,29 @@
                 document.body.appendChild(script);
             });
 
+            // Prepara a sala e o QR Code
+            peer = new Peer();
+            peer.on('open', function(meuID) {
+                const linkConvite = window.location.origin + window.location.pathname + "?c=" + sys + "&id=" + dataId + "&sala=" + meuID;
+                new QRCode(document.getElementById("meu-qrcode"), {
+                    text: linkConvite, width: 180, height: 180
+                });
+            });
+
+            peer.on('connection', function(conexao) {
+                conexao.on('open', function() {
+                    document.getElementById('tela-convite').style.display = 'none';
+                    alert("O Jogador 2 entrou na partida!");
+                });
+            });
+
         } else {
             document.getElementById('power-screen').style.display = 'none';
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.getElementById('game-container').style.display = 'none';
             document.getElementById('status-msg').style.display = 'block';
+        }
+
+        function mostrarConvite() {
+            document.getElementById('tela-convite').style.display = 'block';
         }
         
         // ==========================================================
@@ -134,14 +167,10 @@
                     if (txt === 'Start') btnStart = btn;
                     if (txt === 'Resetar' || txt === 'Reset') btnResetar = btn;
                     
-                    // Captura dos novos botões
                     if (txt === 'X') btnX = btn;
                     if (txt === 'Y') btnY = btn;
                 });
                 
-                // ==========================================
-                // 1. SNES (ESTADO DE OURO - INTOCÁVEL)
-                // ==========================================
                 if ((coreName === 'snes' || coreName === 'sfc') && btnEsq && btnDir && btnSelect && btnStart) {
                     const esqRect = btnEsq.getBoundingClientRect();
                     const dirRect = btnDir.getBoundingClientRect();
@@ -168,9 +197,6 @@
                     }
                 }
 
-                // ==========================================
-                // 2. ATARI 2600
-                // ==========================================
                 if (coreName === 'atari2600' && btnSelect && btnResetar) {
                     const isPortrait = window.innerHeight > window.innerWidth;
                     if (isPortrait) {
@@ -203,12 +229,7 @@
                     });
                 }
 
-                // ==========================================
-                // 3. ARCADE (FBNEO / MAME)
-                // ==========================================
                 if (coreName === 'mame2003' || coreName === 'fbneo') {
-                    
-                    // Oculta os botões X e Y sumariamente
                     if (btnX) btnX.style.setProperty('display', 'none', 'important');
                     if (btnY) btnY.style.setProperty('display', 'none', 'important');
 
@@ -216,7 +237,6 @@
                         const isPortrait = window.innerHeight > window.innerWidth;
                         
                         if (isPortrait) {
-                            // VERTICAL: Botões ancorados a 40% da base (na área preta)
                             btnSelect.style.setProperty('position', 'fixed', 'important');
                             btnSelect.style.setProperty('bottom', '40%', 'important');
                             btnSelect.style.setProperty('left', '10%', 'important');
@@ -229,7 +249,6 @@
                             btnStart.style.setProperty('top', 'auto', 'important');
                             btnStart.style.setProperty('left', 'auto', 'important');
                         } else {
-                            // HORIZONTAL: Mantém o topo intacto
                             btnSelect.style.setProperty('position', 'fixed', 'important');
                             btnSelect.style.setProperty('top', '15px', 'important');
                             btnSelect.style.setProperty('left', '15px', 'important');
@@ -251,13 +270,9 @@
                     }
                 }
 
-                // ==========================================
-                // 4. NINTENDO 64 (LAYOUT INFOGRÁFICO MARIO KART 64)
-                // ==========================================
                 if (coreName === 'n64') {
                     const isPortrait = window.innerHeight > window.innerWidth;
 
-                    // Usa os botões NATIVOS do EmulatorJS (garante Multi-Touch + Analógico 100% funcional)
                     const encontrarBotaoNativo = (rotulos) => {
                         const lista = Array.isArray(rotulos) ? rotulos : [rotulos];
                         for (let el of virtualButtons) {
@@ -294,17 +309,14 @@
                     const n64CLeft = encontrarBotaoNativo(['◄', 'C◄', 'C-Left']);
                     const n64CRight= encontrarBotaoNativo(['►', 'C►', 'C-Right']);
 
-                    // 1. Oculta o Gatilho L (ESQ) e o D-Pad em cruz nativo (deixando apenas o Analógico)
                     if (n64L) n64L.style.setProperty('display', 'none', 'important');
                     const dpadElements = gameContainer.querySelectorAll('.ejs_dpad_main, .ejs_dpad_container, [class*="dpad"]');
                     dpadElements.forEach(d => d.style.setProperty('display', 'none', 'important'));
 
-                    // Se o R vier traduzido como "DIR", renomeia visualmente para "R" igual ao infográfico
                     if (n64R && n64R.innerText.trim() === 'DIR') {
                         n64R.innerText = 'R';
                     }
 
-                    // Função de estilização e posicionamento fiel ao infográfico
                     const estilizarBotao = (el, top, bottom, left, right, w, h, bg, corTexto, radius, fontSize) => {
                         if (!el) return;
                         el.style.setProperty('position', 'fixed', 'important');
@@ -330,108 +342,4 @@
                     };
 
                     if (isPortrait) {
-                        // ==================================================
-                        // MODO VERTICAL (IDÊNTICO AO INFOGRÁFICO ESQUERDO)
-                        // ==================================================
-                        // Linha superior de comandos abaixo da tela do jogo: Z (esq), START (centro), R (dir)
-                        estilizarBotao(n64Z,     'auto', '42%', '6%',  'auto', '68px', '36px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '16px');
-                        estilizarBotao(n64Start, 'auto', '40%', '39%', 'auto', '76px', '32px', 'rgba(55, 65, 80, 0.95)', '#fff', '18px', '13px');
-                        estilizarBotao(n64R,     'auto', '42%', 'auto','6%',   '68px', '36px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '16px');
-
-                        // Losango dos Botões C (Amarelos) abaixo do R
-                        estilizarBotao(n64CUp,   'auto', '32%', 'auto', '14%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CDown, 'auto', '21%', 'auto', '14%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CLeft, 'auto', '26.5%', 'auto', '24%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CRight,'auto', '26.5%', 'auto', '4%',  '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-
-                        // Botões Principais: B (Verde) e A (Azul) na base direita
-                        estilizarBotao(n64B,     'auto', '11%', 'auto', '23%', '64px', '64px', 'rgba(25, 165, 75, 0.95)',  '#fff', '50%', '24px');
-                        estilizarBotao(n64A,     'auto', '5%',  'auto', '5%',  '70px', '70px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
-
-                    } else {
-                        // ==================================================
-                        // MODO HORIZONTAL (IDÊNTICO AO INFOGRÁFICO DIREITO)
-                        // ==================================================
-                        // Gatilhos Z e R no topo das barras laterais
-                        estilizarBotao(n64Z,     '8%',  'auto', '3%',  'auto', '78px', '42px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '18px');
-                        estilizarBotao(n64R,     '8%',  'auto', 'auto','3%',   '78px', '42px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '18px');
-
-                        // Botão START centralizado na parte inferior
-                        estilizarBotao(n64Start, 'auto', '4%',  '44%', 'auto', '84px', '32px', 'rgba(55, 65, 80, 0.95)', '#fff', '18px', '13px');
-
-                        // Losango dos Botões C (Amarelos) no meio da lateral direita
-                        estilizarBotao(n64CUp,   '28%', 'auto', 'auto', '7%',  '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CDown, '50%', 'auto', 'auto', '7%',  '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CLeft, '39%', 'auto', 'auto', '12.5%','36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CRight,'39%', 'auto', 'auto', '1.5%', '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-
-                        // Botões Principais: B (Verde) e A (Azul) no canto inferior direito
-                        estilizarBotao(n64B,     'auto', '16%', 'auto', '11%', '66px', '66px', 'rgba(25, 165, 75, 0.95)',  '#fff', '50%', '24px');
-                        estilizarBotao(n64A,     'auto', '6%',  'auto', '2%',  '72px', '72px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
-                    }
-                }
-
-            }, 300); 
-        }
-    </script>
-
-<!-- BOTÃO FLUTUANTE PARA CONVIDAR -->
-<button onclick="mostrarConvite()" style="position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-  Convidar P2
-</button>
-
-<!-- TELA DO QR CODE (ESCONDIDA) -->
-<div id="tela-convite" style="display: none; position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0); background: white; padding: 20px; text-align: center; z-index: 9999; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);">
-    <h2 style="color: black; margin-top: 0;">Convide o Jogador 2</h2>
-    <p style="color: black;">Peça para seu amigo escanear com a câmera</p>
-    <div id="meu-qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
-    <button onclick="document.getElementById('tela-convite').style.display='none'" style="padding: 10px; font-size: 16px; cursor: pointer;">Fechar</button>
-</div>
-
-<!-- BIBLIOTECAS NECESSÁRIAS -->
-<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<!-- LÓGICA DE CONEXÃO DOS CELULARES -->
-<script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const salaDoAmigo = urlParams.get('sala');
-  let peer;
-
-  if (salaDoAmigo) {
-      // O QUE ACONTECE NO CELULAR DO AMIGO (P2)
-      peer = new Peer();
-      peer.on('open', function() {
-          const conexao = peer.connect(salaDoAmigo);
-          conexao.on('open', function() {
-              console.log("Conectado ao Celular 1!");
-              alert("Você entrou como Jogador 2!");
-          });
-      });
-  } else {
-      // O QUE ACONTECE NO SEU CELULAR (P1)
-      peer = new Peer();
-      peer.on('open', function(meuID) {
-          const linkConvite = window.location.origin + window.location.pathname + "?sala=" + meuID;
-          new QRCode(document.getElementById("meu-qrcode"), {
-              text: linkConvite,
-              width: 180,
-              height: 180
-          });
-      });
-
-      peer.on('connection', function(conexao) {
-          conexao.on('open', function() {
-              document.getElementById('tela-convite').style.display = 'none';
-              alert("O Jogador 2 entrou na partida!");
-          });
-      });
-  }
-
-  function mostrarConvite() {
-      document.getElementById('tela-convite').style.display = 'block';
-  }
-</script>
-    
-</body>
-</html>
+                        estilizarBotao(n64Z,     'auto', '42%', '6%',  'auto', '68px', '36px',
