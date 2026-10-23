@@ -3,9 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sistema">
+    
     <title>Sistema de Execução</title>
+    
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; touch-action: none; }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; touch-action: none; 
+        }
         #game-container { width: 100vw; height: 100vh; position: relative; z-index: 1; }
         
         #power-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
@@ -14,39 +23,38 @@
         #power-btn:active { background-color: #ff0000; color: #000; transform: scale(0.95); }
         
         #loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        .loader-text { color: #fff; font-size: 1.5rem; font-weight: bold; letter-spacing: 3px; animation: pulse 1.2s infinite; text-align: center; padding: 20px; }
+        .loader-text { color: #fff; font-size: 1.5rem; font-weight: bold; letter-spacing: 3px; animation: pulse 1.2s infinite; }
         @keyframes pulse { 0% { opacity: 0.2; } 50% { opacity: 1; text-shadow: 0 0 15px #fff; } 100% { opacity: 0.2; } }
 
-        #status-msg { display: none; color: #fff; text-align: center; margin-top: 40vh; position: relative; z-index: 10; font-size: 1.2rem; }
-        #versao-app { position: absolute; bottom: 5px; right: 5px; color: #444; font-size: 12px; z-index: 10001; }
+        #status-msg { display: none; color: #fff; text-align: center; margin-top: 40vh; position: relative; z-index: 10; }
     </style>
 </head>
 <body>
-    <div id="versao-app">v3.0</div>
-
+    
     <div id="power-screen">
         <div class="cart-status">Conexão Estabelecida</div>
-        <button id="power-btn" onclick="iniciarJogo()">POWER ON</button>
+        <button id="power-btn">POWER ON</button>
     </div>
 
     <div id="loading-overlay">
-        <div class="loader-text" id="loading-text">DECODIFICANDO DADOS...</div>
+        <div class="loader-text" id="loading-text-msg">DECODIFICANDO DADOS...</div>
     </div>
 
     <div id="game-container"><div id="game"></div></div>
-    <div id="status-msg" id="status-alerta">Acesso Negado ou Dados Ausentes.</div>
+    <div id="status-msg">Acesso Negado ou Dados Ausentes.</div>
 
-    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 10000; padding: 10px; background: #ff0000; color: white; border: 2px solid #fff; border-radius: 5px; font-weight: bold; font-family: 'Courier New', Courier, monospace; cursor: pointer;">
-      CONVIDAR P2
+    <!-- UI MULTIPLAYER (ISOLADA) -->
+    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+      Convidar P2
     </button>
-
-    <div id="tela-convite" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; border: 3px solid #00ff00; padding: 20px; text-align: center; z-index: 10001; border-radius: 10px; font-family: 'Courier New', Courier, monospace;">
-        <h2 style="color: #00ff00; margin-top: 0;">JOGADOR 2</h2>
-        <p style="color: #fff;">Escaneie o código com a câmera</p>
-        <div id="meu-qrcode" style="display: flex; justify-content: center; margin: 20px 0; background: white; padding: 10px;"></div>
-        <button onclick="document.getElementById('tela-convite').style.display='none'" style="padding: 10px 20px; font-size: 16px; cursor: pointer; background: transparent; color: #ff0000; border: 2px solid #ff0000;">FECHAR</button>
+    <div id="tela-convite" style="display: none; position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0); background: white; padding: 20px; text-align: center; z-index: 9999; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);">
+        <h2 style="color: black; margin-top: 0;">Convide o Jogador 2</h2>
+        <p style="color: black;">Peça para seu amigo escanear com a câmera</p>
+        <div id="meu-qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+        <button onclick="document.getElementById('tela-convite').style.display='none'" style="padding: 10px; font-size: 16px; cursor: pointer;">Fechar</button>
     </div>
 
+    <!-- SCRIPTS EXTERNOS -->
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -55,60 +63,49 @@
         const sys = urlParams.get('c');
         const dataId = urlParams.get('id');
         const salaDoAmigo = urlParams.get('sala');
-        let peer;
+        let peerHost;
 
-        // ==========================================
-        // LÓGICA DO JOGADOR 2 (CONTROLE)
-        // ==========================================
+        // ROTEAMENTO: JOGADOR 2
         if (salaDoAmigo) {
             document.getElementById('power-screen').style.display = 'none';
             document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text').innerText = "CONECTANDO AO HOST...";
+            document.getElementById('loading-text-msg').innerText = "CONECTANDO AO JOGADOR 1...";
 
-            setTimeout(function() {
-                try {
-                    peer = new Peer();
-                    peer.on('open', function() {
-                        const conexao = peer.connect(salaDoAmigo);
-                        conexao.on('open', function() {
-                            document.getElementById('loading-overlay').style.display = 'none';
-                            alert("Conectado como JOGADOR 2!");
-                        });
-                    });
-                } catch(e) {
-                    alert("Erro de rede no P2: " + e.message);
+            const peerClient = new Peer();
+            peerClient.on('open', function() {
+                const conexao = peerClient.connect(salaDoAmigo);
+                conexao.on('open', function() {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    alert("Você entrou como Jogador 2!");
+                    // O próximo passo técnico ocorrerá aqui: capturar toques na tela e enviar via conexao.send()
+                });
+            });
+        
+        // ROTEAMENTO: JOGADOR 1 (SEU CÓDIGO ORIGINAL INTACTO)
+        } else if (sys && dataId) {
+            document.getElementById('power-btn').addEventListener('click', function() {
+                
+                // INJEÇÃO TÁTICA: FORÇAR TELA CHEIA
+                const docElm = document.documentElement;
+                if (docElm.requestFullscreen) {
+                    docElm.requestFullscreen().catch(err => console.warn(err));
+                } else if (docElm.webkitRequestFullscreen) {
+                    docElm.webkitRequestFullscreen();
                 }
-            }, 500);
-
-        // ==========================================
-        // TELA DE ERRO (URL INVÁLIDA)
-        // ==========================================
-        } else if (!sys || !dataId) {
-            document.getElementById('power-screen').style.display = 'none';
-            document.getElementById('status-msg').style.display = 'block';
-        }
-
-        // ==========================================
-        // LÓGICA DO JOGADOR 1 (HOST) - ATIVADA PELO BOTÃO
-        // ==========================================
-        window.iniciarJogo = function() {
-            try {
-                // 1. Esconde a interface imediatamente
+                
                 document.getElementById('power-screen').style.display = 'none';
                 document.getElementById('loading-overlay').style.display = 'flex';
                 document.getElementById('btn-convidar').style.display = 'block';
                 
-                // 2. Tenta entrar em ecrã inteiro de forma segura
-                try {
-                    const docElm = document.documentElement;
-                    if (docElm.requestFullscreen) docElm.requestFullscreen().catch(e => {});
-                    else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
-                } catch(e) {}
+                // Trava de segurança
+                setTimeout(function() {
+                    const overlay = document.getElementById('loading-overlay');
+                    if (overlay) overlay.style.display = 'none';
+                }, 10000);
 
-                // 3. Inicializa o Emulador
                 window.EJS_player = '#game';
                 window.EJS_core = sys;
-                window.EJS_gameUrl = 'roms/' + sys + '/' + dataId;
+                window.EJS_gameUrl = `roms/${sys}/${dataId}`;
                 window.EJS_startOnLoaded = true;
                 window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
                 
@@ -121,32 +118,38 @@
                 script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
                 document.body.appendChild(script);
 
-                // 4. Inicia o sistema de Salas (com atraso para não congelar o jogo)
-                setTimeout(function() {
-                    try {
-                        peer = new Peer();
-                        peer.on('open', function(meuID) {
-                            const linkConvite = window.location.origin + window.location.pathname + "?c=" + sys + "&id=" + dataId + "&sala=" + meuID;
-                            new QRCode(document.getElementById("meu-qrcode"), {
-                                text: linkConvite, width: 160, height: 160
-                            });
+                // Inicializa a sala do P2 apenas após clicar em POWER ON, para não pesar o carregamento
+                setTimeout(() => {
+                    peerHost = new Peer();
+                    peerHost.on('open', function(meuID) {
+                        const linkConvite = window.location.origin + window.location.pathname + "?c=" + sys + "&id=" + dataId + "&sala=" + meuID;
+                        new QRCode(document.getElementById("meu-qrcode"), {
+                            text: linkConvite, width: 180, height: 180
                         });
-                        peer.on('connection', function(conexao) {
-                            conexao.on('open', function() {
-                                document.getElementById('tela-convite').style.display = 'none';
-                                alert("JOGADOR 2 ENTROU NA SALA!");
-                            });
+                    });
+                    peerHost.on('connection', function(conexao) {
+                        conexao.on('open', function() {
+                            document.getElementById('tela-convite').style.display = 'none';
+                            alert("O Jogador 2 entrou na partida!");
+                            // O próximo passo técnico ocorrerá aqui: receber dados via conexao.on('data') e disparar GamepadEvents
                         });
-                    } catch(e) {}
+                    });
                 }, 1000);
+            });
 
-            } catch(erro) {
-                alert("Falha ao iniciar: " + erro.message);
-            }
-        };
+        } else {
+            document.getElementById('power-screen').style.display = 'none';
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('status-msg').style.display = 'block';
+        }
+
+        function mostrarConvite() {
+            document.getElementById('tela-convite').style.display = 'block';
+        }
 
         // ==========================================================
-        // MOTOR REATIVO DE LAYOUT (MANTIDO INTACTO)
+        // MOTOR REATIVO DE LAYOUT ORIGINAL (INTACTO)
         // ==========================================================
         function injetarLayoutTatico(coreName) {
             setInterval(() => {
@@ -154,17 +157,21 @@
                 if (!gameContainer) return;
                 
                 const virtualButtons = Array.from(gameContainer.querySelectorAll('div, span'));
+                
                 let btnEsq = null, btnDir = null, btnSelect = null, btnStart = null, btnResetar = null;
                 let btnX = null, btnY = null;
                 
                 virtualButtons.forEach(btn => {
                     const txt = btn.innerText ? btn.innerText.trim() : '';
-                    if (txt === 'Rápido' || txt === 'Lento') btn.style.setProperty('display', 'none', 'important');
+                    if (txt === 'Rápido' || txt === 'Lento') {
+                        btn.style.setProperty('display', 'none', 'important');
+                    }
                     if (txt === 'ESQ') btnEsq = btn;
                     if (txt === 'DIR') btnDir = btn;
                     if (txt === 'Select') btnSelect = btn;
                     if (txt === 'Start') btnStart = btn;
                     if (txt === 'Resetar' || txt === 'Reset') btnResetar = btn;
+                    
                     if (txt === 'X') btnX = btn;
                     if (txt === 'Y') btnY = btn;
                 });
@@ -172,6 +179,7 @@
                 if ((coreName === 'snes' || coreName === 'sfc') && btnEsq && btnDir && btnSelect && btnStart) {
                     const esqRect = btnEsq.getBoundingClientRect();
                     const dirRect = btnDir.getBoundingClientRect();
+                    
                     if (esqRect.bottom > 0 && dirRect.bottom > 0) {
                         btnSelect.style.setProperty('position', 'fixed', 'important');
                         btnSelect.style.setProperty('top', (esqRect.bottom + 15) + 'px', 'important');
@@ -229,8 +237,10 @@
                 if (coreName === 'mame2003' || coreName === 'fbneo') {
                     if (btnX) btnX.style.setProperty('display', 'none', 'important');
                     if (btnY) btnY.style.setProperty('display', 'none', 'important');
+
                     if (btnSelect && btnStart) {
                         const isPortrait = window.innerHeight > window.innerWidth;
+                        
                         if (isPortrait) {
                             btnSelect.style.setProperty('position', 'fixed', 'important');
                             btnSelect.style.setProperty('bottom', '40%', 'important');
@@ -256,6 +266,7 @@
                             btnStart.style.setProperty('bottom', 'auto', 'important');
                             btnStart.style.setProperty('left', 'auto', 'important');
                         }
+
                         [btnSelect, btnStart].forEach(btn => {
                             btn.style.setProperty('margin', '0', 'important');
                             btn.style.setProperty('transform', 'none', 'important');
@@ -266,6 +277,7 @@
 
                 if (coreName === 'n64') {
                     const isPortrait = window.innerHeight > window.innerWidth;
+
                     const encontrarBotaoNativo = (rotulos) => {
                         const lista = Array.isArray(rotulos) ? rotulos : [rotulos];
                         for (let el of virtualButtons) {
@@ -291,56 +303,79 @@
                         return null;
                     };
 
-                    const n64A = encontrarBotaoNativo(['A']), n64B = encontrarBotaoNativo(['B']), n64Z = encontrarBotaoNativo(['Z']), n64R = encontrarBotaoNativo(['DIR', 'R']), n64L = encontrarBotaoNativo(['ESQ', 'L']);
-                    const n64Start = encontrarBotaoNativo(['Start', 'START']), n64CUp = encontrarBotaoNativo(['▲', 'C▲', 'C-Up']), n64CDown = encontrarBotaoNativo(['▼', 'C▼', 'C-Down']);
-                    const n64CLeft = encontrarBotaoNativo(['◄', 'C◄', 'C-Left']), n64CRight= encontrarBotaoNativo(['►', 'C►', 'C-Right']);
+                    const n64A     = encontrarBotaoNativo(['A']);
+                    const n64B     = encontrarBotaoNativo(['B']);
+                    const n64Z     = encontrarBotaoNativo(['Z']);
+                    const n64R     = encontrarBotaoNativo(['DIR', 'R']);
+                    const n64L     = encontrarBotaoNativo(['ESQ', 'L']);
+                    const n64Start = encontrarBotaoNativo(['Start', 'START']);
+                    const n64CUp   = encontrarBotaoNativo(['▲', 'C▲', 'C-Up']);
+                    const n64CDown = encontrarBotaoNativo(['▼', 'C▼', 'C-Down']);
+                    const n64CLeft = encontrarBotaoNativo(['◄', 'C◄', 'C-Left']);
+                    const n64CRight= encontrarBotaoNativo(['►', 'C►', 'C-Right']);
 
                     if (n64L) n64L.style.setProperty('display', 'none', 'important');
                     const dpadElements = gameContainer.querySelectorAll('.ejs_dpad_main, .ejs_dpad_container, [class*="dpad"]');
                     dpadElements.forEach(d => d.style.setProperty('display', 'none', 'important'));
-                    if (n64R && n64R.innerText.trim() === 'DIR') n64R.innerText = 'R';
+
+                    if (n64R && n64R.innerText.trim() === 'DIR') {
+                        n64R.innerText = 'R';
+                    }
 
                     const estilizarBotao = (el, top, bottom, left, right, w, h, bg, corTexto, radius, fontSize) => {
                         if (!el) return;
-                        el.style.setProperty('position', 'fixed', 'important'); el.style.setProperty('top', top, 'important');
-                        el.style.setProperty('bottom', bottom, 'important'); el.style.setProperty('left', left, 'important');
-                        el.style.setProperty('right', right, 'important'); el.style.setProperty('width', w, 'important');
-                        el.style.setProperty('height', h, 'important'); el.style.setProperty('background-color', bg, 'important');
-                        el.style.setProperty('color', corTexto, 'important'); el.style.setProperty('border-radius', radius, 'important');
-                        el.style.setProperty('border', '2px solid rgba(255,255,255,0.35)', 'important'); el.style.setProperty('display', 'flex', 'important');
-                        el.style.setProperty('justify-content', 'center', 'important'); el.style.setProperty('align-items', 'center', 'important');
-                        el.style.setProperty('font-weight', 'bold', 'important'); el.style.setProperty('font-size', fontSize, 'important');
-                        el.style.setProperty('margin', '0', 'important'); el.style.setProperty('transform', 'none', 'important');
-                        el.style.setProperty('z-index', '9999', 'important'); el.style.setProperty('box-shadow', '0 4px 10px rgba(0,0,0,0.6)', 'important');
+                        el.style.setProperty('position', 'fixed', 'important');
+                        el.style.setProperty('top', top, 'important');
+                        el.style.setProperty('bottom', bottom, 'important');
+                        el.style.setProperty('left', left, 'important');
+                        el.style.setProperty('right', right, 'important');
+                        el.style.setProperty('width', w, 'important');
+                        el.style.setProperty('height', h, 'important');
+                        el.style.setProperty('background-color', bg, 'important');
+                        el.style.setProperty('color', corTexto, 'important');
+                        el.style.setProperty('border-radius', radius, 'important');
+                        el.style.setProperty('border', '2px solid rgba(255,255,255,0.35)', 'important');
+                        el.style.setProperty('display', 'flex', 'important');
+                        el.style.setProperty('justify-content', 'center', 'important');
+                        el.style.setProperty('align-items', 'center', 'important');
+                        el.style.setProperty('font-weight', 'bold', 'important');
+                        el.style.setProperty('font-size', fontSize, 'important');
+                        el.style.setProperty('margin', '0', 'important');
+                        el.style.setProperty('transform', 'none', 'important');
+                        el.style.setProperty('z-index', '9999', 'important');
+                        el.style.setProperty('box-shadow', '0 4px 10px rgba(0,0,0,0.6)', 'important');
                     };
 
                     if (isPortrait) {
-                        estilizarBotao(n64Z, 'auto', '42%', '6%', 'auto', '68px', '36px', 'rgba(65, 75, 90, 0.9)', '#fff', '12px', '16px');
+                        estilizarBotao(n64Z,     'auto', '42%', '6%',  'auto', '68px', '36px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '16px');
                         estilizarBotao(n64Start, 'auto', '40%', '39%', 'auto', '76px', '32px', 'rgba(55, 65, 80, 0.95)', '#fff', '18px', '13px');
-                        estilizarBotao(n64R, 'auto', '42%', 'auto','6%', '68px', '36px', 'rgba(65, 75, 90, 0.9)', '#fff', '12px', '16px');
-                        estilizarBotao(n64CUp, 'auto', '32%', 'auto', '14%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
+                        estilizarBotao(n64R,     'auto', '42%', 'auto','6%',   '68px', '36px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '16px');
+
+                        estilizarBotao(n64CUp,   'auto', '32%', 'auto', '14%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
                         estilizarBotao(n64CDown, 'auto', '21%', 'auto', '14%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
                         estilizarBotao(n64CLeft, 'auto', '26.5%', 'auto', '24%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CRight,'auto', '26.5%', 'auto', '4%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64B, 'auto', '11%', 'auto', '23%', '64px', '64px', 'rgba(25, 165, 75, 0.95)', '#fff', '50%', '24px');
-                        estilizarBotao(n64A, 'auto', '5%', 'auto', '5%', '70px', '70px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
+                        estilizarBotao(n64CRight,'auto', '26.5%', 'auto', '4%',  '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
+
+                        estilizarBotao(n64B,     'auto', '11%', 'auto', '23%', '64px', '64px', 'rgba(25, 165, 75, 0.95)',  '#fff', '50%', '24px');
+                        estilizarBotao(n64A,     'auto', '5%',  'auto', '5%',  '70px', '70px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
+
                     } else {
-                        estilizarBotao(n64Z, '8%', 'auto', '3%', 'auto', '78px', '42px', 'rgba(65, 75, 90, 0.9)', '#fff', '12px', '18px');
-                        estilizarBotao(n64R, '8%', 'auto', 'auto','3%', '78px', '42px', 'rgba(65, 75, 90, 0.9)', '#fff', '12px', '18px');
-                        estilizarBotao(n64Start, 'auto', '4%', '44%', 'auto', '84px', '32px', 'rgba(55, 65, 80, 0.95)', '#fff', '18px', '13px');
-                        estilizarBotao(n64CUp, '28%', 'auto', 'auto', '7%', '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CDown, '50%', 'auto', 'auto', '7%', '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
+                        estilizarBotao(n64Z,     '8%',  'auto', '3%',  'auto', '78px', '42px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '18px');
+                        estilizarBotao(n64R,     '8%',  'auto', 'auto','3%',   '78px', '42px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '18px');
+
+                        estilizarBotao(n64Start, 'auto', '4%',  '44%', 'auto', '84px', '32px', 'rgba(55, 65, 80, 0.95)', '#fff', '18px', '13px');
+
+                        estilizarBotao(n64CUp,   '28%', 'auto', 'auto', '7%',  '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
+                        estilizarBotao(n64CDown, '50%', 'auto', 'auto', '7%',  '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
                         estilizarBotao(n64CLeft, '39%', 'auto', 'auto', '12.5%','36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
                         estilizarBotao(n64CRight,'39%', 'auto', 'auto', '1.5%', '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64B, 'auto', '16%', 'auto', '11%', '66px', '66px', 'rgba(25, 165, 75, 0.95)', '#fff', '50%', '24px');
-                        estilizarBotao(n64A, 'auto', '6%', 'auto', '2%', '72px', '72px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
+
+                        estilizarBotao(n64B,     'auto', '16%', 'auto', '11%', '66px', '66px', 'rgba(25, 165, 75, 0.95)',  '#fff', '50%', '24px');
+                        estilizarBotao(n64A,     'auto', '6%',  'auto', '2%',  '72px', '72px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
                     }
                 }
-            }, 300); 
-        }
 
-        function mostrarConvite() {
-            document.getElementById('tela-convite').style.display = 'block';
+            }, 300); 
         }
     </script>
 </body>
