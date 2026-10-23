@@ -28,9 +28,10 @@
 
         #status-msg { display: none; color: #fff; text-align: center; margin-top: 40vh; position: relative; z-index: 10; }
 
-        /* ESTILOS BASE DO COMANDO P2 (SEU SCRIPT FARÁ O RESTO) */
-        .p2-btn { position: absolute; width: 50px; height: 50px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: sans-serif; z-index: 9999; user-select: none; }
-        .sys-btn { width: 70px; height: 35px; border-radius: 20px; font-size: 12px; }
+        /* ESTILOS DO COMANDO VIRTUAL P2 */
+        .p2-btn { position: absolute; width: 55px; height: 55px; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: sans-serif; z-index: 9999; user-select: none; }
+        .p2-sys-btn { width: 80px; height: 35px; border-radius: 10px; font-size: 12px; font-family: 'Courier New', Courier, monospace; }
+        .p2-btn:active { background: rgba(255,255,255,0.5); transform: scale(0.9); }
     </style>
 </head>
 <body>
@@ -44,35 +45,33 @@
         <div class="loader-text" id="loading-text-msg">DECODIFICANDO DADOS...</div>
     </div>
 
-    <!-- CONTAINER P1 -->
+    <!-- CONTAINER DO JOGO (P1) -->
     <div id="game-container"><div id="game"></div></div>
     
-    <!-- CONTAINER P2 (INVISÍVEL ATÉ CONECTAR) -->
-    <div id="p2-controller" style="display:none; width:100vw; height:100vh; position:relative;">
-        <div id="game" style="width:100%; height:100%; position:relative;">
-            <!-- Direcionais P2 (Mapeados para os Eixos Padrão) -->
-            <div class="p2-btn" data-pad="12" style="bottom: 120px; left: 80px;">▲</div>
-            <div class="p2-btn" data-pad="13" style="bottom: 40px; left: 80px;">▼</div>
-            <div class="p2-btn" data-pad="14" style="bottom: 80px; left: 30px;">ESQ</div>
-            <div class="p2-btn" data-pad="15" style="bottom: 80px; left: 130px;">DIR</div>
-            
-            <!-- Botões de Ação P2 (Mapeamento Gamepad Padrão) -->
-            <div class="p2-btn" data-pad="3" style="bottom: 120px; right: 80px;">X</div>
-            <div class="p2-btn" data-pad="0" style="bottom: 40px; right: 80px;">B</div>
-            <div class="p2-btn" data-pad="2" style="bottom: 80px; right: 130px;">Y</div>
-            <div class="p2-btn" data-pad="1" style="bottom: 80px; right: 30px;">A</div>
-            
-            <!-- Sistema P2 -->
-            <div class="p2-btn sys-btn" data-pad="8" style="top: 15px; left: 15px;">Select</div>
-            <div class="p2-btn sys-btn" data-pad="9" style="top: 15px; right: 15px;">Start</div>
-        </div>
+    <!-- INTERFACE DO COMANDO (P2) -->
+    <div id="p2-controller" style="display:none; width:100vw; height:100vh; background:#111; position:absolute; top:0; left:0; z-index:99999;">
+        <h3 style="color:#0ff; text-align:center; margin-top:10px; font-family:monospace;">CONTROLE P2</h3>
+        
+        <!-- Direcionais P2 -->
+        <div class="p2-btn" data-pad="12" style="bottom: 140px; left: 85px;">▲</div>
+        <div class="p2-btn" data-pad="13" style="bottom: 40px; left: 85px;">▼</div>
+        <div class="p2-btn" data-pad="14" style="bottom: 90px; left: 35px;">◄</div>
+        <div class="p2-btn" data-pad="15" style="bottom: 90px; left: 135px;">►</div>
+        
+        <!-- Botões de Ação P2 -->
+        <div id="p2-btn-x" class="p2-btn" data-pad="3" style="bottom: 140px; right: 85px;">X</div>
+        <div id="p2-btn-y" class="p2-btn" data-pad="2" style="bottom: 90px; right: 135px;">Y</div>
+        <div id="p2-btn-b" class="p2-btn" data-pad="0" style="bottom: 40px; right: 85px;">B</div>
+        <div id="p2-btn-a" class="p2-btn" data-pad="1" style="bottom: 90px; right: 35px;">A</div>
+        
+        <!-- Sistema P2 -->
+        <div id="p2-btn-select" class="p2-btn p2-sys-btn" data-pad="8" style="top: 20px; left: 20px;">SELECT</div>
+        <div id="p2-btn-start" class="p2-btn p2-sys-btn" data-pad="9" style="top: 20px; right: 20px;">START</div>
     </div>
 
     <div id="status-msg">Acesso Negado ou Dados Ausentes.</div>
 
-    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-      Convidar P2
-    </button>
+    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Convidar P2</button>
     <div id="tela-convite" style="display: none; position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0); background: white; padding: 20px; text-align: center; z-index: 9999; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);">
         <h2 style="color: black; margin-top: 0;">Convide o Jogador 2</h2>
         <p style="color: black;">Peça para seu amigo escanear com a câmera</p>
@@ -90,14 +89,14 @@
         const salaDoAmigo = urlParams.get('sala');
         let peerHost;
 
-        // =====================================
-        // CLIENTE (CELULAR DO JOGADOR 2)
-        // =====================================
         if (salaDoAmigo) {
+            // =====================================
+            // LÓGICA DO JOGADOR 2 (CELULAR CLIENTE)
+            // =====================================
             document.getElementById('power-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'none';
             document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text-msg').innerText = "CONECTANDO...";
+            document.getElementById('loading-text-msg').innerText = "CONECTANDO AO HOST...";
 
             const peerClient = new Peer();
             peerClient.on('open', function() {
@@ -106,45 +105,51 @@
                     document.getElementById('loading-overlay').style.display = 'none';
                     document.getElementById('p2-controller').style.display = 'block';
                     
-                    // Aplica o seu motor de layout sobre os botões falsos criados acima!
-                    injetarLayoutTatico(sys);
+                    // APLICA O SEU LAYOUT TÁTICO NO COMANDO DO P2
+                    if (sys === 'fbneo' || sys === 'mame2003') {
+                        document.getElementById('p2-btn-x').style.display = 'none';
+                        document.getElementById('p2-btn-y').style.display = 'none';
+                        const btnSelect = document.getElementById('p2-btn-select');
+                        btnSelect.innerText = 'FICHA';
+                        btnSelect.style.backgroundColor = '#cba800';
+                        btnSelect.style.color = '#000';
+                        btnSelect.style.border = 'none';
+                    }
 
-                    // Captura e envia comandos
+                    // ENVIO DE TOQUES VIA REDE
                     const botoes = document.getElementById('p2-controller').querySelectorAll('.p2-btn');
                     botoes.forEach(btn => {
-                        const padIndex = btn.getAttribute('data-pad');
+                        const padIndex = parseInt(btn.getAttribute('data-pad'));
                         btn.addEventListener('touchstart', (e) => { 
                             e.preventDefault(); 
                             conexao.send({ b: padIndex, s: 1 }); 
-                            btn.style.backgroundColor = 'rgba(255,255,255,0.6)'; 
+                            btn.style.opacity = '0.5'; 
                         }, {passive: false});
                         btn.addEventListener('touchend', (e) => { 
                             e.preventDefault(); 
                             conexao.send({ b: padIndex, s: 0 }); 
-                            btn.style.backgroundColor = 'rgba(255,255,255,0.2)'; 
+                            btn.style.opacity = '1'; 
                         }, {passive: false});
                     });
                 });
             });
         
-        // =====================================
-        // HOST (COMPUTADOR / JOGADOR 1)
-        // =====================================
         } else if (sys && dataId) {
+            // =====================================
+            // LÓGICA DO JOGADOR 1 (PC / HOST)
+            // =====================================
             
-            // CRIAÇÃO DO COMANDO FANTASMA NA MEMÓRIA DO NAVEGADOR
-            window.fakeP2 = {
-                id: 'Standard Gamepad (P2)', index: 1, connected: true, timestamp: Date.now(),
-                mapping: 'standard', axes: [0,0,0,0], 
-                buttons: Array(17).fill().map(() => ({pressed: false, value: 0}))
-            };
+            // INJEÇÃO DUPLA DE COMANDOS PARA FORÇAR A PORTA 2
+            window.fakeP1 = { id: 'Dummy P1 (Bloqueio)', index: 0, connected: true, timestamp: Date.now(), mapping: 'standard', axes: [0,0,0,0], buttons: Array(17).fill().map(()=>({pressed:false, value:0})) };
+            window.fakeP2 = { id: 'Comando Virtual (P2)', index: 1, connected: true, timestamp: Date.now(), mapping: 'standard', axes: [0,0,0,0], buttons: Array(17).fill().map(()=>({pressed:false, value:0})) };
+            
             const origGetGamepads = navigator.getGamepads.bind(navigator);
             navigator.getGamepads = function() {
                 let pads = origGetGamepads() || [];
-                let newPads = [];
-                for(let i=0; i<4; i++) newPads[i] = pads[i] || null;
-                newPads[1] = window.fakeP2; // Força a existência do Player 2
-                return newPads;
+                // Se o navegador não tiver um comando físico na porta 0, injeta o Dummy para ocupar a vaga do P1
+                let p1 = pads[0] || window.fakeP1; 
+                // Injeta o P2 obrigatoriamente na porta 1
+                return [p1, window.fakeP2, pads[2] || null, pads[3] || null];
             };
 
             document.getElementById('power-btn').addEventListener('click', function() {
@@ -169,14 +174,13 @@
                 
                 window.EJS_onGameStart = function() {
                     document.getElementById('loading-overlay').style.display = 'none';
-                    injetarLayoutTatico(sys);
+                    injetarLayoutTatico(sys); // O seu motor tático original
                 };
 
                 const script = document.createElement('script');
                 script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
                 document.body.appendChild(script);
 
-                // Cria Sala e recebe comandos
                 setTimeout(() => {
                     peerHost = new Peer();
                     peerHost.on('open', function(meuID) {
@@ -187,10 +191,11 @@
                         conexao.on('open', function() {
                             document.getElementById('tela-convite').style.display = 'none';
                         });
-                        // Atualiza os botões do Comando Fantasma em tempo real
+                        
+                        // ATUALIZA OS BOTÕES DO P2 EM TEMPO REAL NA MEMÓRIA
                         conexao.on('data', function(dados) {
-                            const btnIndex = parseInt(dados.b);
-                            if(!isNaN(btnIndex)) {
+                            const btnIndex = dados.b;
+                            if(window.fakeP2.buttons[btnIndex]) {
                                 window.fakeP2.buttons[btnIndex].pressed = (dados.s === 1);
                                 window.fakeP2.buttons[btnIndex].value = dados.s;
                                 window.fakeP2.timestamp = Date.now();
@@ -208,14 +213,14 @@
         function mostrarConvite() { document.getElementById('tela-convite').style.display = 'block'; }
 
         // ==========================================================
-        // SEU MOTOR TÁTICO INTACTO (AGORA RODA EM AMBOS OS CELULARES)
+        // MOTOR REATIVO DE LAYOUT DO JOGADOR 1 (INTACTO)
         // ==========================================================
         function injetarLayoutTatico(coreName) {
             setInterval(() => {
                 const gameContainer = document.getElementById('game');
                 if (!gameContainer) return;
                 
-                const virtualButtons = Array.from(gameContainer.querySelectorAll('div, span, .p2-btn'));
+                const virtualButtons = Array.from(gameContainer.querySelectorAll('div, span'));
                 let btnEsq = null, btnDir = null, btnSelect = null, btnStart = null, btnResetar = null;
                 let btnX = null, btnY = null;
                 
