@@ -3,10 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sistema">
+    
     <title>Sistema de Execução</title>
     
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; -webkit-user-select: none; user-select: none; touch-action: none; }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; touch-action: none; 
+        }
         #game-container { width: 100vw; height: 100vh; position: relative; z-index: 1; }
         
         #power-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
@@ -19,9 +27,10 @@
         @keyframes pulse { 0% { opacity: 0.2; } 50% { opacity: 1; text-shadow: 0 0 15px #fff; } 100% { opacity: 0.2; } }
 
         #status-msg { display: none; color: #fff; text-align: center; margin-top: 40vh; position: relative; z-index: 10; }
-        
-        /* ESTILOS DO COMANDO VIRTUAL DO JOGADOR 2 */
-        .p2-btn { position: absolute; background: rgba(255,255,255,0.2); border: 2px solid #fff; border-radius: 50%; color: white; font-weight: bold; display: flex; justify-content: center; align-items: center; user-select: none; }
+
+        /* ESTILOS BASE DO COMANDO P2 (SEU SCRIPT FARÁ O RESTO) */
+        .p2-btn { position: absolute; width: 50px; height: 50px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: sans-serif; z-index: 9999; user-select: none; }
+        .sys-btn { width: 70px; height: 35px; border-radius: 20px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -35,34 +44,40 @@
         <div class="loader-text" id="loading-text-msg">DECODIFICANDO DADOS...</div>
     </div>
 
+    <!-- CONTAINER P1 -->
     <div id="game-container"><div id="game"></div></div>
+    
+    <!-- CONTAINER P2 (INVISÍVEL ATÉ CONECTAR) -->
+    <div id="p2-controller" style="display:none; width:100vw; height:100vh; position:relative;">
+        <div id="game" style="width:100%; height:100%; position:relative;">
+            <!-- Direcionais P2 (Mapeados para os Eixos Padrão) -->
+            <div class="p2-btn" data-pad="12" style="bottom: 120px; left: 80px;">▲</div>
+            <div class="p2-btn" data-pad="13" style="bottom: 40px; left: 80px;">▼</div>
+            <div class="p2-btn" data-pad="14" style="bottom: 80px; left: 30px;">ESQ</div>
+            <div class="p2-btn" data-pad="15" style="bottom: 80px; left: 130px;">DIR</div>
+            
+            <!-- Botões de Ação P2 (Mapeamento Gamepad Padrão) -->
+            <div class="p2-btn" data-pad="3" style="bottom: 120px; right: 80px;">X</div>
+            <div class="p2-btn" data-pad="0" style="bottom: 40px; right: 80px;">B</div>
+            <div class="p2-btn" data-pad="2" style="bottom: 80px; right: 130px;">Y</div>
+            <div class="p2-btn" data-pad="1" style="bottom: 80px; right: 30px;">A</div>
+            
+            <!-- Sistema P2 -->
+            <div class="p2-btn sys-btn" data-pad="8" style="top: 15px; left: 15px;">Select</div>
+            <div class="p2-btn sys-btn" data-pad="9" style="top: 15px; right: 15px;">Start</div>
+        </div>
+    </div>
+
     <div id="status-msg">Acesso Negado ou Dados Ausentes.</div>
 
-    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Convidar P2</button>
-    
+    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+      Convidar P2
+    </button>
     <div id="tela-convite" style="display: none; position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0); background: white; padding: 20px; text-align: center; z-index: 9999; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);">
         <h2 style="color: black; margin-top: 0;">Convide o Jogador 2</h2>
         <p style="color: black;">Peça para seu amigo escanear com a câmera</p>
         <div id="meu-qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
         <button onclick="document.getElementById('tela-convite').style.display='none'" style="padding: 10px; font-size: 16px; cursor: pointer;">Fechar</button>
-    </div>
-
-    <!-- INTERFACE DO COMANDO PARA O JOGADOR 2 -->
-    <div id="p2-pad" style="display:none; width:100vw; height:100vh; background:#111; position:absolute; top:0; left:0; z-index:99999;">
-        <h3 style="color:#0ff; text-align:center; margin-top:20px; font-family:monospace;">CONTROLE P2</h3>
-        
-        <div id="p2-coin" class="p2-btn" style="width:70px; height:40px; border-radius:10px; top:20px; left:20px; font-size:12px; background: #cba800;">FICHA</div>
-        <div id="p2-start" class="p2-btn" style="width:70px; height:40px; border-radius:10px; top:20px; right:20px; font-size:12px;">START</div>
-
-        <div id="p2-up" class="p2-btn" style="width:50px; height:50px; bottom:140px; left:80px;">▲</div>
-        <div id="p2-down" class="p2-btn" style="width:50px; height:50px; bottom:40px; left:80px;">▼</div>
-        <div id="p2-left" class="p2-btn" style="width:50px; height:50px; bottom:90px; left:30px;">◄</div>
-        <div id="p2-right" class="p2-btn" style="width:50px; height:50px; bottom:90px; left:130px;">►</div>
-
-        <div id="p2-y" class="p2-btn" style="width:50px; height:50px; bottom:140px; right:80px;">Y</div>
-        <div id="p2-x" class="p2-btn" style="width:50px; height:50px; bottom:90px; right:130px;">X</div>
-        <div id="p2-b" class="p2-btn" style="width:50px; height:50px; bottom:40px; right:80px;">B</div>
-        <div id="p2-a" class="p2-btn" style="width:50px; height:50px; bottom:90px; right:30px;">A</div>
     </div>
 
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
@@ -75,11 +90,12 @@
         const salaDoAmigo = urlParams.get('sala');
         let peerHost;
 
+        // =====================================
+        // CLIENTE (CELULAR DO JOGADOR 2)
+        // =====================================
         if (salaDoAmigo) {
-            // =====================================
-            // LÓGICA DO CLIENTE (TELEMÓVEL DO JOGADOR 2)
-            // =====================================
             document.getElementById('power-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('loading-text-msg').innerText = "CONECTANDO...";
 
@@ -88,29 +104,63 @@
                 const conexao = peerClient.connect(salaDoAmigo);
                 conexao.on('open', function() {
                     document.getElementById('loading-overlay').style.display = 'none';
-                    document.getElementById('p2-pad').style.display = 'block'; // Mostra o comando
+                    document.getElementById('p2-controller').style.display = 'block';
+                    
+                    // Aplica o seu motor de layout sobre os botões falsos criados acima!
+                    injetarLayoutTatico(sys);
 
-                    // Envia os toques para o Host
-                    const botoesP2 = ['p2-coin', 'p2-start', 'p2-up', 'p2-down', 'p2-left', 'p2-right', 'p2-a', 'p2-b', 'p2-x', 'p2-y'];
-                    botoesP2.forEach(id => {
-                        const btn = document.getElementById(id);
-                        if(btn) {
-                            btn.addEventListener('touchstart', (e) => { e.preventDefault(); conexao.send({ btn: id, estado: 'down' }); btn.style.transform = 'scale(0.9)'; });
-                            btn.addEventListener('touchend', (e) => { e.preventDefault(); conexao.send({ btn: id, estado: 'up' }); btn.style.transform = 'scale(1)'; });
-                        }
+                    // Captura e envia comandos
+                    const botoes = document.getElementById('p2-controller').querySelectorAll('.p2-btn');
+                    botoes.forEach(btn => {
+                        const padIndex = btn.getAttribute('data-pad');
+                        btn.addEventListener('touchstart', (e) => { 
+                            e.preventDefault(); 
+                            conexao.send({ b: padIndex, s: 1 }); 
+                            btn.style.backgroundColor = 'rgba(255,255,255,0.6)'; 
+                        }, {passive: false});
+                        btn.addEventListener('touchend', (e) => { 
+                            e.preventDefault(); 
+                            conexao.send({ b: padIndex, s: 0 }); 
+                            btn.style.backgroundColor = 'rgba(255,255,255,0.2)'; 
+                        }, {passive: false});
                     });
                 });
             });
         
+        // =====================================
+        // HOST (COMPUTADOR / JOGADOR 1)
+        // =====================================
         } else if (sys && dataId) {
-            // =====================================
-            // LÓGICA DO HOST (COMPUTADOR / P1)
-            // =====================================
+            
+            // CRIAÇÃO DO COMANDO FANTASMA NA MEMÓRIA DO NAVEGADOR
+            window.fakeP2 = {
+                id: 'Standard Gamepad (P2)', index: 1, connected: true, timestamp: Date.now(),
+                mapping: 'standard', axes: [0,0,0,0], 
+                buttons: Array(17).fill().map(() => ({pressed: false, value: 0}))
+            };
+            const origGetGamepads = navigator.getGamepads.bind(navigator);
+            navigator.getGamepads = function() {
+                let pads = origGetGamepads() || [];
+                let newPads = [];
+                for(let i=0; i<4; i++) newPads[i] = pads[i] || null;
+                newPads[1] = window.fakeP2; // Força a existência do Player 2
+                return newPads;
+            };
+
             document.getElementById('power-btn').addEventListener('click', function() {
+                const docElm = document.documentElement;
+                if (docElm.requestFullscreen) docElm.requestFullscreen().catch(e => {});
+                else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
+                
                 document.getElementById('power-screen').style.display = 'none';
                 document.getElementById('loading-overlay').style.display = 'flex';
                 document.getElementById('btn-convidar').style.display = 'block';
                 
+                setTimeout(() => {
+                    const overlay = document.getElementById('loading-overlay');
+                    if (overlay) overlay.style.display = 'none';
+                }, 10000);
+
                 window.EJS_player = '#game';
                 window.EJS_core = sys;
                 window.EJS_gameUrl = `roms/${sys}/${dataId}`;
@@ -126,6 +176,7 @@
                 script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
                 document.body.appendChild(script);
 
+                // Cria Sala e recebe comandos
                 setTimeout(() => {
                     peerHost = new Peer();
                     peerHost.on('open', function(meuID) {
@@ -135,32 +186,14 @@
                     peerHost.on('connection', function(conexao) {
                         conexao.on('open', function() {
                             document.getElementById('tela-convite').style.display = 'none';
-                            alert("O Jogador 2 entrou na partida!");
                         });
-                        
-                        // Recebe os toques e simula no teclado do Host
+                        // Atualiza os botões do Comando Fantasma em tempo real
                         conexao.on('data', function(dados) {
-                            const teclasP2 = {
-                                'p2-coin': 54,  // Tecla '6' (Ficha P2 padrão no MAME)
-                                'p2-start': 50, // Tecla '2' (Start P2 padrão no MAME)
-                                'p2-up': 73,    // I
-                                'p2-down': 75,  // K
-                                'p2-left': 74,  // J
-                                'p2-right': 76, // L
-                                'p2-a': 86,     // V
-                                'p2-b': 66,     // B
-                                'p2-x': 78,     // N
-                                'p2-y': 77      // M
-                            };
-                            const codigoTecla = teclasP2[dados.btn];
-                            if(codigoTecla) {
-                                const tipoEvento = dados.estado === 'down' ? 'keydown' : 'keyup';
-                                const eventoTeclado = new KeyboardEvent(tipoEvento, { keyCode: codigoTecla, which: codigoTecla, bubbles: true });
-                                document.dispatchEvent(eventoTeclado);
-                                
-                                // Injeta diretamente no canvas do emulador
-                                const canvas = document.querySelector('canvas');
-                                if(canvas) canvas.dispatchEvent(new KeyboardEvent(tipoEvento, { keyCode: codigoTecla, which: codigoTecla, bubbles: true }));
+                            const btnIndex = parseInt(dados.b);
+                            if(!isNaN(btnIndex)) {
+                                window.fakeP2.buttons[btnIndex].pressed = (dados.s === 1);
+                                window.fakeP2.buttons[btnIndex].value = dados.s;
+                                window.fakeP2.timestamp = Date.now();
                             }
                         });
                     });
@@ -169,19 +202,20 @@
 
         } else {
             document.getElementById('power-screen').style.display = 'none';
-            document.getElementById('loading-overlay').style.display = 'none';
             document.getElementById('status-msg').style.display = 'block';
         }
 
         function mostrarConvite() { document.getElementById('tela-convite').style.display = 'block'; }
 
+        // ==========================================================
+        // SEU MOTOR TÁTICO INTACTO (AGORA RODA EM AMBOS OS CELULARES)
+        // ==========================================================
         function injetarLayoutTatico(coreName) {
-            // (Seu código original mantido intacto)
             setInterval(() => {
                 const gameContainer = document.getElementById('game');
                 if (!gameContainer) return;
                 
-                const virtualButtons = Array.from(gameContainer.querySelectorAll('div, span'));
+                const virtualButtons = Array.from(gameContainer.querySelectorAll('div, span, .p2-btn'));
                 let btnEsq = null, btnDir = null, btnSelect = null, btnStart = null, btnResetar = null;
                 let btnX = null, btnY = null;
                 
@@ -200,7 +234,6 @@
                 if ((coreName === 'snes' || coreName === 'sfc') && btnEsq && btnDir && btnSelect && btnStart) {
                     const esqRect = btnEsq.getBoundingClientRect();
                     const dirRect = btnDir.getBoundingClientRect();
-                    
                     if (esqRect.bottom > 0 && dirRect.bottom > 0) {
                         btnSelect.style.setProperty('position', 'fixed', 'important');
                         btnSelect.style.setProperty('top', (esqRect.bottom + 15) + 'px', 'important');
@@ -261,7 +294,6 @@
 
                     if (btnSelect && btnStart) {
                         const isPortrait = window.innerHeight > window.innerWidth;
-                        
                         if (isPortrait) {
                             btnSelect.style.setProperty('position', 'fixed', 'important');
                             btnSelect.style.setProperty('bottom', '40%', 'important');
@@ -287,7 +319,6 @@
                             btnStart.style.setProperty('bottom', 'auto', 'important');
                             btnStart.style.setProperty('left', 'auto', 'important');
                         }
-
                         [btnSelect, btnStart].forEach(btn => {
                             btn.style.setProperty('margin', '0', 'important');
                             btn.style.setProperty('transform', 'none', 'important');
@@ -298,7 +329,6 @@
 
                 if (coreName === 'n64') {
                     const isPortrait = window.innerHeight > window.innerWidth;
-
                     const encontrarBotaoNativo = (rotulos) => {
                         const lista = Array.isArray(rotulos) ? rotulos : [rotulos];
                         for (let el of virtualButtons) {
@@ -324,78 +354,51 @@
                         return null;
                     };
 
-                    const n64A     = encontrarBotaoNativo(['A']);
-                    const n64B     = encontrarBotaoNativo(['B']);
-                    const n64Z     = encontrarBotaoNativo(['Z']);
-                    const n64R     = encontrarBotaoNativo(['DIR', 'R']);
-                    const n64L     = encontrarBotaoNativo(['ESQ', 'L']);
-                    const n64Start = encontrarBotaoNativo(['Start', 'START']);
-                    const n64CUp   = encontrarBotaoNativo(['▲', 'C▲', 'C-Up']);
-                    const n64CDown = encontrarBotaoNativo(['▼', 'C▼', 'C-Down']);
-                    const n64CLeft = encontrarBotaoNativo(['◄', 'C◄', 'C-Left']);
-                    const n64CRight= encontrarBotaoNativo(['►', 'C►', 'C-Right']);
+                    const n64A = encontrarBotaoNativo(['A']), n64B = encontrarBotaoNativo(['B']), n64Z = encontrarBotaoNativo(['Z']), n64R = encontrarBotaoNativo(['DIR', 'R']), n64L = encontrarBotaoNativo(['ESQ', 'L']);
+                    const n64Start = encontrarBotaoNativo(['Start', 'START']), n64CUp = encontrarBotaoNativo(['▲', 'C▲', 'C-Up']), n64CDown = encontrarBotaoNativo(['▼', 'C▼', 'C-Down']);
+                    const n64CLeft = encontrarBotaoNativo(['◄', 'C◄', 'C-Left']), n64CRight= encontrarBotaoNativo(['►', 'C►', 'C-Right']);
 
                     if (n64L) n64L.style.setProperty('display', 'none', 'important');
                     const dpadElements = gameContainer.querySelectorAll('.ejs_dpad_main, .ejs_dpad_container, [class*="dpad"]');
                     dpadElements.forEach(d => d.style.setProperty('display', 'none', 'important'));
-
-                    if (n64R && n64R.innerText.trim() === 'DIR') {
-                        n64R.innerText = 'R';
-                    }
+                    if (n64R && n64R.innerText.trim() === 'DIR') n64R.innerText = 'R';
 
                     const estilizarBotao = (el, top, bottom, left, right, w, h, bg, corTexto, radius, fontSize) => {
                         if (!el) return;
-                        el.style.setProperty('position', 'fixed', 'important');
-                        el.style.setProperty('top', top, 'important');
-                        el.style.setProperty('bottom', bottom, 'important');
-                        el.style.setProperty('left', left, 'important');
-                        el.style.setProperty('right', right, 'important');
-                        el.style.setProperty('width', w, 'important');
-                        el.style.setProperty('height', h, 'important');
-                        el.style.setProperty('background-color', bg, 'important');
-                        el.style.setProperty('color', corTexto, 'important');
-                        el.style.setProperty('border-radius', radius, 'important');
-                        el.style.setProperty('border', '2px solid rgba(255,255,255,0.35)', 'important');
-                        el.style.setProperty('display', 'flex', 'important');
-                        el.style.setProperty('justify-content', 'center', 'important');
-                        el.style.setProperty('align-items', 'center', 'important');
-                        el.style.setProperty('font-weight', 'bold', 'important');
-                        el.style.setProperty('font-size', fontSize, 'important');
-                        el.style.setProperty('margin', '0', 'important');
-                        el.style.setProperty('transform', 'none', 'important');
-                        el.style.setProperty('z-index', '9999', 'important');
-                        el.style.setProperty('box-shadow', '0 4px 10px rgba(0,0,0,0.6)', 'important');
+                        el.style.setProperty('position', 'fixed', 'important'); el.style.setProperty('top', top, 'important');
+                        el.style.setProperty('bottom', bottom, 'important'); el.style.setProperty('left', left, 'important');
+                        el.style.setProperty('right', right, 'important'); el.style.setProperty('width', w, 'important');
+                        el.style.setProperty('height', h, 'important'); el.style.setProperty('background-color', bg, 'important');
+                        el.style.setProperty('color', corTexto, 'important'); el.style.setProperty('border-radius', radius, 'important');
+                        el.style.setProperty('border', '2px solid rgba(255,255,255,0.35)', 'important'); el.style.setProperty('display', 'flex', 'important');
+                        el.style.setProperty('justify-content', 'center', 'important'); el.style.setProperty('align-items', 'center', 'important');
+                        el.style.setProperty('font-weight', 'bold', 'important'); el.style.setProperty('font-size', fontSize, 'important');
+                        el.style.setProperty('margin', '0', 'important'); el.style.setProperty('transform', 'none', 'important');
+                        el.style.setProperty('z-index', '9999', 'important'); el.style.setProperty('box-shadow', '0 4px 10px rgba(0,0,0,0.6)', 'important');
                     };
 
                     if (isPortrait) {
-                        estilizarBotao(n64Z,     'auto', '42%', '6%',  'auto', '68px', '36px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '16px');
+                        estilizarBotao(n64Z, 'auto', '42%', '6%', 'auto', '68px', '36px', 'rgba(65, 75, 90, 0.9)', '#fff', '12px', '16px');
                         estilizarBotao(n64Start, 'auto', '40%', '39%', 'auto', '76px', '32px', 'rgba(55, 65, 80, 0.95)', '#fff', '18px', '13px');
-                        estilizarBotao(n64R,     'auto', '42%', 'auto','6%',   '68px', '36px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '16px');
-
-                        estilizarBotao(n64CUp,   'auto', '32%', 'auto', '14%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
+                        estilizarBotao(n64R, 'auto', '42%', 'auto','6%', '68px', '36px', 'rgba(65, 75, 90, 0.9)', '#fff', '12px', '16px');
+                        estilizarBotao(n64CUp, 'auto', '32%', 'auto', '14%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
                         estilizarBotao(n64CDown, 'auto', '21%', 'auto', '14%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
                         estilizarBotao(n64CLeft, 'auto', '26.5%', 'auto', '24%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CRight,'auto', '26.5%', 'auto', '4%',  '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-
-                        estilizarBotao(n64B,     'auto', '11%', 'auto', '23%', '64px', '64px', 'rgba(25, 165, 75, 0.95)',  '#fff', '50%', '24px');
-                        estilizarBotao(n64A,     'auto', '5%',  'auto', '5%',  '70px', '70px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
-
+                        estilizarBotao(n64CRight,'auto', '26.5%', 'auto', '4%', '34px', '34px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
+                        estilizarBotao(n64B, 'auto', '11%', 'auto', '23%', '64px', '64px', 'rgba(25, 165, 75, 0.95)', '#fff', '50%', '24px');
+                        estilizarBotao(n64A, 'auto', '5%', 'auto', '5%', '70px', '70px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
                     } else {
-                        estilizarBotao(n64Z,     '8%',  'auto', '3%',  'auto', '78px', '42px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '18px');
-                        estilizarBotao(n64R,     '8%',  'auto', 'auto','3%',   '78px', '42px', 'rgba(65, 75, 90, 0.9)',  '#fff', '12px', '18px');
-
-                        estilizarBotao(n64Start, 'auto', '4%',  '44%', 'auto', '84px', '32px', 'rgba(55, 65, 80, 0.95)', '#fff', '18px', '13px');
-
-                        estilizarBotao(n64CUp,   '28%', 'auto', 'auto', '7%',  '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-                        estilizarBotao(n64CDown, '50%', 'auto', 'auto', '7%',  '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
+                        estilizarBotao(n64Z, '8%', 'auto', '3%', 'auto', '78px', '42px', 'rgba(65, 75, 90, 0.9)', '#fff', '12px', '18px');
+                        estilizarBotao(n64R, '8%', 'auto', 'auto','3%', '78px', '42px', 'rgba(65, 75, 90, 0.9)', '#fff', '12px', '18px');
+                        estilizarBotao(n64Start, 'auto', '4%', '44%', 'auto', '84px', '32px', 'rgba(55, 65, 80, 0.95)', '#fff', '18px', '13px');
+                        estilizarBotao(n64CUp, '28%', 'auto', 'auto', '7%', '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
+                        estilizarBotao(n64CDown, '50%', 'auto', 'auto', '7%', '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
                         estilizarBotao(n64CLeft, '39%', 'auto', 'auto', '12.5%','36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
                         estilizarBotao(n64CRight,'39%', 'auto', 'auto', '1.5%', '36px', '36px', 'rgba(235, 175, 10, 0.95)', '#000', '50%', '13px');
-
-                        estilizarBotao(n64B,     'auto', '16%', 'auto', '11%', '66px', '66px', 'rgba(25, 165, 75, 0.95)',  '#fff', '50%', '24px');
-                        estilizarBotao(n64A,     'auto', '6%',  'auto', '2%',  '72px', '72px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
+                        estilizarBotao(n64B, 'auto', '16%', 'auto', '11%', '66px', '66px', 'rgba(25, 165, 75, 0.95)', '#fff', '50%', '24px');
+                        estilizarBotao(n64A, 'auto', '6%', 'auto', '2%', '72px', '72px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
                     }
                 }
-
             }, 300); 
         }
     </script>
