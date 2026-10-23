@@ -374,5 +374,64 @@
             }, 300); 
         }
     </script>
+
+<!-- BOTÃO FLUTUANTE PARA CONVIDAR -->
+<button onclick="mostrarConvite()" style="position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+  Convidar P2
+</button>
+
+<!-- TELA DO QR CODE (ESCONDIDA) -->
+<div id="tela-convite" style="display: none; position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0); background: white; padding: 20px; text-align: center; z-index: 9999; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);">
+    <h2 style="color: black; margin-top: 0;">Convide o Jogador 2</h2>
+    <p style="color: black;">Peça para seu amigo escanear com a câmera</p>
+    <div id="meu-qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
+    <button onclick="document.getElementById('tela-convite').style.display='none'" style="padding: 10px; font-size: 16px; cursor: pointer;">Fechar</button>
+</div>
+
+<!-- BIBLIOTECAS NECESSÁRIAS -->
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<!-- LÓGICA DE CONEXÃO DOS CELULARES -->
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const salaDoAmigo = urlParams.get('sala');
+  let peer;
+
+  if (salaDoAmigo) {
+      // O QUE ACONTECE NO CELULAR DO AMIGO (P2)
+      peer = new Peer();
+      peer.on('open', function() {
+          const conexao = peer.connect(salaDoAmigo);
+          conexao.on('open', function() {
+              console.log("Conectado ao Celular 1!");
+              alert("Você entrou como Jogador 2!");
+          });
+      });
+  } else {
+      // O QUE ACONTECE NO SEU CELULAR (P1)
+      peer = new Peer();
+      peer.on('open', function(meuID) {
+          const linkConvite = window.location.origin + window.location.pathname + "?sala=" + meuID;
+          new QRCode(document.getElementById("meu-qrcode"), {
+              text: linkConvite,
+              width: 180,
+              height: 180
+          });
+      });
+
+      peer.on('connection', function(conexao) {
+          conexao.on('open', function() {
+              document.getElementById('tela-convite').style.display = 'none';
+              alert("O Jogador 2 entrou na partida!");
+          });
+      });
+  }
+
+  function mostrarConvite() {
+      document.getElementById('tela-convite').style.display = 'block';
+  }
+</script>
+    
 </body>
 </html>
