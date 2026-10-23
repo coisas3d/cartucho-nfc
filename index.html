@@ -28,15 +28,12 @@
 
         #status-msg { display: none; color: #fff; text-align: center; margin-top: 40vh; position: relative; z-index: 10; }
 
-        /* ==========================================================
-           REGRAS EXCLUSIVAS DE LAYOUT DO JOGADOR 2 (BLINDADAS)
-           ========================================================== */
+        /* REGRAS DE LAYOUT DO JOGADOR 2 */
         .p2-btn { position: absolute; width: 65px; height: 65px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: Arial, sans-serif; z-index: 9999; user-select: none; backdrop-filter: blur(2px); font-size: 18px; }
         .p2-sys-btn { width: 90px; height: 40px; border-radius: 20px; font-size: 14px; }
         .p2-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
         #joystick-zone { position: absolute; width: 140px; height: 140px; z-index: 9999; }
 
-        /* MODO VERTICAL (PORTRAIT) */
         @media screen and (orientation: portrait) {
             #joystick-zone { bottom: 15%; left: 10%; }
             #p2-btn-b { bottom: 15%; right: 35%; }
@@ -45,7 +42,6 @@
             #p2-btn-start { top: 8%; right: 10%; }
         }
 
-        /* MODO HORIZONTAL (LANDSCAPE) - ELEVADO PARA NÃO CORTAR */
         @media screen and (orientation: landscape) {
             #joystick-zone { bottom: 20%; left: 8%; }
             #p2-btn-b { bottom: 20%; right: 20%; }
@@ -57,6 +53,11 @@
 </head>
 <body>
     
+    <!-- ALERTA DE CONEXÃO DO P1 -->
+    <div id="p1-toast" style="display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #00ff00; color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-family: monospace; z-index: 100000; box-shadow: 0 0 10px #00ff00;">
+        JOGADOR 2 CONECTADO!
+    </div>
+
     <div id="power-screen">
         <div class="cart-status">Conexão Estabelecida</div>
         <button id="power-btn">POWER ON</button>
@@ -70,7 +71,9 @@
     
     <div id="status-msg">Acesso Negado ou Dados Ausentes.</div>
 
-    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Convidar P2</button>
+    <!-- BOTÃO CONVIDAR REDUZIDO -->
+    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; width: 90px; top: 10px; right: 10px; z-index: 1000; padding: 5px 0; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 11px;">Convidar P2</button>
+    
     <div id="tela-convite" style="display: none; position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0); background: white; padding: 20px; text-align: center; z-index: 9999; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);">
         <h2 style="color: black; margin-top: 0;">Convide o Jogador 2</h2>
         <p style="color: black;">Peça para seu amigo escanear com a câmera</p>
@@ -120,8 +123,6 @@
                         <div id="p2-btn-start" class="p2-btn p2-sys-btn" data-pad="9">START</div>
                     `;
 
-                    // IMPORTANTE: NÃO HÁ CHAMADA AO injetarLayoutTatico AQUI PARA PRESERVAR O CSS
-                    
                     const joystick = nipplejs.create({
                         zone: document.getElementById('joystick-zone'),
                         mode: 'static',
@@ -229,6 +230,11 @@
                     peerHost.on('connection', function(conexao) {
                         conexao.on('open', function() {
                             document.getElementById('tela-convite').style.display = 'none';
+                            
+                            // Dispara o alerta de conexão na tela do P1
+                            const toast = document.getElementById('p1-toast');
+                            toast.style.display = 'block';
+                            setTimeout(() => { toast.style.display = 'none'; }, 3000);
                         });
                         
                         conexao.on('data', function(dados) {
@@ -253,7 +259,7 @@
         function mostrarConvite() { document.getElementById('tela-convite').style.display = 'block'; }
 
         // ==========================================================
-        // MOTOR REATIVO DE LAYOUT DO JOGADOR 1 (INTACTO)
+        // MOTOR REATIVO DE LAYOUT DO JOGADOR 1
         // ==========================================================
         function injetarLayoutTatico(coreName) {
             setInterval(() => {
@@ -444,6 +450,20 @@
                         estilizarBotao(n64A, 'auto', '6%', 'auto', '2%', '72px', '72px', 'rgba(15, 115, 240, 0.95)', '#fff', '50%', '26px');
                     }
                 }
+                
+                // Reposiciona o botão de Convidar exatamente abaixo do botão Start do P1
+                if (btnStart) {
+                    const btnConvidar = document.getElementById('btn-convidar');
+                    const startRect = btnStart.getBoundingClientRect();
+                    if (startRect.bottom > 0) {
+                        btnConvidar.style.setProperty('position', 'fixed', 'important');
+                        btnConvidar.style.setProperty('top', (startRect.bottom + 10) + 'px', 'important');
+                        btnConvidar.style.setProperty('left', (startRect.left + (startRect.width / 2) - 45) + 'px', 'important'); 
+                        btnConvidar.style.setProperty('right', 'auto', 'important');
+                        btnConvidar.style.setProperty('z-index', '9999', 'important');
+                    }
+                }
+
             }, 300); 
         }
     </script>
