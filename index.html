@@ -240,6 +240,10 @@
         body[data-core="n64"] #game .ejs_virtualGamepad_button.b_cl.ejs_virtualGamepad_button_down, body[data-core="n64"] #game .ejs_virtualGamepad_button.b_cr.ejs_virtualGamepad_button_down,
         body[data-core="n64"] #game .ejs_virtualGamepad_button.b_start.ejs_virtualGamepad_button_down { filter: brightness(1.5); }
 
+        /* Modo leve: sem brilhos nem transições sobre o jogo */
+        .modo-leve #game * { box-shadow: none !important; transition: none !important; }
+        .modo-leve .pad8, .modo-leve #btn-vel, .modo-leve #btn-convidar { box-shadow: none !important; }
+
         /* Botão especial SP do P1 (arcade) */
         #p1-btn-ab { position: fixed; width: 60px; height: 60px; box-sizing: border-box; border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 9999; user-select: none; -webkit-user-select: none; touch-action: none; -webkit-tap-highlight-color: transparent;
             background: rgba(10,10,10,0.6); border: 2px solid rgba(255,255,255,0.85); color: var(--branco); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.06em;
@@ -476,6 +480,32 @@
                 window.EJS_gameUrl = `roms/${sys}/${dataId}`;
                 window.EJS_startOnLoaded = true;
                 window.EJS_color = '#ff6a00';
+
+                // N64: níveis de desempenho para aparelhos fracos. Escolha pelo endereço: &p=0 (original), &p=1 (padrão), &p=2 (leve), &p=3 (mais leve) ou &p=4 (outro núcleo do N64)
+                if (sisEmu === 'n64') {
+                    const nivel = parseInt(new URLSearchParams(window.location.search).get('p'));
+                    const p = isNaN(nivel) ? 1 : nivel;
+                    const opc = {};
+                    if (p >= 1) {
+                        opc['mupen64plus-EnableCopyColorToRDRAM'] = 'Off';
+                        opc['mupen64plus-EnableCopyDepthToRDRAM'] = 'Off';
+                        opc['mupen64plus-MultiSampling'] = '0';
+                        opc['mupen64plus-EnableHWLighting'] = 'False';
+                        opc['mupen64plus-EnableLODEmulation'] = 'False';
+                    }
+                    if (p >= 2) {
+                        opc['mupen64plus-EnableFBEmulation'] = 'False';
+                        opc['mupen64plus-43screensize'] = '320x240';
+                    }
+                    if (p >= 3) {
+                        opc['mupen64plus-BilinearMode'] = 'standard';
+                        opc['mupen64plus-txFilterMode'] = 'None';
+                        opc['mupen64plus-EnableTextureCache'] = 'True';
+                    }
+                    window.EJS_defaultOptions = opc;
+                    if (p >= 4) window.EJS_core = 'parallel_n64';
+                    if (p >= 2) document.documentElement.classList.add('modo-leve');
+                }
                 window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
                 
                 window.EJS_onGameStart = function() {
