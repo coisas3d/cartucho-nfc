@@ -89,15 +89,15 @@
         #status-msg p { margin: 0; color: var(--cinza); font-size: 0.95rem; line-height: 1.5; }
 
         /* ===== BOTÃO CONVIDAR P2, AVISO E JANELA DO QR CODE (jogo em andamento) ===== */
-        #btn-convidar { display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; width: 90px; height: 30px; line-height: 28px; padding: 0; text-align: center; box-sizing: border-box;
+        #btn-convidar { display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 90px; height: 30px; line-height: 28px; padding: 0; text-align: center; box-sizing: border-box;
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 0.02em; color: var(--branco); cursor: pointer; white-space: nowrap;
             background: rgba(10,10,10,0.85); border: 1px solid var(--laranja); border-radius: 999px; box-shadow: 0 0 14px rgba(255,106,0,0.35);
             -webkit-tap-highlight-color: transparent; }
         #btn-convidar::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--laranja); box-shadow: 0 0 8px var(--laranja); vertical-align: 1px; }
-        #btn-convidar:active { background: var(--laranja); color: var(--preto); transform: scale(0.96); }
+        #btn-convidar:active { background: var(--laranja); color: var(--preto); }
         #btn-convidar:active::before { background: var(--preto); box-shadow: none; }
 
-        #p1-toast { display: none; position: absolute; top: 18px; left: 50%; transform: translateX(-50%); z-index: 100000; white-space: nowrap;
+        #p1-toast { display: none; position: absolute; top: 54px; left: 50%; transform: translateX(-50%); z-index: 100000; white-space: nowrap;
             padding: 11px 22px 11px 18px; border-radius: 999px; background: rgba(10,10,10,0.92); border: 1px solid var(--laranja); color: var(--branco);
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
             box-shadow: 0 0 24px rgba(255,106,0,0.45); animation: aviso-entra 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
@@ -161,11 +161,35 @@
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; -webkit-tap-highlight-color: transparent;
             box-shadow: 0 0 14px rgba(255,106,0,0.35), inset 0 0 12px rgba(255,106,0,0.14) !important; transition: transform 0.08s ease, background-color 0.08s ease, box-shadow 0.08s ease !important; }
         #game .ejs_virtualGamepad_button.ejs_virtualGamepad_button_down { background: var(--laranja) !important; color: var(--preto) !important; text-shadow: none; transform: scale(0.94); box-shadow: 0 0 26px rgba(255,106,0,0.85) !important; }
-        #game .ejs_virtualGamepad_button.b_select, #game .ejs_virtualGamepad_button.b_start, #game .ejs_virtualGamepad_button.b_reset, #game .ejs_virtualGamepad_button.b_run {
-            border-radius: 999px !important; border: 1px solid rgba(255,255,255,0.6) !important; font-size: 12px !important; font-weight: 800 !important; letter-spacing: 0.12em; box-shadow: 0 2px 10px rgba(0,0,0,0.6) !important; }
-        #game .ejs_virtualGamepad_button.b_select { border-color: var(--laranja) !important; }
-        #game .ejs_virtualGamepad_button.b_select.ejs_virtualGamepad_button_down, #game .ejs_virtualGamepad_button.b_start.ejs_virtualGamepad_button_down,
-        #game .ejs_virtualGamepad_button.b_reset.ejs_virtualGamepad_button_down, #game .ejs_virtualGamepad_button.b_run.ejs_virtualGamepad_button_down { background: var(--branco) !important; box-shadow: 0 0 20px rgba(255,255,255,0.5) !important; }
+        /* Botões de sistema e ombros (Select, Start, Modo, Reset, L, R...) */
+        #game .ejs_virtualGamepad_button.b_select,
+        #game .ejs_virtualGamepad_button.b_start,
+        #game .ejs_virtualGamepad_button.b_reset,
+        #game .ejs_virtualGamepad_button.b_run,
+        #game .ejs_virtualGamepad_button.b_mode,
+        #game .ejs_virtualGamepad_button.b_pause,
+        #game .ejs_virtualGamepad_button.b_option,
+        #game .ejs_virtualGamepad_button.b_option_1,
+        #game .ejs_virtualGamepad_button.b_option_2,
+        #game .ejs_virtualGamepad_button.b_l,
+        #game .ejs_virtualGamepad_button.b_r,
+        #game .ejs_virtualGamepad_button.pill-sys {
+            border-radius: 999px !important; border: 1px solid rgba(255,255,255,0.6) !important; font-size: 12px !important; font-weight: 800 !important; letter-spacing: 0.1em; box-shadow: 0 2px 10px rgba(0,0,0,0.6) !important; }
+        #game .ejs_virtualGamepad_button.b_select, #game .ejs_virtualGamepad_button.b_l, #game .ejs_virtualGamepad_button.b_r { border-color: var(--laranja) !important; }
+        #game .ejs_virtualGamepad_button.b_select.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_start.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_reset.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_run.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_mode.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_pause.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_option.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_option_1.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_option_2.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_l.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_r.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.pill-sys.ejs_virtualGamepad_button_down { background: var(--branco) !important; box-shadow: 0 0 20px rgba(255,255,255,0.5) !important; }
+        /* Atari 2600: o único botão de ação ganha um rótulo */
+        #game .ejs_virtualGamepad_button.b_button_1::after { content: 'FOGO'; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; }
         #game .ejs_dpad_main { opacity: 1 !important; }
         #game .ejs_dpad_bar { background: rgba(10,10,10,0.6) !important; box-shadow: inset 0 0 0 2px rgba(255,106,0,0.7); }
         #game .ejs_dpad_horizontal:before { border-color: transparent var(--laranja) transparent transparent !important; }
@@ -263,11 +287,14 @@
         const sys = urlParams.get('c');
         const dataId = urlParams.get('id');
         const salaDoAmigo = urlParams.get('sala');
+        // No EmulatorJS, Game Boy e Game Boy Color usam o mesmo sistema ('gb' = core gambatte).
+        // A pasta da ROM continua sendo a do endereço (roms/gbc/...), então as tags antigas seguem funcionando.
+        const sisEmu = (sys === 'gbc') ? 'gb' : sys;
 
         // Nome amigável do sistema, mostrado no selo da tela inicial
         const NOMES_SISTEMA = { fbneo: 'Arcade', mame2003: 'Arcade', snes: 'Super Nintendo', segaMD: 'Mega Drive', gb: 'Game Boy', gbc: 'Game Boy Color', gba: 'Game Boy Advance', n64: 'Nintendo 64', nds: 'Nintendo DS', atari2600: 'Atari 2600' };
         const selo = document.getElementById('ps-sys');
-        if (selo) selo.textContent = NOMES_SISTEMA[sys] || 'Cartucho';
+        if (selo) selo.textContent = (sys === 'gbc' || (sys === 'gb' && /\.gbc$/i.test(dataId || ''))) ? 'Game Boy Color' : (NOMES_SISTEMA[sys] || 'Cartucho');
         let peerHost;
 
         if (salaDoAmigo) {
@@ -399,7 +426,7 @@
                 }, 10000);
 
                 window.EJS_player = '#game';
-                window.EJS_core = sys;
+                window.EJS_core = sisEmu;
                 window.EJS_gameUrl = `roms/${sys}/${dataId}`;
                 window.EJS_startOnLoaded = true;
                 window.EJS_color = '#ff6a00';
@@ -407,7 +434,7 @@
                 
                 window.EJS_onGameStart = function() {
                     document.getElementById('loading-overlay').style.display = 'none';
-                    injetarLayoutTatico(sys); 
+                    injetarLayoutTatico(sisEmu); 
                     configurarP2NoEmulador();
                     
                     const event = new Event('gamepadconnected');
@@ -681,6 +708,7 @@
                     const n64Start = encontrarBotaoNativo(['Start', 'START']), n64CUp = encontrarBotaoNativo(['▲', 'C▲', 'C-Up']), n64CDown = encontrarBotaoNativo(['▼', 'C▼', 'C-Down']);
                     const n64CLeft = encontrarBotaoNativo(['◄', 'C◄', 'C-Left']), n64CRight= encontrarBotaoNativo(['►', 'C►', 'C-Right']);
 
+                    [n64Z, n64R, n64Start].forEach(el => { if (el) el.classList.add('pill-sys'); });
                     if (n64L) n64L.style.setProperty('display', 'none', 'important');
                     const dpadElements = gameContainer.querySelectorAll('.ejs_dpad_main, .ejs_dpad_container, [class*="dpad"]');
                     dpadElements.forEach(d => d.style.setProperty('display', 'none', 'important'));
@@ -691,13 +719,11 @@
                         el.style.setProperty('position', 'fixed', 'important'); el.style.setProperty('top', top, 'important');
                         el.style.setProperty('bottom', bottom, 'important'); el.style.setProperty('left', left, 'important');
                         el.style.setProperty('right', right, 'important'); el.style.setProperty('width', w, 'important');
-                        el.style.setProperty('height', h, 'important'); el.style.setProperty('background-color', bg, 'important');
-                        el.style.setProperty('color', corTexto, 'important'); el.style.setProperty('border-radius', radius, 'important');
-                        el.style.setProperty('border', '2px solid rgba(255,255,255,0.35)', 'important'); el.style.setProperty('display', 'flex', 'important');
+                        el.style.setProperty('height', h, 'important'); el.style.setProperty('display', 'flex', 'important');
                         el.style.setProperty('justify-content', 'center', 'important'); el.style.setProperty('align-items', 'center', 'important');
                         el.style.setProperty('font-weight', 'bold', 'important'); el.style.setProperty('font-size', fontSize, 'important');
                         el.style.setProperty('margin', '0', 'important'); el.style.setProperty('transform', 'none', 'important');
-                        el.style.setProperty('z-index', '9999', 'important'); el.style.setProperty('box-shadow', '0 4px 10px rgba(0,0,0,0.6)', 'important');
+                        el.style.setProperty('z-index', '9999', 'important');
                     };
 
                     if (isPortrait) {
@@ -723,17 +749,6 @@
                     }
                 }
                 
-                if (btnStart) {
-                    const btnConvidar = document.getElementById('btn-convidar');
-                    const startRect = btnStart.getBoundingClientRect();
-                    if (startRect.bottom > 0) {
-                        btnConvidar.style.setProperty('position', 'fixed', 'important');
-                        btnConvidar.style.setProperty('top', (startRect.bottom + 10) + 'px', 'important');
-                        btnConvidar.style.setProperty('left', (startRect.left + (startRect.width / 2) - 45) + 'px', 'important'); 
-                        btnConvidar.style.setProperty('right', 'auto', 'important');
-                        btnConvidar.style.setProperty('z-index', '9999', 'important');
-                    }
-                }
 
             }, 300); 
         }
