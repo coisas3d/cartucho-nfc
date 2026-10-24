@@ -53,7 +53,6 @@
 </head>
 <body>
     
-    <!-- ALERTA DE CONEXÃO DO P1 -->
     <div id="p1-toast" style="display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #00ff00; color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-family: monospace; z-index: 100000; box-shadow: 0 0 10px #00ff00;">
         JOGADOR 2 CONECTADO!
     </div>
@@ -71,7 +70,6 @@
     
     <div id="status-msg">Acesso Negado ou Dados Ausentes.</div>
 
-    <!-- BOTÃO CONVIDAR REDUZIDO -->
     <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; width: 90px; top: 10px; right: 10px; z-index: 1000; padding: 5px 0; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 11px;">Convidar P2</button>
     
     <div id="tela-convite" style="display: none; position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0); background: white; padding: 20px; text-align: center; z-index: 9999; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);">
@@ -180,7 +178,7 @@
         
         } else if (sys && dataId) {
             // =====================================
-            // HOST: COMPUTADOR DO JOGADOR 1
+            // HOST: COMPUTADOR OU CELULAR P1
             // =====================================
             const idGamepad = 'Xbox 360 Controller (XInput STANDARD GAMEPAD)';
             window.fakeP1 = { id: idGamepad, index: 0, connected: true, timestamp: Date.now(), mapping: 'standard', axes: [0,0,0,0], buttons: Array(17).fill().map(()=>({pressed:false, value:0})) };
@@ -215,6 +213,11 @@
                 window.EJS_onGameStart = function() {
                     document.getElementById('loading-overlay').style.display = 'none';
                     injetarLayoutTatico(sys); 
+                    
+                    // Força o disparo do evento de conexão para o emulador auto-mapear o P2 no Mobile
+                    const event = new Event('gamepadconnected');
+                    event.gamepad = window.fakeP2;
+                    window.dispatchEvent(event);
                 };
 
                 const script = document.createElement('script');
@@ -231,7 +234,6 @@
                         conexao.on('open', function() {
                             document.getElementById('tela-convite').style.display = 'none';
                             
-                            // Dispara o alerta de conexão na tela do P1
                             const toast = document.getElementById('p1-toast');
                             toast.style.display = 'block';
                             setTimeout(() => { toast.style.display = 'none'; }, 3000);
@@ -258,9 +260,6 @@
 
         function mostrarConvite() { document.getElementById('tela-convite').style.display = 'block'; }
 
-        // ==========================================================
-        // MOTOR REATIVO DE LAYOUT DO JOGADOR 1
-        // ==========================================================
         function injetarLayoutTatico(coreName) {
             setInterval(() => {
                 const gameContainer = document.getElementById('game');
@@ -451,7 +450,6 @@
                     }
                 }
                 
-                // Reposiciona o botão de Convidar exatamente abaixo do botão Start do P1
                 if (btnStart) {
                     const btnConvidar = document.getElementById('btn-convidar');
                     const startRect = btnStart.getBoundingClientRect();
