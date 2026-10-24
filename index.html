@@ -215,6 +215,7 @@
                 window.EJS_onGameStart = function() {
                     document.getElementById('loading-overlay').style.display = 'none';
                     injetarLayoutTatico(sys); 
+                    configurarP2NoEmulador();
                     
                     const event = new Event('gamepadconnected');
                     event.gamepad = window.fakeP2;
@@ -233,6 +234,7 @@
                     });
                     peerHost.on('connection', function(conexao) {
                         conexao.on('open', function() {
+                            configurarP2NoEmulador();
                             document.getElementById('tela-convite').style.display = 'none';
                             
                             const toast = document.getElementById('p1-toast');
@@ -240,6 +242,9 @@
                             setTimeout(() => { toast.style.display = 'none'; }, 3000);
                         });
                         
+                        conexao.on('close', resetarBotoesP2);
+                        conexao.on('error', resetarBotoesP2);
+
                         conexao.on('data', function(dados) {
                             if (dados.b !== undefined) {
                                 const btnIndex = dados.b;
@@ -257,6 +262,40 @@
         } else {
             document.getElementById('power-screen').style.display = 'none';
             document.getElementById('status-msg').style.display = 'block';
+        }
+
+        // =====================================
+        // P2: mapeamento automático (todos os cores)
+        // O EmulatorJS deixa os controles dos jogadores 2-4 VAZIOS por padrão e só
+        // atribui um gamepad a um slot se ele já existir quando o menu de controles
+        // é criado. Aqui copiamos os botões de gamepad do P1 para o P2 e
+        // atribuímos o gamepad virtual (index 1) ao slot do jogador 2.
+        // =====================================
+        function configurarP2NoEmulador() {
+            const emu = window.EJS_emulator;
+            if (!emu || !emu.controls || !window.fakeP2) return false;
+            const ui = emu.frontend || emu;               // 4.2.4+ usa emu.frontend; 4.2.3 usa emu
+            if (!ui.gamepadSelection) return false;
+
+            // 1) Controles do P2 = botões de gamepad (value2) do P1, sem teclas de teclado
+            emu.controls[1] = {};
+            for (const [btn, cfg] of Object.entries(emu.controls[0] || {})) {
+                if (cfg && cfg.value2 !== undefined) emu.controls[1][btn] = { value2: cfg.value2 };
+            }
+
+            // 2) Atribui o gamepad virtual do P2 ao slot 1
+            const idP2 = window.fakeP2.id + '_' + window.fakeP2.index;
+            for (let i = 0; i < ui.gamepadSelection.length; i++) {
+                if (i !== 1 && ui.gamepadSelection[i] === idP2) ui.gamepadSelection[i] = '';
+            }
+            ui.gamepadSelection[1] = idP2;
+            if (typeof ui.updateGamepadLabels === 'function') ui.updateGamepadLabels();
+            return true;
+        }
+
+        function resetarBotoesP2() {
+            if (!window.fakeP2) return;
+            window.fakeP2.buttons.forEach(b => { b.pressed = false; b.value = 0; });
         }
 
         function mostrarConvite() { document.getElementById('tela-convite').style.display = 'block'; }
