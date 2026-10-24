@@ -90,10 +90,10 @@
 
         /* ===== BOTÃO CONVIDAR P2, AVISO E JANELA DO QR CODE (jogo em andamento) ===== */
         #btn-convidar { display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; width: 90px; height: 30px; line-height: 28px; padding: 0; text-align: center; box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; color: var(--branco); cursor: pointer;
-            background: rgba(10,10,10,0.72); border: 1px solid var(--laranja); border-radius: 999px; box-shadow: 0 0 14px rgba(255,106,0,0.35);
-            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); -webkit-tap-highlight-color: transparent; }
-        #btn-convidar::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--laranja); box-shadow: 0 0 8px var(--laranja); vertical-align: 1px; }
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 0.02em; color: var(--branco); cursor: pointer; white-space: nowrap;
+            background: rgba(10,10,10,0.85); border: 1px solid var(--laranja); border-radius: 999px; box-shadow: 0 0 14px rgba(255,106,0,0.35);
+            -webkit-tap-highlight-color: transparent; }
+        #btn-convidar::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--laranja); box-shadow: 0 0 8px var(--laranja); vertical-align: 1px; }
         #btn-convidar:active { background: var(--laranja); color: var(--preto); transform: scale(0.96); }
         #btn-convidar:active::before { background: var(--preto); box-shadow: none; }
 
@@ -131,14 +131,57 @@
         }
 
         /* REGRAS DE LAYOUT DO JOGADOR 2 */
-        .p2-btn { position: absolute; width: 65px; height: 65px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: Arial, sans-serif; z-index: 9999; user-select: none; backdrop-filter: blur(2px); font-size: 18px; }
-        .p2-sys-btn { width: 90px; height: 40px; border-radius: 20px; font-size: 14px; }
-        .p2-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
+        /* ===== BOTÕES DURANTE O JOGO: visual premium (preto, laranja e branco) ===== */
+        /* Jogador 2 (celular do convidado) */
+        .p2-tela { background: radial-gradient(ellipse at 50% 100%, rgba(255,106,0,0.22) 0%, rgba(255,106,0,0) 62%), radial-gradient(ellipse at 50% 0%, rgba(255,106,0,0.10) 0%, rgba(255,106,0,0) 55%), #050505 !important; position: relative; overflow: hidden; }
+        .p2-marca { position: absolute; top: 50%; left: 50%; width: min(62vmin, 320px); height: auto; transform: translate(-50%, -50%); opacity: 0.06; pointer-events: none; border-radius: 50%; }
+        .p2-topo { position: absolute; top: 2.2%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 5px; pointer-events: none; z-index: 1; }
+        .p2-topo img { width: 38px; height: 38px; border-radius: 50%; box-shadow: 0 0 14px rgba(255,106,0,0.5); }
+        .p2-topo span { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 9px; font-weight: 800; letter-spacing: 0.22em; color: var(--branco); white-space: nowrap; }
+        .p2-topo span::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--laranja); box-shadow: 0 0 8px var(--laranja); vertical-align: 1px; }
+
+        .p2-btn { position: absolute; width: 65px; height: 65px; box-sizing: border-box; display: flex; justify-content: center; align-items: center; border-radius: 50%; z-index: 9999; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: none;
+            background: rgba(10,10,10,0.6); border: 2px solid var(--laranja); color: var(--branco); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 20px; font-weight: 800;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9); box-shadow: 0 0 14px rgba(255,106,0,0.35), inset 0 0 12px rgba(255,106,0,0.14); transition: transform 0.08s ease, background-color 0.08s ease, box-shadow 0.08s ease; }
+        .p2-btn.press { background: var(--laranja); color: var(--preto); text-shadow: none; transform: scale(0.94); box-shadow: 0 0 26px rgba(255,106,0,0.85); }
+        .p2-sys-btn { width: 90px; height: 40px; border-radius: 999px; font-size: 12px; letter-spacing: 0.14em; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 2px 10px rgba(0,0,0,0.6); }
+        .p2-sys-btn.press { background: var(--branco); color: var(--preto); box-shadow: 0 0 20px rgba(255,255,255,0.5); }
+        .p2-btn-ficha { background: var(--laranja); border: none; color: var(--preto); text-shadow: none; box-shadow: 0 4px 16px rgba(255,106,0,0.45); }
+        .p2-btn-ficha.press { background: var(--branco); }
+        .p2-btn-combo { font-size: 15px; letter-spacing: 0.06em; border-color: rgba(255,255,255,0.85); box-shadow: 0 0 14px rgba(255,255,255,0.22), inset 0 0 12px rgba(255,106,0,0.14); }
+        .p2-btn-combo.press { background: var(--branco); color: var(--preto); box-shadow: 0 0 26px rgba(255,255,255,0.7); }
         #joystick-zone { position: absolute; width: 140px; height: 140px; z-index: 9999; }
-        .p2-btn-combo { background: rgba(203,168,0,0.55); border-color: rgba(255,230,120,0.9); font-size: 15px; }
-        /* Botão especial do P1 (A+B) - arcade */
-        #p1-btn-ab { position: fixed; width: 60px; height: 60px; border-radius: 50%; background: rgba(203,168,0,0.55); border: 2px solid rgba(255,230,120,0.9); color: #fff; display: none; justify-content: center; align-items: center; font-weight: bold; font-family: Arial, sans-serif; font-size: 14px; z-index: 9999; user-select: none; touch-action: none; }
-        #p1-btn-ab.ativo { background: rgba(255,255,255,0.4); transform: scale(0.95); }
+
+        /* Analógico (serve para o P2 e para o P1) */
+        .nipple .back { background: radial-gradient(circle, rgba(10,10,10,0.6) 0%, rgba(10,10,10,0.6) 58%, rgba(255,106,0,0.28) 100%) !important; border: 2px solid rgba(255,106,0,0.85) !important; box-sizing: border-box !important; opacity: 1 !important; box-shadow: 0 0 16px rgba(255,106,0,0.35); }
+        .nipple .front { background: radial-gradient(circle at 35% 30%, #ffb27a 0%, var(--laranja) 55%, #c24e00 100%) !important; border: 2px solid rgba(255,255,255,0.65) !important; box-sizing: border-box !important; opacity: 1 !important; box-shadow: 0 4px 10px rgba(0,0,0,0.6); }
+
+        /* Jogador 1 (botões do próprio emulador) */
+        #game .ejs_virtualGamepad_button { background: rgba(10,10,10,0.6) !important; border: 2px solid var(--laranja) !important; color: var(--branco) !important; text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 0 14px rgba(255,106,0,0.35), inset 0 0 12px rgba(255,106,0,0.14) !important; transition: transform 0.08s ease, background-color 0.08s ease, box-shadow 0.08s ease !important; }
+        #game .ejs_virtualGamepad_button.ejs_virtualGamepad_button_down { background: var(--laranja) !important; color: var(--preto) !important; text-shadow: none; transform: scale(0.94); box-shadow: 0 0 26px rgba(255,106,0,0.85) !important; }
+        #game .ejs_virtualGamepad_button.b_select, #game .ejs_virtualGamepad_button.b_start, #game .ejs_virtualGamepad_button.b_reset, #game .ejs_virtualGamepad_button.b_run {
+            border-radius: 999px !important; border: 1px solid rgba(255,255,255,0.6) !important; font-size: 12px !important; font-weight: 800 !important; letter-spacing: 0.12em; box-shadow: 0 2px 10px rgba(0,0,0,0.6) !important; }
+        #game .ejs_virtualGamepad_button.b_select { border-color: var(--laranja) !important; }
+        #game .ejs_virtualGamepad_button.b_select.ejs_virtualGamepad_button_down, #game .ejs_virtualGamepad_button.b_start.ejs_virtualGamepad_button_down,
+        #game .ejs_virtualGamepad_button.b_reset.ejs_virtualGamepad_button_down, #game .ejs_virtualGamepad_button.b_run.ejs_virtualGamepad_button_down { background: var(--branco) !important; box-shadow: 0 0 20px rgba(255,255,255,0.5) !important; }
+        #game .ejs_dpad_main { opacity: 1 !important; }
+        #game .ejs_dpad_bar { background: rgba(10,10,10,0.6) !important; box-shadow: inset 0 0 0 2px rgba(255,106,0,0.7); }
+        #game .ejs_dpad_horizontal:before { border-color: transparent var(--laranja) transparent transparent !important; }
+        #game .ejs_dpad_horizontal:after { border-color: transparent transparent transparent var(--laranja) !important; }
+        #game .ejs_dpad_vertical:before { border-color: transparent transparent var(--laranja) transparent !important; }
+        #game .ejs_dpad_vertical:after { border-color: var(--laranja) transparent transparent transparent !important; }
+        #game .ejs_dpad_left_pressed .ejs_dpad_horizontal:before { border-right-color: var(--branco) !important; }
+        #game .ejs_dpad_right_pressed .ejs_dpad_horizontal:after { border-left-color: var(--branco) !important; }
+        #game .ejs_dpad_up_pressed .ejs_dpad_vertical:before { border-bottom-color: var(--branco) !important; }
+        #game .ejs_dpad_down_pressed .ejs_dpad_vertical:after { border-top-color: var(--branco) !important; }
+
+        /* Botão especial SP do P1 (arcade) */
+        #p1-btn-ab { position: fixed; width: 60px; height: 60px; box-sizing: border-box; border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 9999; user-select: none; -webkit-user-select: none; touch-action: none; -webkit-tap-highlight-color: transparent;
+            background: rgba(10,10,10,0.6); border: 2px solid rgba(255,255,255,0.85); color: var(--branco); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.06em;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9); box-shadow: 0 0 14px rgba(255,255,255,0.22), inset 0 0 12px rgba(255,106,0,0.14); transition: transform 0.08s ease, background-color 0.08s ease; }
+        #p1-btn-ab.ativo { background: var(--branco); color: var(--preto); text-shadow: none; transform: scale(0.94); box-shadow: 0 0 26px rgba(255,255,255,0.7); }
 
         @media screen and (orientation: portrait) {
             #joystick-zone { bottom: 15%; left: 3%; }
@@ -244,19 +287,21 @@
                     const gameDiv = document.getElementById('game-container');
                     gameDiv.style.width = '100vw';
                     gameDiv.style.height = '100vh';
-                    gameDiv.style.background = '#000';
+                    gameDiv.classList.add('p2-tela');
                     
                     let isArcade = (sys === 'fbneo' || sys === 'mame2003');
-                    let btnSelectEstilo = isArcade ? 'background:#cba800; color:#000; border:none;' : '';
+                    let btnSelectClasse = isArcade ? 'p2-btn-ficha' : '';
                     let btnSelectTexto = isArcade ? 'FICHA' : 'SELECT';
 
                     let btnEspecial = isArcade ? '<div id="p2-btn-ab" class="p2-btn p2-btn-combo" data-pad="0,1">SP</div>' : '';
 
                     gameDiv.innerHTML = `
+                        <img class="p2-marca" src="c3dlogo.png" alt="">
+                        <div class="p2-topo"><img src="c3dlogo.png" alt=""><span>JOGADOR 2</span></div>
                         <div id="joystick-zone"></div>
                         <div id="p2-btn-b" class="p2-btn" data-pad="1">B</div>
                         <div id="p2-btn-a" class="p2-btn" data-pad="0">A</div>
-                        <div id="p2-btn-select" class="p2-btn p2-sys-btn" data-pad="8" style="${btnSelectEstilo}">${btnSelectTexto}</div>
+                        <div id="p2-btn-select" class="p2-btn p2-sys-btn ${btnSelectClasse}" data-pad="8">${btnSelectTexto}</div>
                         <div id="p2-btn-start" class="p2-btn p2-sys-btn" data-pad="9">START</div>
                         ${btnEspecial}
                     `;
@@ -308,10 +353,12 @@
                             const enviar = (estado) => padIndexes.forEach(i => conexao.send({ b: i, s: estado }));
                             btn.addEventListener('touchstart', (e) => { 
                                 e.preventDefault(); 
+                                btn.classList.add('press');
                                 enviar(1); 
                             }, {passive: false});
                             const soltar = (e) => { 
                                 e.preventDefault(); 
+                                btn.classList.remove('press');
                                 enviar(0); 
                             };
                             btn.addEventListener('touchend', soltar, {passive: false});
@@ -355,6 +402,7 @@
                 window.EJS_core = sys;
                 window.EJS_gameUrl = `roms/${sys}/${dataId}`;
                 window.EJS_startOnLoaded = true;
+                window.EJS_color = '#ff6a00';
                 window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
                 
                 window.EJS_onGameStart = function() {
