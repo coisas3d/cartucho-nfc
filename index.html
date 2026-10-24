@@ -39,12 +39,12 @@
         #p1-btn-ab.ativo { background: rgba(255,255,255,0.4); transform: scale(0.95); }
 
         @media screen and (orientation: portrait) {
-            #joystick-zone { bottom: 15%; left: 10%; }
-            #p2-btn-b { bottom: 15%; right: 35%; }
-            #p2-btn-a { bottom: 25%; right: 15%; }
+            #joystick-zone { bottom: 15%; left: 3%; }
+            #p2-btn-b { bottom: 15%; right: 25%; }
+            #p2-btn-a { bottom: 25%; right: 5%; }
             #p2-btn-select { top: 8%; left: 10%; }
             #p2-btn-start { top: 8%; right: 10%; }
-            #p2-btn-ab { bottom: 36%; right: 25%; }
+            #p2-btn-ab { bottom: 36%; right: 15%; }
         }
 
         @media screen and (orientation: landscape) {
@@ -53,7 +53,7 @@
             #p2-btn-a { bottom: 45%; right: 8%; }
             #p2-btn-select { top: 8%; left: 25%; transform: translateX(-50%); }
             #p2-btn-start { top: 8%; right: 25%; transform: translateX(50%); }
-            #p2-btn-ab { bottom: 40%; right: 20%; }
+            #p2-btn-ab { bottom: 55%; right: 20%; }
         }
     </style>
 </head>
@@ -119,7 +119,7 @@
                     let btnSelectEstilo = isArcade ? 'background:#cba800; color:#000; border:none;' : '';
                     let btnSelectTexto = isArcade ? 'FICHA' : 'SELECT';
 
-                    let btnEspecial = isArcade ? '<div id="p2-btn-ab" class="p2-btn p2-btn-combo" data-pad="0,1">A+B</div>' : '';
+                    let btnEspecial = isArcade ? '<div id="p2-btn-ab" class="p2-btn p2-btn-combo" data-pad="0,1">SP</div>' : '';
 
                     gameDiv.innerHTML = `
                         <div id="joystick-zone"></div>
@@ -316,7 +316,7 @@
             if (btn) return btn;
             btn = document.createElement('div');
             btn.id = 'p1-btn-ab';
-            btn.innerText = 'A+B';
+            btn.innerText = 'SP';
             document.body.appendChild(btn);
             const apertar = (estado) => {
                 const gm = window.EJS_emulator && window.EJS_emulator.gameManager;
@@ -333,8 +333,9 @@
 
         function posicionarBotaoEspecialP1() {
             const btn = garantirBotaoEspecialP1();
-            const a = document.querySelector('#game .b_a');
-            const b = document.querySelector('#game .b_b');
+            const porTexto = (t) => Array.from(document.querySelectorAll('#game div')).find(el => el.children.length === 0 && el.innerText && el.innerText.trim() === t);
+            const a = document.querySelector('#game .b_a') || porTexto('A');
+            const b = document.querySelector('#game .b_b') || porTexto('B');
             if (!a || !b) { btn.style.display = 'none'; return; }
             const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
             if (ra.width === 0 || rb.width === 0) { btn.style.display = 'none'; return; }
