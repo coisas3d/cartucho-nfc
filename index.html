@@ -150,6 +150,19 @@
         .p2-btn-ficha.press { background: var(--branco); }
         .p2-btn-combo { font-size: 15px; letter-spacing: 0.06em; border-color: rgba(255,255,255,0.85); box-shadow: 0 0 14px rgba(255,255,255,0.22), inset 0 0 12px rgba(255,106,0,0.14); }
         .p2-btn-combo.press { background: var(--branco); color: var(--preto); box-shadow: 0 0 26px rgba(255,255,255,0.7); }
+        .p2x { margin: 0; }
+        .p2-pill { border-radius: 999px; font-size: 12px; letter-spacing: 0.1em; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 2px 10px rgba(0,0,0,0.6); }
+        .p2-pill.press { background: var(--branco); color: var(--preto); box-shadow: 0 0 20px rgba(255,255,255,0.5); }
+        .p2-pill.p2c-borda { border: 1px solid var(--laranja); }
+        .p2-pill.p2c-turbo { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; }
+        .p2-pill.p2c-turbo.ativo { background: var(--laranja); border-color: var(--laranja); color: var(--preto); box-shadow: 0 0 20px rgba(255,106,0,0.8); }
+        .p2x.p2c-azul { background: rgba(15,115,240,0.92); border: 2px solid rgba(255,255,255,0.6); box-shadow: 0 0 16px rgba(15,115,240,0.55); }
+        .p2x.p2c-verde { background: rgba(25,165,75,0.92); border: 2px solid rgba(255,255,255,0.6); box-shadow: 0 0 16px rgba(25,165,75,0.55); }
+        .p2x.p2c-amar { background: rgba(235,175,10,0.95); border: 2px solid rgba(255,255,255,0.5); color: #0a0a0a; text-shadow: none; box-shadow: 0 0 12px rgba(235,175,10,0.45); }
+        .p2x.p2c-verm { background: rgba(220,38,38,0.95); border: 1px solid rgba(255,255,255,0.6); color: var(--branco); box-shadow: 0 0 14px rgba(220,38,38,0.5); }
+        .p2x.p2c-azul.press, .p2x.p2c-verde.press, .p2x.p2c-amar.press, .p2x.p2c-verm.press { filter: brightness(1.5); color: var(--branco); }
+        .p2x.p2c-amar.press { color: #0a0a0a; }
+
         #joystick-zone { position: absolute; width: 140px; height: 140px; z-index: 9999; }
 
         /* Analógico (serve para o P2 e para o P1) */
@@ -341,6 +354,7 @@
                     gameDiv.style.width = '100vw';
                     gameDiv.style.height = '100vh';
                     gameDiv.classList.add('p2-tela');
+                    if (montarP2Completo(gameDiv, conexao, sisEmu)) return;
                     
                     let isArcade = (sys === 'fbneo' || sys === 'mame2003');
                     let btnSelectClasse = isArcade ? 'p2-btn-ficha' : '';
@@ -499,6 +513,8 @@
                                     window.fakeP2.buttons[btnIndex].value = dados.s;
                                 }
                             }
+                            if (dados.x !== undefined && window.fakeP2.axes[dados.x] !== undefined) window.fakeP2.axes[dados.x] = dados.v;
+                            if (dados.t) alternarTurbo();
                             window.fakeP2.timestamp = Date.now();
                         });
                     });
@@ -591,15 +607,17 @@
         // =====================================
         const CORES_COM_PAD8 = ['snes', 'sfc', 'segaMD', 'gb', 'gba', 'atari2600', 'n64'];
 
-        function garantirPad8() {
-            let pad = document.getElementById('pad8');
+        function garantirPad8(opc) {
+            opc = opc || {};
+            const idPad = opc.id || 'pad8';
+            let pad = document.getElementById(idPad);
             if (pad) return pad;
             pad = document.createElement('div');
-            pad.id = 'pad8';
+            pad.id = idPad;
             pad.className = 'pad8';
             const nomes = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
             pad.innerHTML = nomes.map((n, i) => `<i class="${n}" style="--a:${i * 45}deg"></i>`).join('') + '<b></b>';
-            document.body.appendChild(pad);
+            (opc.container || document.body).appendChild(pad);
 
             const setas = {};
             nomes.forEach(n => { setas[n] = pad.querySelector('i.' + n); });
@@ -607,13 +625,12 @@
             let ponteiro = null;
             let atual = { u: 0, d: 0, l: 0, r: 0 };
 
-            const enviar = (novo) => {
+            const mandaDir = opc.enviarDir || ((k, v) => {
                 const gm = window.EJS_emulator && window.EJS_emulator.gameManager;
-                if (!gm) return;
-                if (novo.u !== atual.u) gm.simulateInput(0, 4, novo.u);
-                if (novo.d !== atual.d) gm.simulateInput(0, 5, novo.d);
-                if (novo.l !== atual.l) gm.simulateInput(0, 6, novo.l);
-                if (novo.r !== atual.r) gm.simulateInput(0, 7, novo.r);
+                if (gm) gm.simulateInput(0, { u: 4, d: 5, l: 6, r: 7 }[k], v);
+            });
+            const enviar = (novo) => {
+                for (const k of ['u', 'd', 'l', 'r']) if (novo[k] !== atual[k]) mandaDir(k, novo[k]);
                 atual = novo;
             };
             const mostrar = (novo, fx, fy) => {
@@ -697,6 +714,15 @@
         // Botão de velocidade (Game Boy e GBA): um toque liga e outro desliga o avanço rápido
         // =====================================
         let velocidadeLigada = false;
+        function alternarTurbo() {
+            const emu = window.EJS_emulator;
+            if (!emu || !emu.gameManager) return;
+            velocidadeLigada = !velocidadeLigada;
+            emu.isFastForward = velocidadeLigada;
+            emu.gameManager.toggleFastForward(velocidadeLigada ? 1 : 0);
+            const b = document.getElementById('btn-vel');
+            if (b) b.classList.toggle('ativo', velocidadeLigada);
+        }
         function garantirBotaoVelocidade() {
             let btn = document.getElementById('btn-vel');
             if (btn) return btn;
@@ -704,15 +730,7 @@
             btn.id = 'btn-vel';
             btn.innerText = '▶▶ TURBO';
             document.body.appendChild(btn);
-            btn.addEventListener('pointerdown', (ev) => {
-                ev.preventDefault();
-                const emu = window.EJS_emulator;
-                if (!emu || !emu.gameManager) return;
-                velocidadeLigada = !velocidadeLigada;
-                emu.isFastForward = velocidadeLigada;
-                emu.gameManager.toggleFastForward(velocidadeLigada ? 1 : 0);
-                btn.classList.toggle('ativo', velocidadeLigada);
-            });
+            btn.addEventListener('pointerdown', (ev) => { ev.preventDefault(); alternarTurbo(); });
             return btn;
         }
         function posicionarBotaoVelocidade(btnSelect, btnStart) {
@@ -781,6 +799,155 @@
                 top = 10;
             }
             fixarEm(conv, left, Math.max(6, top));
+        }
+
+        // =====================================
+        // Controle do Jogador 2: mesmos botões do Jogador 1, no mesmo estilo
+        // Índices do gamepad padrão: 0=A 1=B 2=X 3=Y 4=L 5=R 6=L2 7=R2 8=Select 9=Start 12-15=cruz (cima, baixo, esq, dir)
+        // =====================================
+        const P2_DIR = { u: 12, d: 13, l: 14, r: 15 };
+        // item: [id, texto, tipo, ação, [cx%,cy%,dx,dy] retrato, [cx%,cy%,dx,dy] paisagem, tamanho, classe]
+        //   tipo: 'c' círculo, 'p' pílula; ação: lista de botões, {ax:[eixo,valor]} ou 'turbo'
+        function p2Layout(core) {
+            const F = 58, d = 44;
+            const diamante = (c, o) => [[c[0], c[1], 0, -d], [c[0], c[1], -d, 0], [c[0], c[1], d, 0], [c[0], c[1], 0, d]].map((p, i) => p);
+            const P = { pad: [22, 79], padL: [14, 56] };
+            const base = { pad8: [P.pad, P.padL, 140] };
+            if (core === 'snes' || core === 'sfc') {
+                const fr = [74, 79], fl = [86, 56];
+                const di = (c) => diamante(c);
+                const dr = di(fr), dl = di(fl);
+                return { pad8: [P.pad, P.padL, 140], itens: [
+                    ['x', 'X', 'c', [2], dr[0], dl[0], F],
+                    ['y', 'Y', 'c', [3], dr[1], dl[1], F],
+                    ['a', 'A', 'c', [0], dr[2], dl[2], F],
+                    ['b', 'B', 'c', [1], dr[3], dl[3], F],
+                    ['l', 'L', 'p', [4], [13, 57, 0, 0], [8, 14, 0, 0], 0, 'p2c-borda'],
+                    ['r', 'R', 'p', [5], [87, 57, 0, 0], [92, 14, 0, 0], 0, 'p2c-borda'],
+                    ['sel', 'Select', 'p', [8], [13, 63.5, 0, 0], [8, 28, 0, 0], 0, 'p2c-borda'],
+                    ['sta', 'Start', 'p', [9], [87, 63.5, 0, 0], [92, 28, 0, 0], 0]
+                ] };
+            }
+            if (core === 'segaMD') {
+                const g = (c, col, lin) => [c[0], c[1], (col - 1) * 62, lin ? 34 : -34];
+                const fr = [73, 78], fl = [84, 56];
+                const n = [['x', 'X', 4], ['y', 'Y', 2], ['z', 'Z', 5], ['a', 'A', 3], ['b', 'B', 1], ['c', 'C', 0]];
+                const itens = n.map((e, i) => [e[0], e[1], 'c', [e[2]], g(fr, i % 3, i >= 3), g(fl, i % 3, i >= 3), 54]);
+                itens.push(['mod', 'Modo', 'p', [8], [30, 91, 0, 0], [42, 90, 0, 0], 0, 'p2c-borda']);
+                itens.push(['sta', 'Start', 'p', [9], [70, 91, 0, 0], [58, 90, 0, 0], 0]);
+                return { pad8: [P.pad, P.padL, 140], itens };
+            }
+            if (core === 'n64') {
+                const c1 = [77, 69], c2 = [86, 42], k = 38, S = 46;
+                const cp = (c, dx, dy) => [c[0], c[1], dx, dy];
+                return { pad8: [[22, 76], [14, 36], 100], stick: [[22, 90], [14, 80]], itens: [
+                    ['cu', '▲', 'c', { ax: [3, -1] }, cp(c1, 0, -k), cp(c2, 0, -k), S, 'p2c-amar'],
+                    ['cd', '▼', 'c', { ax: [3, 1] }, cp(c1, 0, k), cp(c2, 0, k), S, 'p2c-amar'],
+                    ['cl', '◄', 'c', { ax: [2, -1] }, cp(c1, -k, 0), cp(c2, -k, 0), S, 'p2c-amar'],
+                    ['cr', '►', 'c', { ax: [2, 1] }, cp(c1, k, 0), cp(c2, k, 0), S, 'p2c-amar'],
+                    ['b', 'B', 'c', [3], [62, 81, 0, 0], [76, 70, 0, 0], F, 'p2c-verde'],
+                    ['a', 'A', 'c', [1], [80, 90, 0, 0], [86, 86, 0, 0], F, 'p2c-azul'],
+                    ['z', 'Z', 'p', [6], [48, 92, 0, 0], [66, 86, 0, 0], 0, ''],
+                    ['l', 'L', 'p', [4], [13, 57, 0, 0], [8, 16, 0, 0], 0, 'p2c-borda'],
+                    ['r', 'R', 'p', [5], [87, 57, 0, 0], [92, 16, 0, 0], 0, 'p2c-borda'],
+                    ['sta', 'Start', 'p', [9], [48, 86, 0, 0], [8, 5, 0, 0], 0, 'p2c-verm']
+                ] };
+            }
+            if (core === 'gb' || core === 'gba') {
+                const itens = [
+                    ['a', 'A', 'c', [0], [84, 76, 0, 0], [90, 45, 0, 0], F],
+                    ['b', 'B', 'c', [1], [66, 82, 0, 0], [80, 64, 0, 0], F],
+                    ['sel', 'Select', 'p', [8], [29, 92, 0, 0], [9, 92, 0, 0], 0, 'p2c-borda'],
+                    ['sta', 'Start', 'p', [9], [47, 92, 0, 0], [22, 92, 0, 0], 0],
+                    ['tur', '▶▶ TURBO', 'p', 'turbo', [74, 92, 0, 0], [92, 92, 0, 0], 92, 'p2c-turbo']
+                ];
+                if (core === 'gba') {
+                    itens.push(['l', 'L', 'p', [4], [13, 57, 0, 0], [8, 14, 0, 0], 0, 'p2c-borda']);
+                    itens.push(['r', 'R', 'p', [5], [87, 57, 0, 0], [92, 14, 0, 0], 0, 'p2c-borda']);
+                }
+                return { pad8: [P.pad, P.padL, 140], itens };
+            }
+            if (core === 'atari2600') {
+                return { pad8: [P.pad, P.padL, 140], itens: [
+                    ['fogo', '', 'c', [1], [78, 79, 0, 0], [88, 60, 0, 0], 66],
+                    ['sel', 'Select', 'p', [8], [24, 63, 0, 0], [30, 12, 0, 0], 0, 'p2c-borda'],
+                    ['res', 'Resetar', 'p', [9], [76, 63, 0, 0], [70, 12, 0, 0], 0]
+                ] };
+            }
+            return null;
+        }
+
+        function montarP2Completo(gameDiv, conexao, core) {
+            const lay = p2Layout(core);
+            if (!lay) return false;
+            const posiciona = (el, pos, w, h) => {
+                el.style.left = `calc(${pos[0]}% + ${pos[2]}px - ${w / 2}px)`;
+                el.style.top = `calc(${pos[1]}% + ${pos[3]}px - ${h / 2}px)`;
+            };
+            gameDiv.innerHTML = `<img class="p2-marca" src="c3dlogo.png" alt=""><div class="p2-topo"><img src="c3dlogo.png" alt=""><span>JOGADOR 2</span></div>`;
+            const lista = []; // elementos para reposicionar ao girar o aparelho
+            const enviar = (b, s) => conexao.send({ b: b, s: s });
+            const retrato = () => window.innerHeight > window.innerWidth;
+
+            // cruz com 8 direções
+            const pad = garantirPad8({ id: 'p2-pad8', container: gameDiv, enviarDir: (k, v) => enviar(P2_DIR[k], v) });
+            lista.push(() => {
+                const t = lay.pad8[2], p = retrato() ? lay.pad8[0] : lay.pad8[1];
+                pad.style.width = pad.style.height = t + 'px';
+                pad.style.setProperty('--r', (t * 0.36) + 'px');
+                posiciona(pad, [p[0], p[1], 0, 0], t, t);
+                pad.style.display = 'block';
+            });
+
+            // analógico do N64
+            if (lay.stick) {
+                const zona = document.createElement('div');
+                zona.id = 'joystick-zone';
+                zona.style.cssText = 'position:absolute;width:140px;height:140px;z-index:9999';
+                gameDiv.appendChild(zona);
+                lista.push(() => { const q = retrato() ? lay.stick[0] : lay.stick[1]; posiciona(zona, [q[0], q[1], 0, 0], 140, 140); });
+                const js = nipplejs.create({ zone: zona, mode: 'static', position: { left: '50%', top: '50%' }, color: 'white', size: 110 });
+                let ult = [0, 0];
+                const mandaEixo = (i, v) => { v = Math.round(v * 20) / 20; if (v !== ult[i]) { ult[i] = v; conexao.send({ x: i, v: v }); } };
+                js.on('move', (evt, data) => {
+                    const f = Math.min(1, (data.force || 0));
+                    mandaEixo(0, Math.cos(data.angle.radian) * f);
+                    mandaEixo(1, -Math.sin(data.angle.radian) * f);
+                });
+                js.on('end', () => { mandaEixo(0, 0); mandaEixo(1, 0); });
+            }
+
+            lay.itens.forEach(it => {
+                const [id, texto, tipo, acao, pr, pl, tam, cls] = it;
+                const el = document.createElement('div');
+                const pill = tipo === 'p';
+                const w = pill ? (tam || 66) : tam, h = pill ? 30 : tam;
+                el.className = 'p2-btn p2x ' + (pill ? 'p2-pill ' : '') + (cls || '');
+                el.id = 'p2x-' + id;
+                el.textContent = texto;
+                el.style.width = w + 'px'; el.style.height = h + 'px';
+                if (!pill) el.style.fontSize = (w * 0.42) + 'px';
+                gameDiv.appendChild(el);
+                lista.push(() => posiciona(el, retrato() ? pr : pl, w, h));
+
+                let ativo = false, turboOn = false;
+                const aplica = (s) => {
+                    if (acao === 'turbo') { if (s) { turboOn = !turboOn; el.classList.toggle('ativo', turboOn); conexao.send({ t: 1 }); } return; }
+                    if (Array.isArray(acao)) acao.forEach(i => enviar(i, s));
+                    else conexao.send({ x: acao.ax[0], v: s ? acao.ax[1] : 0 });
+                };
+                el.addEventListener('pointerdown', (e) => { e.preventDefault(); if (ativo) return; ativo = true; el.classList.add('press'); try { el.setPointerCapture(e.pointerId); } catch (x) {} aplica(1); });
+                const solta = (e) => { if (!ativo) return; ativo = false; el.classList.remove('press'); aplica(0); };
+                el.addEventListener('pointerup', solta);
+                el.addEventListener('pointercancel', solta);
+                el.addEventListener('lostpointercapture', solta);
+            });
+
+            const reposiciona = () => lista.forEach(f => f());
+            window.addEventListener('resize', reposiciona);
+            window.addEventListener('orientationchange', () => setTimeout(reposiciona, 150));
+            reposiciona();
+            return true;
         }
 
         function injetarLayoutTatico(coreName) {
