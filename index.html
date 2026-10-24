@@ -354,6 +354,12 @@
                     gameDiv.style.width = '100vw';
                     gameDiv.style.height = '100vh';
                     gameDiv.classList.add('p2-tela');
+                    // tela cheia no primeiro toque (o navegador só permite depois de um toque do usuário)
+                    const entrarTelaCheia = () => {
+                        try { const el = document.documentElement; if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); } catch (e) {}
+                    };
+                    document.addEventListener('pointerdown', entrarTelaCheia, { once: true });
+                    document.addEventListener('touchend', entrarTelaCheia, { once: true });
                     if (montarP2Completo(gameDiv, conexao, sisEmu)) return;
                     
                     let isArcade = (sys === 'fbneo' || sys === 'mame2003');
@@ -817,7 +823,7 @@
                 const fr = [74, 79], fl = [86, 56];
                 const di = (c) => diamante(c);
                 const dr = di(fr), dl = di(fl);
-                return { pad8: [P.pad, P.padL, 140], itens: [
+                return { pad8: [[22, 83], [14, 66], 140], itens: [
                     ['x', 'X', 'c', [2], dr[0], dl[0], F],
                     ['y', 'Y', 'c', [3], dr[1], dl[1], F],
                     ['a', 'A', 'c', [0], dr[2], dl[2], F],
@@ -868,7 +874,7 @@
                 return { pad8: [P.pad, P.padL, 140], itens };
             }
             if (core === 'atari2600') {
-                return { pad8: [P.pad, P.padL, 140], itens: [
+                return { pad8: [[22, 81], [14, 60], 140], itens: [
                     ['fogo', '', 'c', [1], [78, 79, 0, 0], [88, 60, 0, 0], 66],
                     ['sel', 'Select', 'p', [8], [24, 63, 0, 0], [30, 12, 0, 0], 0, 'p2c-borda'],
                     ['res', 'Resetar', 'p', [9], [76, 63, 0, 0], [70, 12, 0, 0], 0]
