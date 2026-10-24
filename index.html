@@ -33,6 +33,10 @@
         .p2-sys-btn { width: 90px; height: 40px; border-radius: 20px; font-size: 14px; }
         .p2-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
         #joystick-zone { position: absolute; width: 140px; height: 140px; z-index: 9999; }
+        .p2-btn-combo { background: rgba(203,168,0,0.55); border-color: rgba(255,230,120,0.9); font-size: 15px; }
+        /* Botão especial do P1 (A+B) - arcade */
+        #p1-btn-ab { position: fixed; width: 60px; height: 60px; border-radius: 50%; background: rgba(203,168,0,0.55); border: 2px solid rgba(255,230,120,0.9); color: #fff; display: none; justify-content: center; align-items: center; font-weight: bold; font-family: Arial, sans-serif; font-size: 14px; z-index: 9999; user-select: none; touch-action: none; }
+        #p1-btn-ab.ativo { background: rgba(255,255,255,0.4); transform: scale(0.95); }
 
         @media screen and (orientation: portrait) {
             #joystick-zone { bottom: 15%; left: 10%; }
@@ -40,6 +44,7 @@
             #p2-btn-a { bottom: 25%; right: 15%; }
             #p2-btn-select { top: 8%; left: 10%; }
             #p2-btn-start { top: 8%; right: 10%; }
+            #p2-btn-ab { bottom: 36%; right: 25%; }
         }
 
         @media screen and (orientation: landscape) {
@@ -48,6 +53,7 @@
             #p2-btn-a { bottom: 45%; right: 8%; }
             #p2-btn-select { top: 8%; left: 25%; transform: translateX(-50%); }
             #p2-btn-start { top: 8%; right: 25%; transform: translateX(50%); }
+            #p2-btn-ab { bottom: 40%; right: 20%; }
         }
     </style>
 </head>
@@ -113,12 +119,15 @@
                     let btnSelectEstilo = isArcade ? 'background:#cba800; color:#000; border:none;' : '';
                     let btnSelectTexto = isArcade ? 'FICHA' : 'SELECT';
 
+                    let btnEspecial = isArcade ? '<div id="p2-btn-ab" class="p2-btn p2-btn-combo" data-pad="0,1">A+B</div>' : '';
+
                     gameDiv.innerHTML = `
                         <div id="joystick-zone"></div>
                         <div id="p2-btn-b" class="p2-btn" data-pad="1">B</div>
                         <div id="p2-btn-a" class="p2-btn" data-pad="0">A</div>
                         <div id="p2-btn-select" class="p2-btn p2-sys-btn" data-pad="8" style="${btnSelectEstilo}">${btnSelectTexto}</div>
                         <div id="p2-btn-start" class="p2-btn p2-sys-btn" data-pad="9">START</div>
+                        ${btnEspecial}
                     `;
 
                     const joystick = nipplejs.create({
@@ -161,16 +170,21 @@
 
                     const botoes = gameDiv.querySelectorAll('.p2-btn');
                     botoes.forEach(btn => {
-                        const padIndex = btn.getAttribute('data-pad');
-                        if (padIndex !== null) {
+                        const attr = btn.getAttribute('data-pad');
+                        if (attr !== null) {
+                            // data-pad pode ter vários botões separados por vírgula (ex.: "0,1" = A+B)
+                            const padIndexes = attr.split(',').map(n => parseInt(n));
+                            const enviar = (estado) => padIndexes.forEach(i => conexao.send({ b: i, s: estado }));
                             btn.addEventListener('touchstart', (e) => { 
                                 e.preventDefault(); 
-                                conexao.send({ b: parseInt(padIndex), s: 1 }); 
+                                enviar(1); 
                             }, {passive: false});
-                            btn.addEventListener('touchend', (e) => { 
+                            const soltar = (e) => { 
                                 e.preventDefault(); 
-                                conexao.send({ b: parseInt(padIndex), s: 0 }); 
-                            }, {passive: false});
+                                enviar(0); 
+                            };
+                            btn.addEventListener('touchend', soltar, {passive: false});
+                            btn.addEventListener('touchcancel', soltar, {passive: false});
                         }
                     });
                 });
@@ -293,6 +307,44 @@
             return true;
         }
 
+        // =====================================
+        // P1: botão especial A+B (arcade). Aperta os mesmos dois botões que o A e o B
+        // da tela (entradas 0 e 8 do emulador) ao mesmo tempo.
+        // =====================================
+        function garantirBotaoEspecialP1() {
+            let btn = document.getElementById('p1-btn-ab');
+            if (btn) return btn;
+            btn = document.createElement('div');
+            btn.id = 'p1-btn-ab';
+            btn.innerText = 'A+B';
+            document.body.appendChild(btn);
+            const apertar = (estado) => {
+                const gm = window.EJS_emulator && window.EJS_emulator.gameManager;
+                if (!gm) return;
+                gm.simulateInput(0, 0, estado);
+                gm.simulateInput(0, 8, estado);
+            };
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); btn.classList.add('ativo'); apertar(1); }, {passive: false});
+            const soltar = (e) => { e.preventDefault(); btn.classList.remove('ativo'); apertar(0); };
+            btn.addEventListener('touchend', soltar, {passive: false});
+            btn.addEventListener('touchcancel', soltar, {passive: false});
+            return btn;
+        }
+
+        function posicionarBotaoEspecialP1() {
+            const btn = garantirBotaoEspecialP1();
+            const a = document.querySelector('#game .b_a');
+            const b = document.querySelector('#game .b_b');
+            if (!a || !b) { btn.style.display = 'none'; return; }
+            const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+            if (ra.width === 0 || rb.width === 0) { btn.style.display = 'none'; return; }
+            const topo = Math.min(ra.top, rb.top);
+            const centroX = (ra.left + ra.width / 2 + rb.left + rb.width / 2) / 2;
+            btn.style.display = 'flex';
+            btn.style.left = (centroX - 30) + 'px';
+            btn.style.top = Math.max(0, topo - 70) + 'px';
+        }
+
         function resetarBotoesP2() {
             if (!window.fakeP2) return;
             window.fakeP2.buttons.forEach(b => { b.pressed = false; b.value = 0; });
@@ -379,6 +431,7 @@
                 }
 
                 if (coreName === 'mame2003' || coreName === 'fbneo') {
+                    posicionarBotaoEspecialP1();
                     if (btnX) btnX.style.setProperty('display', 'none', 'important');
                     if (btnY) btnY.style.setProperty('display', 'none', 'important');
 
