@@ -180,9 +180,11 @@
             // =====================================
             // HOST: COMPUTADOR OU CELULAR P1
             // =====================================
-            const idGamepad = 'Xbox 360 Controller (XInput STANDARD GAMEPAD)';
-            window.fakeP1 = { id: idGamepad, index: 0, connected: true, timestamp: Date.now(), mapping: 'standard', axes: [0,0,0,0], buttons: Array(17).fill().map(()=>({pressed:false, value:0})) };
-            window.fakeP2 = { id: idGamepad, index: 1, connected: true, timestamp: Date.now(), mapping: 'standard', axes: [0,0,0,0], buttons: Array(17).fill().map(()=>({pressed:false, value:0})) };
+            const idGamepad = 'Standard gamepad';
+            const botoesBase = () => Array(17).fill().map(() => ({ pressed: false, touched: false, value: 0 }));
+            
+            window.fakeP1 = { id: idGamepad, index: 0, connected: true, timestamp: Date.now(), mapping: 'standard', axes: [0,0,0,0], buttons: botoesBase() };
+            window.fakeP2 = { id: idGamepad, index: 1, connected: true, timestamp: Date.now(), mapping: 'standard', axes: [0,0,0,0], buttons: botoesBase() };
             
             const origGetGamepads = navigator.getGamepads.bind(navigator);
             navigator.getGamepads = function() {
@@ -214,7 +216,6 @@
                     document.getElementById('loading-overlay').style.display = 'none';
                     injetarLayoutTatico(sys); 
                     
-                    // Força o disparo do evento de conexão para o emulador auto-mapear o P2 no Mobile
                     const event = new Event('gamepadconnected');
                     event.gamepad = window.fakeP2;
                     window.dispatchEvent(event);
