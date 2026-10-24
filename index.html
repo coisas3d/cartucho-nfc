@@ -88,6 +88,48 @@
         #status-msg h1 { margin: 22px 0 8px; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.04em; }
         #status-msg p { margin: 0; color: var(--cinza); font-size: 0.95rem; line-height: 1.5; }
 
+        /* ===== BOTÃO CONVIDAR P2, AVISO E JANELA DO QR CODE (jogo em andamento) ===== */
+        #btn-convidar { display: none; position: absolute; top: 10px; right: 10px; z-index: 1000; width: 90px; height: 30px; line-height: 28px; padding: 0; text-align: center; box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; color: var(--branco); cursor: pointer;
+            background: rgba(10,10,10,0.72); border: 1px solid var(--laranja); border-radius: 999px; box-shadow: 0 0 14px rgba(255,106,0,0.35);
+            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); -webkit-tap-highlight-color: transparent; }
+        #btn-convidar::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--laranja); box-shadow: 0 0 8px var(--laranja); vertical-align: 1px; }
+        #btn-convidar:active { background: var(--laranja); color: var(--preto); transform: scale(0.96); }
+        #btn-convidar:active::before { background: var(--preto); box-shadow: none; }
+
+        #p1-toast { display: none; position: absolute; top: 18px; left: 50%; transform: translateX(-50%); z-index: 100000; white-space: nowrap;
+            padding: 11px 22px 11px 18px; border-radius: 999px; background: rgba(10,10,10,0.92); border: 1px solid var(--laranja); color: var(--branco);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+            box-shadow: 0 0 24px rgba(255,106,0,0.45); animation: aviso-entra 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+        #p1-toast::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 10px; border-radius: 50%; background: var(--laranja); box-shadow: 0 0 10px var(--laranja); }
+        @keyframes aviso-entra { from { opacity: 0; transform: translate(-50%, -16px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+        #tela-convite { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; box-sizing: border-box; width: min(340px, 90vw); max-height: 94vh; overflow-y: auto;
+            padding: 26px 24px 22px; text-align: center; border-radius: 24px; color: var(--branco);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: radial-gradient(ellipse at 50% 0%, rgba(255,106,0,0.2) 0%, rgba(255,106,0,0) 65%), #0b0b0b;
+            border: 1px solid rgba(255,106,0,0.7); box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 20px 60px rgba(0,0,0,0.7), 0 0 50px rgba(255,106,0,0.3); }
+        #tela-convite h2 { margin: 0; font-size: 1.25rem; font-weight: 800; letter-spacing: 0.02em; color: var(--branco); }
+        #tela-convite p { margin: 8px 0 0; font-size: 0.88rem; line-height: 1.45; color: var(--cinza); }
+        #meu-qrcode { display: flex; justify-content: center; align-items: center; width: 208px; height: 208px; margin: 18px auto; padding: 0; box-sizing: border-box; background: #fff; border-radius: 16px; overflow: hidden;
+            box-shadow: 0 0 30px rgba(255,106,0,0.35); }
+        #meu-qrcode img, #meu-qrcode canvas { max-width: 180px; max-height: 180px; }
+        .convite-status { display: inline-flex; align-items: center; gap: 9px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--branco); }
+        .convite-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--laranja); animation: convite-pisca 1.2s ease-in-out infinite; }
+        @keyframes convite-pisca { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; box-shadow: 0 0 10px var(--laranja); } }
+        .convite-fechar { display: block; width: 100%; margin-top: 18px; padding: 13px 0; border: 1px solid rgba(255,255,255,0.28); border-radius: 999px; background: transparent; color: var(--branco);
+            font-family: inherit; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .convite-fechar:active { background: var(--laranja); border-color: var(--laranja); color: var(--preto); }
+
+        @media screen and (orientation: landscape) and (max-height: 560px) {
+            #tela-convite { width: min(600px, 92vw); padding: 20px 26px; }
+            .convite-corpo { display: grid; grid-template-columns: 208px 1fr; grid-template-areas: "qr topo" "qr base"; column-gap: 28px; align-items: center; text-align: left; }
+            .convite-topo { grid-area: topo; align-self: end; }
+            #meu-qrcode { grid-area: qr; margin: 0; }
+            .convite-base { grid-area: base; align-self: start; margin-top: 16px; }
+            .convite-fechar { margin-top: 14px; }
+        }
+
         /* REGRAS DE LAYOUT DO JOGADOR 2 */
         .p2-btn { position: absolute; width: 65px; height: 65px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: Arial, sans-serif; z-index: 9999; user-select: none; backdrop-filter: blur(2px); font-size: 18px; }
         .p2-sys-btn { width: 90px; height: 40px; border-radius: 20px; font-size: 14px; }
@@ -119,9 +161,7 @@
 </head>
 <body>
     
-    <div id="p1-toast" style="display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #00ff00; color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-family: monospace; z-index: 100000; box-shadow: 0 0 10px #00ff00;">
-        JOGADOR 2 CONECTADO!
-    </div>
+    <div id="p1-toast">Jogador 2 conectado</div>
 
     <div id="power-screen">
         <div class="ps-content">
@@ -155,13 +195,20 @@
         </div>
     </div>
 
-    <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; width: 90px; top: 10px; right: 10px; z-index: 1000; padding: 5px 0; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 11px;">Convidar P2</button>
+    <button id="btn-convidar" type="button" onclick="mostrarConvite()">Convidar P2</button>
     
-    <div id="tela-convite" style="display: none; position: absolute; top: 15%; left: 50%; transform: translate(-50%, 0); background: white; padding: 20px; text-align: center; z-index: 9999; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);">
-        <h2 style="color: black; margin-top: 0;">Convide o Jogador 2</h2>
-        <p style="color: black;">Peça para seu amigo escanear com a câmera</p>
-        <div id="meu-qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
-        <button onclick="document.getElementById('tela-convite').style.display='none'" style="padding: 10px; font-size: 16px; cursor: pointer;">Fechar</button>
+    <div id="tela-convite">
+        <div class="convite-corpo">
+            <div class="convite-topo">
+                <h2>Convide o Jogador 2</h2>
+                <p>Peça para seu amigo escanear o QR code com a câmera do celular.</p>
+            </div>
+            <div id="meu-qrcode"></div>
+            <div class="convite-base">
+                <div class="convite-status">Aguardando jogador 2</div>
+                <button type="button" class="convite-fechar" onclick="document.getElementById('tela-convite').style.display='none'">Fechar</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
