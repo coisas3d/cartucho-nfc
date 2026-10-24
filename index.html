@@ -8,7 +8,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Sistema">
     
-    <title>Sistema de Execução</title>
+    <meta name="theme-color" content="#050505">
+    <link rel="icon" type="image/png" href="c3dlogo.png">
+    <title>Coisas 3D Personalizados</title>
     
     <style>
         body, html { 
@@ -17,16 +19,74 @@
         }
         #game-container { width: 100vw; height: 100vh; position: relative; z-index: 1; }
         
-        #power-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
-        .cart-status { color: #00ff00; font-size: 1.2rem; margin-bottom: 40px; text-shadow: 0 0 10px #00ff00; text-transform: uppercase; }
-        #power-btn { background-color: transparent; border: 3px solid #ff0000; color: #ff0000; padding: 15px 40px; font-size: 1.8rem; font-weight: bold; font-family: inherit; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: all 0.1s ease-in-out; }
-        #power-btn:active { background-color: #ff0000; color: #000; transform: scale(0.95); }
-        
-        #loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        .loader-text { color: #fff; font-size: 1.5rem; font-weight: bold; letter-spacing: 3px; animation: pulse 1.2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.2; } 50% { opacity: 1; text-shadow: 0 0 15px #fff; } 100% { opacity: 0.2; } }
+        :root { --laranja: #ff6a00; --laranja-claro: #ff8f3a; --preto: #0a0a0a; --branco: #ffffff; --cinza: #9a9a9a; }
 
-        #status-msg { display: none; color: #fff; text-align: center; margin-top: 40vh; position: relative; z-index: 10; }
+        /* ===== TELA INICIAL ===== */
+        #power-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; overflow: hidden; display: flex; justify-content: center; align-items: center;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: radial-gradient(ellipse at 50% 30%, rgba(255,106,0,0.24) 0%, rgba(255,106,0,0) 60%), linear-gradient(180deg, #0f0f0f 0%, #050505 100%); }
+        #power-screen::before { content: ''; position: absolute; left: -60%; right: -60%; bottom: -8%; height: 46%; opacity: 0.32; pointer-events: none;
+            background: linear-gradient(rgba(255,106,0,0.55) 1px, transparent 1px) 0 0 / 100% 46px, linear-gradient(90deg, rgba(255,106,0,0.55) 1px, transparent 1px) 0 0 / 46px 100%;
+            transform: perspective(360px) rotateX(64deg); transform-origin: top;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 45%); mask-image: linear-gradient(to bottom, transparent 0%, #000 45%);
+            animation: grade-move 2.4s linear infinite; }
+        @keyframes grade-move { from { background-position: 0 0, 0 0; } to { background-position: 0 46px, 0 0; } }
+
+        .ps-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px; max-width: 520px; }
+        .ps-logo { width: clamp(130px, 36vmin, 230px); height: auto; aspect-ratio: 1 / 1; border-radius: 50%; display: block;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 0 36px rgba(255,106,0,0.5), 0 0 110px rgba(255,106,0,0.28);
+            animation: logo-entra 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both, logo-brilho 3.2s ease-in-out 0.9s infinite; }
+        @keyframes logo-entra { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes logo-brilho { 0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 0 36px rgba(255,106,0,0.5), 0 0 110px rgba(255,106,0,0.28); }
+                                 50% { box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 0 52px rgba(255,106,0,0.8), 0 0 140px rgba(255,106,0,0.4); } }
+
+        .ps-info { display: flex; flex-direction: column; align-items: center; animation: info-entra 0.8s ease 0.25s both; }
+        @keyframes info-entra { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .ps-sys { margin-top: 26px; display: inline-flex; align-items: center; gap: 9px; padding: 7px 18px; border: 1px solid rgba(255,106,0,0.65); border-radius: 999px; background: rgba(255,106,0,0.09);
+            color: var(--branco); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; }
+        .ps-sys::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--laranja); box-shadow: 0 0 10px var(--laranja); }
+        .ps-title { margin-top: 16px; color: var(--branco); font-size: clamp(1.25rem, 5vmin, 1.7rem); font-weight: 800; letter-spacing: 0.03em; }
+        .ps-sub { margin-top: 6px; color: var(--cinza); font-size: clamp(0.85rem, 3vmin, 1rem); }
+
+        #power-btn { margin-top: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; border: none; border-radius: 999px; cursor: pointer;
+            padding: 18px 40px; min-width: 250px; font-family: inherit; font-size: clamp(1rem, 4vmin, 1.2rem); font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--preto); background: linear-gradient(180deg, var(--laranja-claro) 0%, var(--laranja) 100%);
+            box-shadow: 0 10px 30px rgba(255,106,0,0.45), inset 0 1px 0 rgba(255,255,255,0.45);
+            -webkit-tap-highlight-color: transparent; transition: transform 0.12s ease, box-shadow 0.12s ease; animation: botao-pulsa 2.2s ease-in-out infinite; }
+        #power-btn svg { width: 1.15em; height: 1.15em; flex: none; }
+        #power-btn:active { transform: scale(0.96); box-shadow: 0 4px 14px rgba(255,106,0,0.5), inset 0 1px 0 rgba(255,255,255,0.35); }
+        @keyframes botao-pulsa { 0%, 100% { box-shadow: 0 10px 30px rgba(255,106,0,0.4), inset 0 1px 0 rgba(255,255,255,0.45); }
+                                 50% { box-shadow: 0 10px 44px rgba(255,106,0,0.75), inset 0 1px 0 rgba(255,255,255,0.45); } }
+        .ps-hint { margin-top: 22px; max-width: 290px; color: #7c7c7c; font-size: 0.78rem; line-height: 1.45; }
+
+        @media screen and (orientation: landscape) and (max-height: 560px) {
+            .ps-content { flex-direction: row; gap: clamp(28px, 7vw, 70px); max-width: 860px; text-align: left; }
+            .ps-logo { width: clamp(120px, 52vh, 230px); }
+            .ps-info { align-items: flex-start; }
+            .ps-sys { margin-top: 0; }
+            #power-btn { margin-top: 20px; padding: 14px 32px; }
+            .ps-hint { margin-top: 14px; }
+        }
+
+        /* ===== TELA DE CARREGAMENTO ===== */
+        #loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; gap: 26px; z-index: 9999;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: radial-gradient(ellipse at 50% 40%, rgba(255,106,0,0.16) 0%, rgba(255,106,0,0) 60%), #050505; }
+        .load-logo { width: clamp(90px, 24vmin, 150px); height: auto; aspect-ratio: 1 / 1; border-radius: 50%; animation: carrega-brilho 1.6s ease-in-out infinite; }
+        @keyframes carrega-brilho { 0%, 100% { box-shadow: 0 0 22px rgba(255,106,0,0.35); transform: scale(0.97); } 50% { box-shadow: 0 0 55px rgba(255,106,0,0.8); transform: scale(1); } }
+        .loader-text { color: var(--branco); font-size: 0.95rem; font-weight: 800; letter-spacing: 0.32em; text-transform: uppercase; text-align: center; padding: 0 16px; }
+        .load-bar { position: relative; width: min(230px, 62vw); height: 4px; border-radius: 4px; background: rgba(255,255,255,0.12); overflow: hidden; }
+        .load-bar::after { content: ''; position: absolute; top: 0; left: -45%; width: 45%; height: 100%; border-radius: 4px; background: linear-gradient(90deg, transparent, var(--laranja), transparent); animation: carrega-barra 1.2s ease-in-out infinite; }
+        @keyframes carrega-barra { from { left: -45%; } to { left: 100%; } }
+
+        /* ===== CARTUCHO NÃO RECONHECIDO ===== */
+        #status-msg { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; text-align: center; color: var(--branco);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: radial-gradient(ellipse at 50% 35%, rgba(255,106,0,0.16) 0%, rgba(255,106,0,0) 60%), #050505; }
+        #status-msg .err-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(340px, 86vw); }
+        #status-msg img { width: 110px; height: 110px; border-radius: 50%; opacity: 0.9; box-shadow: 0 0 30px rgba(255,106,0,0.35); }
+        #status-msg h1 { margin: 22px 0 8px; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.04em; }
+        #status-msg p { margin: 0; color: var(--cinza); font-size: 0.95rem; line-height: 1.5; }
 
         /* REGRAS DE LAYOUT DO JOGADOR 2 */
         .p2-btn { position: absolute; width: 65px; height: 65px; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: Arial, sans-serif; z-index: 9999; user-select: none; backdrop-filter: blur(2px); font-size: 18px; }
@@ -64,17 +124,36 @@
     </div>
 
     <div id="power-screen">
-        <div class="cart-status">Conexão Estabelecida</div>
-        <button id="power-btn">POWER ON</button>
+        <div class="ps-content">
+            <img class="ps-logo" src="c3dlogo.png" alt="Coisas 3D Personalizados" width="230" height="230" decoding="async">
+            <div class="ps-info">
+                <div class="ps-sys" id="ps-sys">Cartucho</div>
+                <div class="ps-title">Cartucho reconhecido</div>
+                <div class="ps-sub">Tudo pronto para jogar</div>
+                <button id="power-btn" type="button">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.9-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg>
+                    <span>Toque para jogar</span>
+                </button>
+                <div class="ps-hint">Quer jogar em dupla? Depois de iniciar, toque em “Convidar P2”.</div>
+            </div>
+        </div>
     </div>
 
     <div id="loading-overlay">
-        <div class="loader-text" id="loading-text-msg">DECODIFICANDO DADOS...</div>
+        <img class="load-logo" src="c3dlogo.png" alt="" width="150" height="150" decoding="async">
+        <div class="loader-text" id="loading-text-msg">CARREGANDO JOGO...</div>
+        <div class="load-bar"></div>
     </div>
 
     <div id="game-container"><div id="game"></div></div>
     
-    <div id="status-msg">Acesso Negado ou Dados Ausentes.</div>
+    <div id="status-msg">
+        <div class="err-box">
+            <img src="c3dlogo.png" alt="Coisas 3D Personalizados" width="110" height="110">
+            <h1>Cartucho não reconhecido</h1>
+            <p>Não foi possível ler os dados deste cartucho. Aproxime-o do leitor novamente.</p>
+        </div>
+    </div>
 
     <button id="btn-convidar" onclick="mostrarConvite()" style="display: none; position: absolute; width: 90px; top: 10px; right: 10px; z-index: 1000; padding: 5px 0; background: #ff4747; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 11px;">Convidar P2</button>
     
@@ -94,6 +173,11 @@
         const sys = urlParams.get('c');
         const dataId = urlParams.get('id');
         const salaDoAmigo = urlParams.get('sala');
+
+        // Nome amigável do sistema, mostrado no selo da tela inicial
+        const NOMES_SISTEMA = { fbneo: 'Arcade', mame2003: 'Arcade', snes: 'Super Nintendo', segaMD: 'Mega Drive', gb: 'Game Boy', gbc: 'Game Boy Color', gba: 'Game Boy Advance', n64: 'Nintendo 64', nds: 'Nintendo DS', atari2600: 'Atari 2600' };
+        const selo = document.getElementById('ps-sys');
+        if (selo) selo.textContent = NOMES_SISTEMA[sys] || 'Cartucho';
         let peerHost;
 
         if (salaDoAmigo) {
