@@ -1,0 +1,115 @@
+CAPAS DOS JOGOS
+
+Coloque aqui a imagem de cada jogo. O site mostra a capa na tela inicial.
+
+Como nomear: capas/<console>/<nome-do-arquivo-do-jogo-sem-extensao>.jpg
+Exemplo: o jogo roms/snes/topgear.sfc usa a capa capas/snes/topgear.jpg
+Aceita .jpg, .png ou .webp. Tamanho sugerido: uns 300 x 420 pixels (em pe) e menos de 100 KB.
+Jogo sem imagem aparece so com o nome. Nao precisa criar tudo de uma vez.
+
+Nomes de arquivo esperados (de acordo com o jogos.json):
+
+[atari2600]
+  Asteroids.jpg  ->  Asteroids
+  Enduro.jpg  ->  Enduro
+  HERO.jpg  ->  H.E.R.O.
+  JrPacMan.jpg  ->  Jr. Pac-Man
+  MsPacMan.jpg  ->  Ms. Pac-Man
+  Pitfall.jpg  ->  Pitfall!
+  RiverRaid.jpg  ->  River Raid
+  SpaceInvaders.jpg  ->  Space Invaders
+
+[fbneo]
+  dino.jpg  ->  Cadillacs and Dinosaurs
+  mslug.jpg  ->  Metal Slug
+  mslugx.jpg  ->  Metal Slug X
+
+[gb]
+  pkmblue.jpg  ->  Pokémon Blue
+  pkmcristal.jpg  ->  Pokémon Crystal
+  pkmgold.jpg  ->  Pokémon Gold
+  pkmpinball.jpg  ->  Pokémon Pinball
+  pkmred.jpg  ->  Pokémon Red
+  pkmsilver.jpg  ->  Pokémon Silver
+  pkmtcg.jpg  ->  Pokémon Trading Card Game
+  pkmyellow.jpg  ->  Pokémon Yellow
+
+[gba]
+  dbaadventure.jpg  ->  Dragon Ball Advanced Adventure
+  mariotennis.jpg  ->  Mario Tennis: Power Tour
+  pkmemerald.jpg  ->  Pokémon Emerald
+  pkmfr.jpg  ->  Pokémon FireRed
+  pkmlg.jpg  ->  Pokémon LeafGreen
+  pkmrubi.jpg  ->  Pokémon Ruby
+  pkmsafira.jpg  ->  Pokémon Sapphire
+
+[gbc]
+  PokemonPinball.jpg  ->  Pokémon Pinball
+  PokemonYellowBR.jpg  ->  Pokémon Yellow
+
+[mame2003]
+  dino.jpg  ->  Cadillacs and Dinosaurs
+
+[n64]
+  007.jpg  ->  007
+  doom64.jpg  ->  Doom 64
+  mario64.jpg  ->  Super Mario 64
+  mariokart64.jpg  ->  Mario Kart 64
+  mk64.jpg  ->  Mario Kart 64
+  pkmstadium.jpg  ->  Pokémon Stadium
+  starfox64.jpg  ->  Star Fox 64
+
+[segaMD]
+  Aladdin.jpg  ->  Aladdin
+  AlteredBeast.jpg  ->  Altered Beast
+  GoldenAxe.jpg  ->  Golden Axe
+  KidChameleon.jpg  ->  Kid Chameleon
+  SonictheHedgehog.jpg  ->  Sonic the Hedgehog
+  StreetsofRage2.jpg  ->  Streets of Rage 2
+
+[snes]
+  Aladdin.jpg  ->  Aladdin
+  Bomberman5.jpg  ->  Super Bomberman 5
+  ChronoTrigger.jpg  ->  Chrono Trigger
+  dkcountry.jpg  ->  Donkey Kong Country
+  dkcountry2.jpg  ->  Donkey Kong Country 2
+  DonkeyKongCountry.jpg  ->  Donkey Kong Country
+  DonkeyKongCountry2.jpg  ->  Donkey Kong Country 2
+  DonkeyKongCountry3.jpg  ->  Donkey Kong Country 3
+  Doom.jpg  ->  Doom
+  FinalFight3.jpg  ->  Final Fight 3
+  FZero.jpg  ->  F-Zero
+  GoofTroop.jpg  ->  Goof Troop
+  ISSD.jpg  ->  International Superstar Soccer Deluxe
+  KillerInstinct.jpg  ->  Killer Instinct
+  mariokart.jpg  ->  Super Mario Kart
+  MarioPaint.jpg  ->  Mario Paint
+  marioworld.jpg  ->  Super Mario World
+  MarvelSuperHeroesWarGems.jpg  ->  Marvel Super Heroes: War of the Gems
+  MegaMan7.jpg  ->  Mega Man 7
+  MegamanBass.jpg  ->  Mega Man & Bass
+  MegaManX.jpg  ->  Mega Man X
+  MegaManX2.jpg  ->  Mega Man X2
+  MegaManX3.jpg  ->  Mega Man X3
+  PowerRangersTheMovie.jpg  ->  Mighty Morphin Power Rangers: The Movie
+  RockNRollRacing.jpg  ->  Rock n' Roll Racing
+  RockRollRacing.jpg  ->  Rock n' Roll Racing
+  sf2.jpg  ->  Street Fighter II
+  SMWPTBR.jpg  ->  Super Mario World
+  SonicTheHedgehog.jpg  ->  Sonic the Hedgehog
+  sonicwings.jpg  ->  Sonic Wings
+  StarFox.jpg  ->  Star Fox
+  StreetFighterAlpha2.jpg  ->  Street Fighter Alpha 2
+  SunsetRiders.jpg  ->  Sunset Riders
+  SuperBomberman4.jpg  ->  Super Bomberman 4
+  SuperMarioRPG.jpg  ->  Super Mario RPG
+  TheLegendOfZeldaLinkToThePast.jpg  ->  The Legend of Zelda: A Link to the Past
+  TheLionKing.jpg  ->  The Lion King
+  TheMagicalQuestMickeyMouse.jpg  ->  The Magical Quest Starring Mickey Mouse
+  TMNTurtles4TurtlesInTime.jpg  ->  Teenage Mutant Ninja Turtles IV: Turtles in Time
+  topgear.jpg  ->  Top Gear
+  UltimateMortalKombat3.jpg  ->  Ultimate Mortal Kombat 3
+  UMK3.jpg  ->  Ultimate Mortal Kombat 3
+  WildGuns.jpg  ->  Wild Guns
+  XMenMutantApocalypse.jpg  ->  X-Men: Mutant Apocalypse
+  zeldalinkpast.jpg  ->  The Legend of Zelda: A Link to the Past
