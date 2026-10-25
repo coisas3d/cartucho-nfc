@@ -463,5 +463,15 @@
   "nome": "The Legend of Zelda: A Link to the Past",
   "arq": "zeldalinkpast.sfc",
   "tam": 1048576
+ },
+ "gba/medabotsmetabee": {
+  "nome": "Medabots AX: Metabee",
+  "arq": "medabotsmetabee.gba",
+  "tam": 8388608
+ },
+ "gba/medabotsrokusho": {
+  "nome": "Medabots AX: Rokusho",
+  "arq": "medabotsrokusho.gba",
+  "tam": 8388608
  }
 }
