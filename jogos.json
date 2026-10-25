@@ -1,264 +1,467 @@
 {
- "_leia-me": "Chave = pasta/nome-do-arquivo-sem-extensao. Campos: nome (obrigatorio) e capa (opcional, caminho de imagem). Se nao houver capa, o site procura capas/<pasta>/<nome>.jpg, .png ou .webp",
+ "_leia-me": "Chave = pasta/nome-do-arquivo-sem-extensao. nome: titulo mostrado na tela inicial. arq: nome real do arquivo. tam: tamanho em bytes. l/b: opcoes de layout e BIOS para jogos de arcade. capa (opcional): caminho de imagem; se nao houver, o site procura capas/<pasta>/<nome>.jpg, .png ou .webp",
  "atari2600/Asteroids": {
-  "nome": "Asteroids"
+  "nome": "Asteroids",
+  "arq": "Asteroids.zip",
+  "tam": 5568
  },
  "atari2600/Enduro": {
-  "nome": "Enduro"
+  "nome": "Enduro",
+  "arq": "Enduro.zip",
+  "tam": 3357
  },
  "atari2600/HERO": {
-  "nome": "H.E.R.O."
+  "nome": "H.E.R.O.",
+  "arq": "HERO.zip",
+  "tam": 6264
  },
  "atari2600/JrPacMan": {
-  "nome": "Jr. Pac-Man"
+  "nome": "Jr. Pac-Man",
+  "arq": "JrPacMan.zip",
+  "tam": 9849
  },
  "atari2600/MsPacMan": {
-  "nome": "Ms. Pac-Man"
+  "nome": "Ms. Pac-Man",
+  "arq": "MsPacMan.zip",
+  "tam": 5536
  },
  "atari2600/Pitfall": {
-  "nome": "Pitfall!"
+  "nome": "Pitfall!",
+  "arq": "Pitfall.zip",
+  "tam": 3231
  },
  "atari2600/RiverRaid": {
-  "nome": "River Raid"
+  "nome": "River Raid",
+  "arq": "RiverRaid.zip",
+  "tam": 3252
  },
  "atari2600/SpaceInvaders": {
-  "nome": "Space Invaders"
+  "nome": "Space Invaders",
+  "arq": "SpaceInvaders.zip",
+  "tam": 3421
  },
  "fbneo/dino": {
-  "nome": "Cadillacs and Dinosaurs"
+  "nome": "Cadillacs and Dinosaurs",
+  "arq": "dino.zip",
+  "tam": 4116096
  },
  "fbneo/mslug": {
-  "nome": "Metal Slug"
+  "nome": "Metal Slug",
+  "arq": "mslug.zip",
+  "tam": 13165900,
+  "l": "3",
+  "b": "neogeo"
  },
  "fbneo/mslugx": {
-  "nome": "Metal Slug X"
+  "nome": "Metal Slug X",
+  "arq": "mslugx.zip",
+  "tam": 28900606,
+  "l": "3",
+  "b": "neogeo"
  },
- "mame2003/dino": {
-  "nome": "Cadillacs and Dinosaurs"
+ "gb/67ac275ff77417ceb7a4df070da9b4501c6f90eb": {
+  "nome": "(sem nome) 67ac275f",
+  "arq": "67ac275ff77417ceb7a4df070da9b4501c6f90eb.gb",
+  "tam": 1048576
  },
  "gb/pkmblue": {
-  "nome": "Pokémon Blue"
+  "nome": "Pokémon Blue",
+  "arq": "pkmblue.gb",
+  "tam": 1048576
  },
  "gb/pkmcristal": {
-  "nome": "Pokémon Crystal"
+  "nome": "Pokémon Crystal",
+  "arq": "pkmcristal.GBC",
+  "tam": 2097152
  },
  "gb/pkmgold": {
-  "nome": "Pokémon Gold"
+  "nome": "Pokémon Gold",
+  "arq": "pkmgold.gbc",
+  "tam": 2097152
  },
  "gb/pkmpinball": {
-  "nome": "Pokémon Pinball"
+  "nome": "Pokémon Pinball",
+  "arq": "pkmpinball.gbc",
+  "tam": 1048576
  },
  "gb/pkmred": {
-  "nome": "Pokémon Red"
+  "nome": "Pokémon Red",
+  "arq": "pkmred.gb",
+  "tam": 1048576
  },
  "gb/pkmsilver": {
-  "nome": "Pokémon Silver"
+  "nome": "Pokémon Silver",
+  "arq": "pkmsilver.gbc",
+  "tam": 2097152
  },
  "gb/pkmtcg": {
-  "nome": "Pokémon Trading Card Game"
+  "nome": "Pokémon Trading Card Game",
+  "arq": "pkmtcg.gbc",
+  "tam": 1048576
  },
  "gb/pkmyellow": {
-  "nome": "Pokémon Yellow"
- },
- "gbc/PokemonPinball": {
-  "nome": "Pokémon Pinball"
- },
- "gbc/PokemonYellowBR": {
-  "nome": "Pokémon Yellow"
+  "nome": "Pokémon Yellow",
+  "arq": "pkmyellow.gbc",
+  "tam": 1048576
  },
  "gba/dbaadventure": {
-  "nome": "Dragon Ball Advanced Adventure"
+  "nome": "Dragon Ball Advanced Adventure",
+  "arq": "dbaadventure.gba",
+  "tam": 16777216
  },
  "gba/mariotennis": {
-  "nome": "Mario Tennis: Power Tour"
+  "nome": "Mario Tennis: Power Tour",
+  "arq": "mariotennis.gba",
+  "tam": 16777216
  },
  "gba/pkmemerald": {
-  "nome": "Pokémon Emerald"
+  "nome": "Pokémon Emerald",
+  "arq": "pkmemerald.gba",
+  "tam": 16777216
  },
  "gba/pkmfr": {
-  "nome": "Pokémon FireRed"
+  "nome": "Pokémon FireRed",
+  "arq": "pkmfr.gba",
+  "tam": 16777216
  },
  "gba/pkmlg": {
-  "nome": "Pokémon LeafGreen"
+  "nome": "Pokémon LeafGreen",
+  "arq": "pkmlg.gba",
+  "tam": 16777216
  },
  "gba/pkmrubi": {
-  "nome": "Pokémon Ruby"
+  "nome": "Pokémon Ruby",
+  "arq": "pkmrubi.gba",
+  "tam": 16777216
  },
  "gba/pkmsafira": {
-  "nome": "Pokémon Sapphire"
+  "nome": "Pokémon Sapphire",
+  "arq": "pkmsafira.gba",
+  "tam": 16777216
+ },
+ "gbc/d223d223ee1471d4d60a30672422906b0bd26ac7": {
+  "nome": "(sem nome) d223d223",
+  "arq": "d223d223ee1471d4d60a30672422906b0bd26ac7.gbc",
+  "tam": 1048576
+ },
+ "gbc/d9dc9d3d9fabc403c27089c56d81bccc010da029": {
+  "nome": "(sem nome) d9dc9d3d",
+  "arq": "d9dc9d3d9fabc403c27089c56d81bccc010da029.gbc",
+  "tam": 1048576
+ },
+ "gbc/PokemonPinball": {
+  "nome": "Pokémon Pinball",
+  "arq": "PokemonPinball.gbc",
+  "tam": 1048576
+ },
+ "gbc/PokemonYellowBR": {
+  "nome": "Pokémon Yellow",
+  "arq": "PokemonYellowBR.gbc",
+  "tam": 1048576
+ },
+ "mame2003/dino": {
+  "nome": "Cadillacs and Dinosaurs",
+  "arq": "dino.zip",
+  "tam": 4114503
  },
  "n64/007": {
-  "nome": "007"
+  "nome": "007",
+  "arq": "007.zip",
+  "tam": 10728638
  },
  "n64/doom64": {
-  "nome": "Doom 64"
+  "nome": "Doom 64",
+  "arq": "doom64.zip",
+  "tam": 7311639
  },
  "n64/mario64": {
-  "nome": "Super Mario 64"
- },
- "n64/mariokart64": {
-  "nome": "Mario Kart 64"
+  "nome": "Super Mario 64",
+  "arq": "mario64.zip",
+  "tam": 7058113
  },
  "n64/mk64": {
-  "nome": "Mario Kart 64"
+  "nome": "Mario Kart 64",
+  "arq": "mk64.zip",
+  "tam": 8980122
  },
  "n64/pkmstadium": {
-  "nome": "Pokémon Stadium"
+  "nome": "Pokémon Stadium",
+  "arq": "pkmstadium.zip",
+  "tam": 27718772
  },
  "n64/starfox64": {
-  "nome": "Star Fox 64"
+  "nome": "Star Fox 64",
+  "arq": "starfox64.zip",
+  "tam": 10530622
  },
  "segaMD/Aladdin": {
-  "nome": "Aladdin"
+  "nome": "Aladdin",
+  "arq": "Aladdin.zip",
+  "tam": 1181098
  },
  "segaMD/AlteredBeast": {
-  "nome": "Altered Beast"
+  "nome": "Altered Beast",
+  "arq": "AlteredBeast.zip",
+  "tam": 337879
  },
  "segaMD/GoldenAxe": {
-  "nome": "Golden Axe"
+  "nome": "Golden Axe",
+  "arq": "GoldenAxe.zip",
+  "tam": 347846
  },
  "segaMD/KidChameleon": {
-  "nome": "Kid Chameleon"
+  "nome": "Kid Chameleon",
+  "arq": "KidChameleon.zip",
+  "tam": 794397
  },
  "segaMD/SonictheHedgehog": {
-  "nome": "Sonic the Hedgehog"
+  "nome": "Sonic the Hedgehog",
+  "arq": "SonictheHedgehog.zip",
+  "tam": 393744
  },
  "segaMD/StreetsofRage2": {
-  "nome": "Streets of Rage 2"
+  "nome": "Streets of Rage 2",
+  "arq": "StreetsofRage2.zip",
+  "tam": 1036184
+ },
+ "snes/7d37d1c7412cc7cf434faed0a5b8796aff09c0c0": {
+  "nome": "(sem nome) 7d37d1c7",
+  "arq": "7d37d1c7412cc7cf434faed0a5b8796aff09c0c0.smc",
+  "tam": 1573376
+ },
+ "snes/835bd3e3a9398a63322ec0901f5ca9d6aa01001e": {
+  "nome": "(sem nome) 835bd3e3",
+  "arq": "835bd3e3a9398a63322ec0901f5ca9d6aa01001e.smc",
+  "tam": 4194816
  },
  "snes/Aladdin": {
-  "nome": "Aladdin"
+  "nome": "Aladdin",
+  "arq": "Aladdin.sfc",
+  "tam": 1310720
  },
  "snes/Bomberman5": {
-  "nome": "Super Bomberman 5"
+  "nome": "Super Bomberman 5",
+  "arq": "Bomberman5.sfc",
+  "tam": 2097152
  },
  "snes/ChronoTrigger": {
-  "nome": "Chrono Trigger"
+  "nome": "Chrono Trigger",
+  "arq": "ChronoTrigger.smc",
+  "tam": 4194816
  },
  "snes/dkcountry": {
-  "nome": "Donkey Kong Country"
+  "nome": "Donkey Kong Country",
+  "arq": "dkcountry.smc",
+  "tam": 4194816
  },
  "snes/dkcountry2": {
-  "nome": "Donkey Kong Country 2"
+  "nome": "Donkey Kong Country 2",
+  "arq": "dkcountry2.smc",
+  "tam": 6291456
  },
  "snes/DonkeyKongCountry": {
-  "nome": "Donkey Kong Country"
+  "nome": "Donkey Kong Country",
+  "arq": "DonkeyKongCountry.smc",
+  "tam": 4194816
  },
  "snes/DonkeyKongCountry2": {
-  "nome": "Donkey Kong Country 2"
+  "nome": "Donkey Kong Country 2",
+  "arq": "DonkeyKongCountry2.smc",
+  "tam": 6291456
  },
  "snes/DonkeyKongCountry3": {
-  "nome": "Donkey Kong Country 3"
+  "nome": "Donkey Kong Country 3",
+  "arq": "DonkeyKongCountry3.sfc",
+  "tam": 4194304
  },
  "snes/Doom": {
-  "nome": "Doom"
+  "nome": "Doom",
+  "arq": "Doom.sfc",
+  "tam": 2097152
+ },
+ "snes/eeb28f26d6012cce01ad61fb39c896a506bb2f17": {
+  "nome": "(sem nome) eeb28f26",
+  "arq": "eeb28f26d6012cce01ad61fb39c896a506bb2f17.smc",
+  "tam": 1049088
  },
  "snes/FinalFight3": {
-  "nome": "Final Fight 3"
+  "nome": "Final Fight 3",
+  "arq": "FinalFight3.sfc",
+  "tam": 3145728
  },
  "snes/FZero": {
-  "nome": "F-Zero"
+  "nome": "F-Zero",
+  "arq": "FZero.sfc",
+  "tam": 524288
  },
  "snes/GoofTroop": {
-  "nome": "Goof Troop"
+  "nome": "Goof Troop",
+  "arq": "GoofTroop.smc",
+  "tam": 524800
  },
  "snes/ISSD": {
-  "nome": "International Superstar Soccer Deluxe"
+  "nome": "International Superstar Soccer Deluxe",
+  "arq": "ISSD.sfc",
+  "tam": 2097152
  },
  "snes/KillerInstinct": {
-  "nome": "Killer Instinct"
+  "nome": "Killer Instinct",
+  "arq": "KillerInstinct.smc",
+  "tam": 4194304
  },
  "snes/mariokart": {
-  "nome": "Super Mario Kart"
+  "nome": "Super Mario Kart",
+  "arq": "mariokart.sfc",
+  "tam": 524288
  },
  "snes/MarioPaint": {
-  "nome": "Mario Paint"
+  "nome": "Mario Paint",
+  "arq": "MarioPaint.sfc",
+  "tam": 1048576
  },
  "snes/marioworld": {
-  "nome": "Super Mario World"
+  "nome": "Super Mario World",
+  "arq": "marioworld.smc",
+  "tam": 1572864
  },
  "snes/MarvelSuperHeroesWarGems": {
-  "nome": "Marvel Super Heroes: War of the Gems"
+  "nome": "Marvel Super Heroes: War of the Gems",
+  "arq": "MarvelSuperHeroesWarGems.smc",
+  "tam": 2097152
  },
  "snes/MegaMan7": {
-  "nome": "Mega Man 7"
+  "nome": "Mega Man 7",
+  "arq": "MegaMan7.smc",
+  "tam": 2097664
  },
  "snes/MegamanBass": {
-  "nome": "Mega Man & Bass"
+  "nome": "Mega Man & Bass",
+  "arq": "MegamanBass.smc",
+  "tam": 4194304
  },
  "snes/MegaManX": {
-  "nome": "Mega Man X"
+  "nome": "Mega Man X",
+  "arq": "MegaManX.smc",
+  "tam": 1573376
  },
  "snes/MegaManX2": {
-  "nome": "Mega Man X2"
+  "nome": "Mega Man X2",
+  "arq": "MegaManX2.smc",
+  "tam": 2097664
  },
  "snes/MegaManX3": {
-  "nome": "Mega Man X3"
+  "nome": "Mega Man X3",
+  "arq": "MegaManX3.smc",
+  "tam": 2097664
  },
  "snes/PowerRangersTheMovie": {
-  "nome": "Mighty Morphin Power Rangers: The Movie"
+  "nome": "Mighty Morphin Power Rangers: The Movie",
+  "arq": "PowerRangersTheMovie.sfc",
+  "tam": 1572864
  },
  "snes/RockNRollRacing": {
-  "nome": "Rock n' Roll Racing"
+  "nome": "Rock n' Roll Racing",
+  "arq": "RockNRollRacing.sfc",
+  "tam": 1048576
  },
  "snes/RockRollRacing": {
-  "nome": "Rock n' Roll Racing"
+  "nome": "Rock n' Roll Racing",
+  "arq": "RockRollRacing.smc",
+  "tam": 1049088
  },
  "snes/sf2": {
-  "nome": "Street Fighter II"
+  "nome": "Street Fighter II",
+  "arq": "sf2.smc",
+  "tam": 2097664
  },
  "snes/SMWPTBR": {
-  "nome": "Super Mario World"
+  "nome": "Super Mario World",
+  "arq": "SMWPTBR.sfc",
+  "tam": 1048576
  },
  "snes/SonicTheHedgehog": {
-  "nome": "Sonic the Hedgehog"
+  "nome": "Sonic the Hedgehog",
+  "arq": "SonicTheHedgehog.smc",
+  "tam": 1048576
  },
  "snes/sonicwings": {
-  "nome": "Sonic Wings"
+  "nome": "Sonic Wings",
+  "arq": "sonicwings.sfc",
+  "tam": 1310720
  },
  "snes/StarFox": {
-  "nome": "Star Fox"
+  "nome": "Star Fox",
+  "arq": "StarFox.smc",
+  "tam": 1049088
  },
  "snes/StreetFighterAlpha2": {
-  "nome": "Street Fighter Alpha 2"
+  "nome": "Street Fighter Alpha 2",
+  "arq": "StreetFighterAlpha2.sfc",
+  "tam": 4194304
  },
  "snes/SunsetRiders": {
-  "nome": "Sunset Riders"
+  "nome": "Sunset Riders",
+  "arq": "SunsetRiders.smc",
+  "tam": 1051315
  },
  "snes/SuperBomberman4": {
-  "nome": "Super Bomberman 4"
+  "nome": "Super Bomberman 4",
+  "arq": "SuperBomberman4.sfc",
+  "tam": 2097152
  },
  "snes/SuperMarioRPG": {
-  "nome": "Super Mario RPG"
+  "nome": "Super Mario RPG",
+  "arq": "SuperMarioRPG.smc",
+  "tam": 4194304
  },
  "snes/TheLegendOfZeldaLinkToThePast": {
-  "nome": "The Legend of Zelda: A Link to the Past"
+  "nome": "The Legend of Zelda: A Link to the Past",
+  "arq": "TheLegendOfZeldaLinkToThePast.sfc",
+  "tam": 1048576
  },
  "snes/TheLionKing": {
-  "nome": "The Lion King"
+  "nome": "The Lion King",
+  "arq": "TheLionKing.smc",
+  "tam": 3146240
  },
  "snes/TheMagicalQuestMickeyMouse": {
-  "nome": "The Magical Quest Starring Mickey Mouse"
+  "nome": "The Magical Quest Starring Mickey Mouse",
+  "arq": "TheMagicalQuestMickeyMouse.smc",
+  "tam": 1049088
  },
  "snes/TMNTurtles4TurtlesInTime": {
-  "nome": "Teenage Mutant Ninja Turtles IV: Turtles in Time"
+  "nome": "Teenage Mutant Ninja Turtles IV: Turtles in Time",
+  "arq": "TMNTurtles4TurtlesInTime.smc",
+  "tam": 1048576
  },
  "snes/topgear": {
-  "nome": "Top Gear"
+  "nome": "Top Gear",
+  "arq": "topgear.sfc",
+  "tam": 524288
  },
  "snes/UltimateMortalKombat3": {
-  "nome": "Ultimate Mortal Kombat 3"
+  "nome": "Ultimate Mortal Kombat 3",
+  "arq": "UltimateMortalKombat3.smc",
+  "tam": 4194816
  },
  "snes/UMK3": {
-  "nome": "Ultimate Mortal Kombat 3"
+  "nome": "Ultimate Mortal Kombat 3",
+  "arq": "UMK3.sfc",
+  "tam": 4194304
  },
  "snes/WildGuns": {
-  "nome": "Wild Guns"
+  "nome": "Wild Guns",
+  "arq": "WildGuns.sfc",
+  "tam": 1048576
  },
  "snes/XMenMutantApocalypse": {
-  "nome": "X-Men: Mutant Apocalypse"
+  "nome": "X-Men: Mutant Apocalypse",
+  "arq": "XMenMutantApocalypse.smc",
+  "tam": 2097664
  },
  "snes/zeldalinkpast": {
-  "nome": "The Legend of Zelda: A Link to the Past"
+  "nome": "The Legend of Zelda: A Link to the Past",
+  "arq": "zeldalinkpast.sfc",
+  "tam": 1048576
  }
-}
+}
