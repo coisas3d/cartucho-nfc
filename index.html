@@ -42,6 +42,9 @@
 
         .ps-info { display: flex; flex-direction: column; align-items: center; animation: info-entra 0.8s ease 0.25s both; }
         @keyframes info-entra { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .ps-capa { display: none; margin-top: 22px; padding: 4px; border-radius: 14px; background: linear-gradient(180deg, rgba(255,106,0,0.9), rgba(255,106,0,0.35)); box-shadow: 0 10px 34px rgba(0,0,0,0.6), 0 0 36px rgba(255,106,0,0.3); }
+        .ps-capa img { display: block; max-width: min(46vw, 190px); max-height: 150px; border-radius: 10px; background: #111; }
+        .com-capa .ps-logo { width: clamp(84px, 18vmin, 120px); }
         .ps-sys { margin-top: 26px; display: inline-flex; align-items: center; gap: 9px; padding: 7px 18px; border: 1px solid rgba(255,106,0,0.65); border-radius: 999px; background: rgba(255,106,0,0.09);
             color: var(--branco); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; }
         .ps-sys::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--laranja); box-shadow: 0 0 10px var(--laranja); }
@@ -64,6 +67,10 @@
             .ps-logo { width: clamp(120px, 52vh, 230px); }
             .ps-info { align-items: flex-start; }
             .ps-sys { margin-top: 0; }
+            .ps-capa { margin: 0 0 14px; }
+            .ps-capa img { max-height: 70px; }
+            .ps-capa { padding: 3px; border-radius: 11px; }
+            .com-capa .ps-logo { width: clamp(100px, 40vh, 170px); }
             #power-btn { margin-top: 20px; padding: 14px 32px; }
             .ps-hint { margin-top: 14px; }
         }
@@ -96,6 +103,22 @@
         #btn-convidar::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--laranja); box-shadow: 0 0 8px var(--laranja); vertical-align: 1px; }
         #btn-convidar:active { background: var(--laranja); color: var(--preto); }
         #btn-convidar:active::before { background: var(--preto); box-shadow: none; }
+
+        #menu-btn { display: none; position: fixed; z-index: 1000; width: 34px; height: 30px; padding: 0; box-sizing: border-box; border-radius: 999px; cursor: pointer; line-height: 28px; text-align: center; font-size: 15px; color: var(--branco);
+            background: rgba(10,10,10,0.85); border: 1px solid rgba(255,255,255,0.55); box-shadow: 0 0 10px rgba(0,0,0,0.6); -webkit-tap-highlight-color: transparent; }
+        #menu-btn:active { background: var(--branco); color: var(--preto); }
+        #menu-jogo { display: none; position: fixed; inset: 0; z-index: 100001; align-items: center; justify-content: center; background: rgba(0,0,0,0.78); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
+        .mj-caixa { box-sizing: border-box; width: min(340px, 90vw); max-height: 94vh; overflow-y: auto; padding: 20px 18px 18px; border-radius: 22px; color: var(--branco);
+            background: radial-gradient(ellipse at 50% 0%, rgba(255,106,0,0.2) 0%, rgba(255,106,0,0) 65%), #0b0b0b; border: 1px solid rgba(255,106,0,0.7); box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(255,106,0,0.25); }
+        .mj-titulo { text-align: center; margin-bottom: 12px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--laranja); }
+        .mj-bt { display: block; width: 100%; margin-top: 8px; padding: 11px 14px; text-align: left; border-radius: 14px; border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.04); color: var(--branco); font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .mj-bt small { display: block; margin-top: 2px; font-size: 0.72rem; font-weight: 500; color: var(--cinza); }
+        .mj-bt:active { background: var(--laranja); border-color: var(--laranja); color: var(--preto); }
+        .mj-bt:active small { color: var(--preto); }
+        .mj-fechar { display: block; width: 100%; margin-top: 14px; padding: 12px 0; border-radius: 999px; border: none; background: var(--laranja); color: var(--preto); font-family: inherit; font-size: 0.88rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+        #aviso-desempenho { display: none; position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 100000; align-items: center; gap: 12px; box-sizing: border-box; width: min(420px, 92vw); padding: 12px 14px; border-radius: 16px;
+            background: rgba(10,10,10,0.94); border: 1px solid var(--laranja); color: var(--branco); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 0.78rem; line-height: 1.35; box-shadow: 0 0 24px rgba(255,106,0,0.4); }
+        #aviso-desempenho button { flex: none; padding: 8px 14px; border-radius: 999px; border: none; background: var(--laranja); color: var(--preto); font-weight: 800; font-family: inherit; cursor: pointer; }
 
         #p1-toast { display: none; position: absolute; top: 54px; left: 50%; transform: translateX(-50%); z-index: 100000; white-space: nowrap;
             padding: 11px 22px 11px 18px; border-radius: 999px; background: rgba(10,10,10,0.92); border: 1px solid var(--laranja); color: var(--branco);
@@ -281,8 +304,9 @@
         <div class="ps-content">
             <img class="ps-logo" src="c3dlogo.png" alt="Coisas 3D Personalizados" width="230" height="230" decoding="async">
             <div class="ps-info">
+                <div class="ps-capa" id="ps-capa"><img id="ps-capa-img" alt=""></div>
                 <div class="ps-sys" id="ps-sys">Cartucho</div>
-                <div class="ps-title">Cartucho reconhecido</div>
+                <div class="ps-title" id="ps-titulo">Cartucho reconhecido</div>
                 <div class="ps-sub">Tudo pronto para jogar</div>
                 <button id="power-btn" type="button">
                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.9-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg>
@@ -310,6 +334,22 @@
     </div>
 
     <button id="btn-convidar" type="button" onclick="mostrarConvite()">Convidar P2</button>
+    <button id="menu-btn" type="button" aria-label="Menu do jogo" onclick="abrirMenuJogo()">&#9776;</button>
+
+    <div id="menu-jogo">
+        <div class="mj-caixa">
+            <div class="mj-titulo">Menu do jogo</div>
+            <button type="button" class="mj-bt" onclick="acaoMenuJogo('salvar')">Salvar jogo<small>Guarda o ponto atual neste celular</small></button>
+            <button type="button" class="mj-bt" onclick="acaoMenuJogo('carregar')">Carregar jogo salvo<small>Volta para o último ponto salvo</small></button>
+            <button type="button" class="mj-bt" onclick="acaoMenuJogo('exportar')">Exportar save<small>Baixa o arquivo de save (backup)</small></button>
+            <button type="button" class="mj-bt" onclick="acaoMenuJogo('importar')">Importar save<small>Restaura um arquivo de save</small></button>
+            <button type="button" class="mj-bt" id="mj-vibra" onclick="acaoMenuJogo('vibracao')">Vibração: ligada</button>
+            <button type="button" class="mj-bt" onclick="acaoMenuJogo('reiniciar')">Reiniciar jogo</button>
+            <button type="button" class="mj-fechar" onclick="fecharMenuJogo()">Voltar ao jogo</button>
+        </div>
+    </div>
+
+    <div id="aviso-desempenho"><span id="ad-texto"></span><button type="button" onclick="this.parentNode.style.display='none'">OK</button></div>
     
     <div id="tela-convite">
         <div class="convite-corpo">
@@ -330,6 +370,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
 
     <script>
+        // Para ativar a contagem de uso, crie um site gratuito em goatcounter.com e cole aqui o endereço, ex.: 'https://meusite.goatcounter.com/count'
+        const GOATCOUNTER_URL = '';
+
         const urlParams = new URLSearchParams(window.location.search);
         const sys = urlParams.get('c');
         const dataId = urlParams.get('id');
@@ -343,6 +386,41 @@
         const selo = document.getElementById('ps-sys');
         if (selo) selo.textContent = (sys === 'gbc' || (sys === 'gb' && /\.gbc$/i.test(dataId || ''))) ? 'Game Boy Color' : (NOMES_SISTEMA[sys] || 'Cartucho');
         let peerHost;
+
+        // Nome do jogo e capa na tela inicial (lista em jogos.json; capas opcionais em capas/<pasta>/<nome>.jpg)
+        function nomeDoArquivo(id) {
+            const base = (id || '').replace(/\.[^.]+$/, '');
+            if (/^[0-9a-f]{32,}$/i.test(base)) return '';
+            const t = base.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Za-z])(\d)/g, '$1 $2').trim();
+            return t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
+        }
+        function mostrarInfoDoJogo() {
+            const base = (dataId || '').replace(/\.[^.]+$/, '');
+            fetch('jogos.json').then(r => r.ok ? r.json() : {}).catch(() => ({})).then(mapa => {
+                const info = mapa[sys + '/' + base] || mapa[sisEmu + '/' + base] || {};
+                const nome = info.nome || nomeDoArquivo(dataId);
+                if (nome) {
+                    const t = document.getElementById('ps-titulo');
+                    if (t) t.textContent = nome;
+                    document.title = nome + ' | Coisas 3D';
+                    const c = document.getElementById('loading-text-msg');
+                    if (c) c.textContent = 'CARREGANDO ' + nome.toUpperCase() + '...';
+                }
+                const candidatas = info.capa ? [info.capa] : ['jpg', 'png', 'webp'].map(e => `capas/${sys}/${base}.${e}`);
+                const tentar = (i) => {
+                    if (i >= candidatas.length) return;
+                    const img = new Image();
+                    img.onload = () => {
+                        document.getElementById('ps-capa-img').src = img.src;
+                        document.getElementById('ps-capa').style.display = 'block';
+                        document.querySelector('.ps-content').classList.add('com-capa');
+                    };
+                    img.onerror = () => tentar(i + 1);
+                    img.src = candidatas[i];
+                };
+                tentar(0);
+            });
+        }
 
         if (salaDoAmigo) {
             // =====================================
@@ -362,6 +440,7 @@
                     gameDiv.style.width = '100vw';
                     gameDiv.style.height = '100vh';
                     gameDiv.classList.add('p2-tela');
+                    ativarTelaLigada();
                     // tela cheia no primeiro toque (o navegador só permite depois de um toque do usuário)
                     const entrarTelaCheia = () => {
                         try { const el = document.documentElement; if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); } catch (e) {}
@@ -440,7 +519,14 @@
                 return [pads[0] || window.fakeP1, window.fakeP2, pads[2] || null, pads[3] || null];
             };
 
+            pedirArmazenamentoPermanente();
+            preaquecerDownloads();
+            mostrarInfoDoJogo();
+            registrarEvento('/abriu/' + sys + '/' + dataId, 'Abriu ' + sys + '/' + dataId);
+
             document.getElementById('power-btn').addEventListener('click', function() {
+                ativarTelaLigada();
+                registrarEvento('/jogou/' + sys + '/' + dataId, 'Jogou ' + sys + '/' + dataId);
                 const docElm = document.documentElement;
                 if (docElm.requestFullscreen) docElm.requestFullscreen().catch(e => {});
                 else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
@@ -463,11 +549,14 @@
                 // Jogos de Neo Geo (ex.: Metal Slug) precisam da BIOS: use &b=neogeo e coloque neogeo.zip em roms/fbneo
                 if (new URLSearchParams(window.location.search).get('b') === 'neogeo') window.EJS_biosUrl = 'roms/fbneo/neogeo.zip';
 
+                // Saves: o estado salvo vai para o navegador e o save do jogo (bateria) é gravado a cada 30 segundos
+                window.EJS_defaultOptions = { 'save-state-location': 'browser', 'save-save-interval': '30' };
+
                 // N64: níveis de desempenho para aparelhos fracos. Escolha pelo endereço: &p=0 (original), &p=1 (padrão), &p=2 (leve) ou &p=3 (mais leve)
                 if (sisEmu === 'n64') {
                     const nivel = parseInt(new URLSearchParams(window.location.search).get('p'));
                     const p = isNaN(nivel) ? 1 : nivel;
-                    const opc = {};
+                    const opc = window.EJS_defaultOptions;
                     if (p >= 1) {
                         opc['mupen64plus-EnableCopyColorToRDRAM'] = 'Off';
                         opc['mupen64plus-EnableCopyDepthToRDRAM'] = 'Off';
@@ -484,13 +573,14 @@
                         opc['mupen64plus-txFilterMode'] = 'None';
                         opc['mupen64plus-EnableTextureCache'] = 'True';
                     }
-                    window.EJS_defaultOptions = opc;
                     if (p >= 2) document.documentElement.classList.add('modo-leve');
                 }
                 window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
                 
                 window.EJS_onGameStart = function() {
                     document.getElementById('loading-overlay').style.display = 'none';
+                    document.getElementById('menu-btn').style.display = 'block';
+                    monitorarDesempenho(sisEmu);
                     injetarLayoutTatico(sisEmu); 
                     configurarP2NoEmulador();
                     
@@ -511,6 +601,7 @@
                     });
                     peerHost.on('connection', function(conexao) {
                         conexao.on('open', function() {
+                            registrarEvento('/p2/' + sys, 'Jogador 2 conectado ' + sys);
                             configurarP2NoEmulador();
                             document.getElementById('tela-convite').style.display = 'none';
                             
@@ -704,6 +795,7 @@
                 if (!sobrePad && (pad.dataset.fixo === '1' || !(opc.regiao || regiaoPadrao)(ev.clientX, ev.clientY))) return;
                 ev.preventDefault();
                 ponteiro = ev.pointerId;
+                vibrar(8);
                 if (!sobrePad) {
                     const t = r.width, m = 4;
                     const x = Math.min(Math.max(ev.clientX - t / 2, m), window.innerWidth - t - m);
@@ -812,7 +904,12 @@
         // Nenhum botão pode cobrir a tela do jogo: o botão Convidar P2 vai para a área dos controles
         function posicionarConvidar(coreName, btnEsq, btnDir, btnStart) {
             const conv = document.getElementById('btn-convidar');
-            if (!conv || coreName === 'fbneo' || coreName === 'mame2003') return;
+            const mb = document.getElementById('menu-btn');
+            if (!conv) return;
+            if (coreName === 'fbneo' || coreName === 'mame2003') {
+                if (mb) { mb.style.left = 'calc(50% + 52px)'; mb.style.top = '10px'; }
+                return;
+            }
             const retrato = window.innerHeight > window.innerWidth;
             const W = 90, H = 30;
             const e = btnEsq ? btnEsq.getBoundingClientRect() : null;
@@ -837,6 +934,7 @@
                 top = 10;
             }
             fixarEm(conv, left, Math.max(6, top));
+            if (mb) { mb.style.left = (left - 42) + 'px'; mb.style.top = Math.max(6, top) + 'px'; }
         }
 
         // =====================================
@@ -1062,6 +1160,119 @@
                     fixarEm(el, x, y);
                 }
             });
+        }
+
+        // =====================================
+        // Extras: vibração, tela sempre ligada, menu do jogo, aviso de desempenho e contagem de uso
+        // =====================================
+
+        let vibracaoLigada = true;
+        try { vibracaoLigada = localStorage.getItem('c3d_vibracao') !== '0'; } catch (e) {}
+        function vibrar(ms) { if (vibracaoLigada && navigator.vibrate) { try { navigator.vibrate(ms || 12); } catch (e) {} } }
+        document.addEventListener('pointerdown', (ev) => {
+            if (ev.target && ev.target.closest && ev.target.closest('.ejs_virtualGamepad_button, .p1x, #p1-btn-ab, #btn-vel, .p2-btn, #menu-btn')) vibrar(12);
+        }, true);
+
+        let travaTela = null;
+        async function manterTelaLigada() {
+            try { if ('wakeLock' in navigator && !travaTela) { travaTela = await navigator.wakeLock.request('screen'); travaTela.addEventListener('release', () => { travaTela = null; }); } } catch (e) { travaTela = null; }
+        }
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && window.__telaLigadaAtiva) manterTelaLigada(); });
+        function ativarTelaLigada() { window.__telaLigadaAtiva = true; manterTelaLigada(); }
+
+        // Contagem de uso (opcional, GoatCounter: sem cookies e sem dados pessoais)
+        function registrarEvento(caminho, titulo) {
+            if (!GOATCOUNTER_URL) return;
+            const enviar = () => { try { window.goatcounter.count({ path: caminho, title: titulo || caminho, event: true }); } catch (e) {} };
+            if (window.goatcounter && window.goatcounter.count) { enviar(); return; }
+            window.goatcounter = { no_onload: true };
+            const s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://gc.zgo.at/count.js';
+            s.setAttribute('data-goatcounter', GOATCOUNTER_URL);
+            s.onload = enviar;
+            document.head.appendChild(s);
+        }
+
+        // Pede ao navegador para não apagar os saves e o jogo guardado no celular
+        function pedirArmazenamentoPermanente() {
+            try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+        }
+
+        // Baixa o emulador e a ROM enquanto a pessoa ainda está na tela inicial
+        function preaquecerDownloads() {
+            try {
+                if (navigator.connection && navigator.connection.saveData) return;
+                const base = 'https://cdn.emulatorjs.org/latest/data/';
+                ['loader.js', 'emulator.min.js', 'emulator.min.css'].forEach(a => fetch(base + a, { mode: 'no-cors' }).catch(() => {}));
+                fetch(`roms/${sys}/${dataId}`, { cache: 'force-cache' }).catch(() => {});
+                if (new URLSearchParams(window.location.search).get('b') === 'neogeo') fetch('roms/fbneo/neogeo.zip', { cache: 'force-cache' }).catch(() => {});
+            } catch (e) {}
+        }
+
+        // Menu do jogo: salvar, carregar, exportar/importar save, reiniciar
+        function botaoEJS(nome) {
+            const emu = window.EJS_emulator;
+            const b = emu && emu.elements && emu.elements.bottomBar && emu.elements.bottomBar[nome];
+            return b && b[0];
+        }
+        function abrirMenuJogo() {
+            const emu = window.EJS_emulator;
+            try { if (emu && emu.pause) emu.pause(); } catch (e) {}
+            atualizarRotuloVibracao();
+            document.getElementById('menu-jogo').style.display = 'flex';
+        }
+        function fecharMenuJogo() {
+            document.getElementById('menu-jogo').style.display = 'none';
+            const emu = window.EJS_emulator;
+            try { if (emu && emu.play) emu.play(); } catch (e) {}
+        }
+        function atualizarRotuloVibracao() {
+            const el = document.getElementById('mj-vibra');
+            if (el) el.textContent = 'Vibração: ' + (vibracaoLigada ? 'ligada' : 'desligada');
+        }
+        function acaoMenuJogo(acao) {
+            if (acao === 'vibracao') {
+                vibracaoLigada = !vibracaoLigada;
+                try { localStorage.setItem('c3d_vibracao', vibracaoLigada ? '1' : '0'); } catch (e) {}
+                atualizarRotuloVibracao();
+                if (vibracaoLigada) vibrar(30);
+                return;
+            }
+            if (acao === 'reiniciar' && !window.confirm('Reiniciar o jogo? O que não foi salvo será perdido.')) return;
+            const mapa = { salvar: 'saveState', carregar: 'loadState', exportar: 'saveSavFiles', importar: 'loadSavFiles', reiniciar: 'restart' };
+            const b = botaoEJS(mapa[acao]);
+            // salvar/carregar/reiniciar acontecem com o jogo rodando; exportar/importar abrem a janela de arquivos
+            if (acao === 'salvar' || acao === 'carregar' || acao === 'reiniciar') fecharMenuJogo();
+            if (b) b.click();
+        }
+
+        // Aviso quando o celular não consegue rodar o jogo na velocidade certa (mede a fluidez da tela nos primeiros segundos)
+        function monitorarDesempenho(coreName) {
+            let quadros = 0, ativo = false, interrompido = false;
+            const aoMudarVisibilidade = () => { if (document.hidden) interrompido = true; };
+            document.addEventListener('visibilitychange', aoMudarVisibilidade);
+            const contar = () => { if (!ativo) return; quadros++; requestAnimationFrame(contar); };
+            setTimeout(() => {
+                ativo = true;
+                requestAnimationFrame(contar);
+                setTimeout(() => {
+                    ativo = false;
+                    document.removeEventListener('visibilitychange', aoMudarVisibilidade);
+                    if (interrompido) return;
+                    const fps = quadros / 6;
+                    if (fps < 40) mostrarAvisoDesempenho(coreName);
+                }, 6000);
+            }, 5000);
+        }
+        function mostrarAvisoDesempenho(coreName) {
+            const el = document.getElementById('aviso-desempenho');
+            if (!el) return;
+            document.getElementById('ad-texto').textContent = (coreName === 'n64')
+                ? 'Este jogo pede um celular mais potente. Se estiver travando, tente em um aparelho topo de linha (de 2022 em diante).'
+                : 'O jogo está pesado para este celular. Feche os outros aplicativos e tente de novo.';
+            el.style.display = 'flex';
+            setTimeout(() => { el.style.display = 'none'; }, 15000);
         }
 
         function injetarLayoutTatico(coreName) {

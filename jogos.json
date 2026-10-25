@@ -1,0 +1,264 @@
+{
+ "_leia-me": "Chave = pasta/nome-do-arquivo-sem-extensao. Campos: nome (obrigatorio) e capa (opcional, caminho de imagem). Se nao houver capa, o site procura capas/<pasta>/<nome>.jpg, .png ou .webp",
+ "atari2600/Asteroids": {
+  "nome": "Asteroids"
+ },
+ "atari2600/Enduro": {
+  "nome": "Enduro"
+ },
+ "atari2600/HERO": {
+  "nome": "H.E.R.O."
+ },
+ "atari2600/JrPacMan": {
+  "nome": "Jr. Pac-Man"
+ },
+ "atari2600/MsPacMan": {
+  "nome": "Ms. Pac-Man"
+ },
+ "atari2600/Pitfall": {
+  "nome": "Pitfall!"
+ },
+ "atari2600/RiverRaid": {
+  "nome": "River Raid"
+ },
+ "atari2600/SpaceInvaders": {
+  "nome": "Space Invaders"
+ },
+ "fbneo/dino": {
+  "nome": "Cadillacs and Dinosaurs"
+ },
+ "fbneo/mslug": {
+  "nome": "Metal Slug"
+ },
+ "fbneo/mslugx": {
+  "nome": "Metal Slug X"
+ },
+ "mame2003/dino": {
+  "nome": "Cadillacs and Dinosaurs"
+ },
+ "gb/pkmblue": {
+  "nome": "Pokémon Blue"
+ },
+ "gb/pkmcristal": {
+  "nome": "Pokémon Crystal"
+ },
+ "gb/pkmgold": {
+  "nome": "Pokémon Gold"
+ },
+ "gb/pkmpinball": {
+  "nome": "Pokémon Pinball"
+ },
+ "gb/pkmred": {
+  "nome": "Pokémon Red"
+ },
+ "gb/pkmsilver": {
+  "nome": "Pokémon Silver"
+ },
+ "gb/pkmtcg": {
+  "nome": "Pokémon Trading Card Game"
+ },
+ "gb/pkmyellow": {
+  "nome": "Pokémon Yellow"
+ },
+ "gbc/PokemonPinball": {
+  "nome": "Pokémon Pinball"
+ },
+ "gbc/PokemonYellowBR": {
+  "nome": "Pokémon Yellow"
+ },
+ "gba/dbaadventure": {
+  "nome": "Dragon Ball Advanced Adventure"
+ },
+ "gba/mariotennis": {
+  "nome": "Mario Tennis: Power Tour"
+ },
+ "gba/pkmemerald": {
+  "nome": "Pokémon Emerald"
+ },
+ "gba/pkmfr": {
+  "nome": "Pokémon FireRed"
+ },
+ "gba/pkmlg": {
+  "nome": "Pokémon LeafGreen"
+ },
+ "gba/pkmrubi": {
+  "nome": "Pokémon Ruby"
+ },
+ "gba/pkmsafira": {
+  "nome": "Pokémon Sapphire"
+ },
+ "n64/007": {
+  "nome": "007"
+ },
+ "n64/doom64": {
+  "nome": "Doom 64"
+ },
+ "n64/mario64": {
+  "nome": "Super Mario 64"
+ },
+ "n64/mariokart64": {
+  "nome": "Mario Kart 64"
+ },
+ "n64/mk64": {
+  "nome": "Mario Kart 64"
+ },
+ "n64/pkmstadium": {
+  "nome": "Pokémon Stadium"
+ },
+ "n64/starfox64": {
+  "nome": "Star Fox 64"
+ },
+ "segaMD/Aladdin": {
+  "nome": "Aladdin"
+ },
+ "segaMD/AlteredBeast": {
+  "nome": "Altered Beast"
+ },
+ "segaMD/GoldenAxe": {
+  "nome": "Golden Axe"
+ },
+ "segaMD/KidChameleon": {
+  "nome": "Kid Chameleon"
+ },
+ "segaMD/SonictheHedgehog": {
+  "nome": "Sonic the Hedgehog"
+ },
+ "segaMD/StreetsofRage2": {
+  "nome": "Streets of Rage 2"
+ },
+ "snes/Aladdin": {
+  "nome": "Aladdin"
+ },
+ "snes/Bomberman5": {
+  "nome": "Super Bomberman 5"
+ },
+ "snes/ChronoTrigger": {
+  "nome": "Chrono Trigger"
+ },
+ "snes/dkcountry": {
+  "nome": "Donkey Kong Country"
+ },
+ "snes/dkcountry2": {
+  "nome": "Donkey Kong Country 2"
+ },
+ "snes/DonkeyKongCountry": {
+  "nome": "Donkey Kong Country"
+ },
+ "snes/DonkeyKongCountry2": {
+  "nome": "Donkey Kong Country 2"
+ },
+ "snes/DonkeyKongCountry3": {
+  "nome": "Donkey Kong Country 3"
+ },
+ "snes/Doom": {
+  "nome": "Doom"
+ },
+ "snes/FinalFight3": {
+  "nome": "Final Fight 3"
+ },
+ "snes/FZero": {
+  "nome": "F-Zero"
+ },
+ "snes/GoofTroop": {
+  "nome": "Goof Troop"
+ },
+ "snes/ISSD": {
+  "nome": "International Superstar Soccer Deluxe"
+ },
+ "snes/KillerInstinct": {
+  "nome": "Killer Instinct"
+ },
+ "snes/mariokart": {
+  "nome": "Super Mario Kart"
+ },
+ "snes/MarioPaint": {
+  "nome": "Mario Paint"
+ },
+ "snes/marioworld": {
+  "nome": "Super Mario World"
+ },
+ "snes/MarvelSuperHeroesWarGems": {
+  "nome": "Marvel Super Heroes: War of the Gems"
+ },
+ "snes/MegaMan7": {
+  "nome": "Mega Man 7"
+ },
+ "snes/MegamanBass": {
+  "nome": "Mega Man & Bass"
+ },
+ "snes/MegaManX": {
+  "nome": "Mega Man X"
+ },
+ "snes/MegaManX2": {
+  "nome": "Mega Man X2"
+ },
+ "snes/MegaManX3": {
+  "nome": "Mega Man X3"
+ },
+ "snes/PowerRangersTheMovie": {
+  "nome": "Mighty Morphin Power Rangers: The Movie"
+ },
+ "snes/RockNRollRacing": {
+  "nome": "Rock n' Roll Racing"
+ },
+ "snes/RockRollRacing": {
+  "nome": "Rock n' Roll Racing"
+ },
+ "snes/sf2": {
+  "nome": "Street Fighter II"
+ },
+ "snes/SMWPTBR": {
+  "nome": "Super Mario World"
+ },
+ "snes/SonicTheHedgehog": {
+  "nome": "Sonic the Hedgehog"
+ },
+ "snes/sonicwings": {
+  "nome": "Sonic Wings"
+ },
+ "snes/StarFox": {
+  "nome": "Star Fox"
+ },
+ "snes/StreetFighterAlpha2": {
+  "nome": "Street Fighter Alpha 2"
+ },
+ "snes/SunsetRiders": {
+  "nome": "Sunset Riders"
+ },
+ "snes/SuperBomberman4": {
+  "nome": "Super Bomberman 4"
+ },
+ "snes/SuperMarioRPG": {
+  "nome": "Super Mario RPG"
+ },
+ "snes/TheLegendOfZeldaLinkToThePast": {
+  "nome": "The Legend of Zelda: A Link to the Past"
+ },
+ "snes/TheLionKing": {
+  "nome": "The Lion King"
+ },
+ "snes/TheMagicalQuestMickeyMouse": {
+  "nome": "The Magical Quest Starring Mickey Mouse"
+ },
+ "snes/TMNTurtles4TurtlesInTime": {
+  "nome": "Teenage Mutant Ninja Turtles IV: Turtles in Time"
+ },
+ "snes/topgear": {
+  "nome": "Top Gear"
+ },
+ "snes/UltimateMortalKombat3": {
+  "nome": "Ultimate Mortal Kombat 3"
+ },
+ "snes/UMK3": {
+  "nome": "Ultimate Mortal Kombat 3"
+ },
+ "snes/WildGuns": {
+  "nome": "Wild Guns"
+ },
+ "snes/XMenMutantApocalypse": {
+  "nome": "X-Men: Mutant Apocalypse"
+ },
+ "snes/zeldalinkpast": {
+  "nome": "The Legend of Zelda: A Link to the Past"
+ }
+}
