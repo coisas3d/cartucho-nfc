@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Como jogar - Cartucho NFC</title><meta name="theme-color" content="#0a0a0a">
+<style>
+:root{--laranja:#ff6a00;--laranja-claro:#ff8f3a;--preto:#0a0a0a;--branco:#fff;--cinza:#9a9a9a;--card:#161616;--borda:#2a2a2a}
+*{box-sizing:border-box}body{margin:0;background:var(--preto);color:var(--branco);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55;font-size:16px}
+.w{max-width:680px;margin:0 auto;padding:22px 16px 60px}
+header{text-align:center;margin-bottom:18px}header img{height:64px}
+h1{font-size:1.6rem;margin:10px 0 4px}h1 span{color:var(--laranja)}header p{color:var(--cinza);margin:0}
+.abas{display:flex;gap:8px;margin:18px 0}.abas button{flex:1;padding:14px;border-radius:12px;border:1px solid var(--borda);background:var(--card);color:#fff;font-size:1rem;font-weight:700;cursor:pointer}
+.abas button.on{background:var(--laranja);color:#000;border-color:var(--laranja)}
+.c{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+h2{font-size:1.1rem;margin:0 0 8px;color:var(--laranja-claro)}
+ol,ul{padding-left:22px;margin:6px 0}li{margin:7px 0}
+.al{border:2px solid var(--laranja);background:#1d1208}.al h2{color:#fff}
+.n{display:inline-block;background:var(--laranja);color:#000;font-weight:800;border-radius:6px;padding:0 7px;margin-right:4px}
+details{border-top:1px solid var(--borda);padding:10px 0}details:first-of-type{border:0}summary{cursor:pointer;font-weight:600}
+.m{color:var(--cinza);font-size:.9rem}b{color:#fff}[hidden]{display:none!important}
+</style></head><body><div class="w">
+<header><img src="c3dlogo.png" alt="Coisas 3D"><h1>Como <span>jogar</span></h1><p>Seu cartucho NFC em 3 passos</p></header>
+
+<div class="abas"><button id="bi">iPhone</button><button id="ba">Android</button></div>
+
+<div id="ios" hidden>
+<div class="c al"><h2>Antes de começar (iPhone)</h2><ol>
+<li><span class="n">1</span><b>Tire o modo silencioso:</b> olhe a chavinha na lateral esquerda do iPhone. Se aparecer uma faixa laranja, o som está desligado. Empurre a chave para o lado da tela para ativar o som.</li>
+<li><span class="n">2</span><b>Desligue o Modo de Baixo Consumo:</b> Ajustes &gt; Bateria &gt; Modo de Baixo Consumo (desligado). Se a bateria estiver amarela, ele está ligado e o jogo fica lento.</li>
+<li><span class="n">3</span>Conecte ao <b>Wi-Fi</b> ou 4G/5G com bom sinal e aumente o volume.</li></ol></div>
+<div class="c"><h2>Lendo a tag</h2><ol>
+<li>Desbloqueie o iPhone e <b>encoste o cartucho na parte de cima das costas</b> do aparelho (perto da câmera).</li>
+<li><b>Mantenha parado por pelo menos 5 segundos.</b> No iPhone a leitura costuma levar de 3 a 5 segundos. Não afaste antes.</li>
+<li>Vai aparecer uma notificação no topo da tela. <b>Toque nela</b> para abrir o jogo.</li>
+<li>Se nada acontecer, afaste, espere 2 segundos e tente de novo, com a capinha fina ou sem ela.</li></ol></div>
+</div>
+
+<div id="and" hidden>
+<div class="c al"><h2>Antes de começar (Android)</h2><ol>
+<li><span class="n">1</span>Ative o <b>NFC</b> em Configurações &gt; Conexões (ou procure "NFC").</li>
+<li><span class="n">2</span>Desligue a <b>Economia de bateria</b>, pois ela reduz o desempenho e deixa o jogo travando.</li>
+<li><span class="n">3</span>Aumente o volume e use Wi-Fi ou dados móveis com bom sinal.</li></ol></div>
+<div class="c"><h2>Lendo a tag</h2><ol>
+<li>Desbloqueie o celular e <b>encoste o cartucho nas costas</b>, na região do NFC (geralmente no meio ou perto da câmera).</li>
+<li>A leitura é muito rápida, em geral menos de 1 segundo.</li>
+<li>Toque na notificação, caso ela apareça, e escolha o navegador (Chrome é o recomendado).</li></ol></div>
+</div>
+
+<div class="c"><h2>Primeira vez</h2><ul>
+<li>Na primeira vez o jogo baixa os arquivos e demora um pouco mais. Nas próximas, abre bem mais rápido.</li>
+<li>Toque em <b>"Toque para jogar"</b> quando aparecer. O jogo vai para tela cheia.</li>
+<li>Segure o celular na <b>horizontal</b> para ter a melhor experiência (a vertical também funciona).</li></ul></div>
+
+<div class="c"><h2>Controles</h2><ul>
+<li>O direcional <b>aparece onde você colocar o dedo</b> do lado esquerdo da tela.</li>
+<li>Os botões ficam do lado direito. O celular vibra ao tocar (apenas em Android).</li>
+<li>Em Game Boy e GBA existe o botão <b>TURBO</b> para ficar apertando o botão automaticamente.</li>
+<li>O botão <b>☰</b> abre o menu para salvar, carregar, reiniciar e sair.</li></ul></div>
+
+<div class="c"><h2>Jogando em dupla (Player 2)</h2><ol>
+<li>No seu celular, toque em <b>Convidar P2</b>. Vai aparecer um QR Code.</li>
+<li>No outro celular, abra a câmera, aponte para o QR Code e abra o link.</li>
+<li>Toque na tela para entrar em tela cheia. O segundo celular vira um controle com os mesmos botões do seu.</li></ol>
+<p class="m">Os dois celulares precisam estar com internet.</p></div>
+
+<div class="c"><h2>Salvando seu progresso</h2><ul>
+<li>O jogo salva sozinho a cada 30 segundos, mas use o menu <b>☰ &gt; Salvar</b> antes de sair.</li>
+<li>Para continuar, abra o jogo e use <b>☰ &gt; Carregar</b>.</li>
+<li>O progresso fica guardado no navegador do celular. Se você limpar os dados do navegador, perde o save. No iPhone, o Safari pode apagar os dados se o jogo ficar cerca de 7 dias sem uso. Por isso, baixe um backup do save pelo menu de vez em quando.</li>
+<li>Use sempre o mesmo navegador para o seu save aparecer.</li></ul></div>
+
+<div class="c"><h2>Problemas comuns</h2>
+<details><summary>A tag não lê</summary>Aproxime a parte de cima das costas (iPhone) ou o ponto do NFC (Android), sem metal atrás (como suportes magnéticos ou capas com placa). No iPhone, espere pelo menos 5 segundos.</details>
+<details><summary>Sem som</summary>No iPhone, confira a chavinha de silencioso. Aumente o volume de mídia e toque na tela uma vez, o navegador só libera o áudio depois de um toque.</details>
+<details><summary>Jogo lento ou travando</summary>Desligue o modo economia de energia (ou Baixo Consumo), feche outros aplicativos e deixe o celular fresco, sem carregar enquanto joga. Jogos de Nintendo 64 exigem um celular potente e recente.</details>
+<details><summary>Erro de rede ou jogo não carrega</summary>Verifique sua internet e tente de novo. O primeiro carregamento baixa o jogo inteiro.</details>
+<details><summary>Perdi meu save</summary>Abra no mesmo navegador de antes. Se tiver feito backup, carregue-o pelo menu.</details></div>
+<p class="m" style="text-align:center">Coisas 3D - bom jogo!</p>
+</div>
+<script>
+var ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function aba(i){document.getElementById('ios').hidden=!i;document.getElementById('and').hidden=i;
+ document.getElementById('bi').className=i?'on':'';document.getElementById('ba').className=i?'':'on'}
+document.getElementById('bi').onclick=function(){aba(true)};document.getElementById('ba').onclick=function(){aba(false)};aba(ios);
+</script></body></html>
