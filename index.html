@@ -248,6 +248,9 @@
         #p1-btn-ab { position: fixed; width: 60px; height: 60px; box-sizing: border-box; border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 9999; user-select: none; -webkit-user-select: none; touch-action: none; -webkit-tap-highlight-color: transparent;
             background: rgba(10,10,10,0.6); border: 2px solid rgba(255,255,255,0.85); color: var(--branco); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.06em;
             text-shadow: 0 1px 3px rgba(0,0,0,0.9); box-shadow: 0 0 14px rgba(255,255,255,0.22), inset 0 0 12px rgba(255,106,0,0.14); transition: transform 0.08s ease, background-color 0.08s ease; }
+        .p1x { position: fixed; width: 56px; height: 56px; box-sizing: border-box; border-radius: 50%; display: none; justify-content: center; align-items: center; z-index: 9999; user-select: none; -webkit-user-select: none; touch-action: none; -webkit-tap-highlight-color: transparent;
+            background: rgba(10,10,10,0.6); border: 2px solid var(--laranja); color: var(--branco); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 22px; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.9); box-shadow: 0 0 14px rgba(255,106,0,0.35), inset 0 0 12px rgba(255,106,0,0.14); }
+        .p1x.ativo { background: var(--laranja); color: var(--preto); text-shadow: none; box-shadow: 0 0 26px rgba(255,106,0,0.85); }
         #p1-btn-ab.ativo { background: var(--branco); color: var(--preto); text-shadow: none; transform: scale(0.94); box-shadow: 0 0 26px rgba(255,255,255,0.7); }
 
         @media screen and (orientation: portrait) {
@@ -481,7 +484,10 @@
                 window.EJS_startOnLoaded = true;
                 window.EJS_color = '#ff6a00';
 
-                // N64: níveis de desempenho para aparelhos fracos. Escolha pelo endereço: &p=0 (original), &p=1 (padrão), &p=2 (leve), &p=3 (mais leve) ou &p=4 (outro núcleo do N64)
+                // Jogos de Neo Geo (ex.: Metal Slug) precisam da BIOS: use &b=neogeo e coloque neogeo.zip em roms/fbneo
+                if (new URLSearchParams(window.location.search).get('b') === 'neogeo') window.EJS_biosUrl = 'roms/fbneo/neogeo.zip';
+
+                // N64: níveis de desempenho para aparelhos fracos. Escolha pelo endereço: &p=0 (original), &p=1 (padrão), &p=2 (leve) ou &p=3 (mais leve)
                 if (sisEmu === 'n64') {
                     const nivel = parseInt(new URLSearchParams(window.location.search).get('p'));
                     const p = isNaN(nivel) ? 1 : nivel;
@@ -503,7 +509,6 @@
                         opc['mupen64plus-EnableTextureCache'] = 'True';
                     }
                     window.EJS_defaultOptions = opc;
-                    if (p >= 4) window.EJS_core = 'parallel_n64';
                     if (p >= 2) document.documentElement.classList.add('modo-leve');
                 }
                 window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
@@ -903,6 +908,24 @@
                 }
                 return { pad8: [P.pad, P.padL, 140], itens };
             }
+            if ((core === 'fbneo' || core === 'mame2003') && (LAYOUT_ARCADE === '4' || LAYOUT_ARCADE === '6')) {
+                const sys = [
+                    ['sel', 'FICHA', 'p', [8], [13, 63.5, 0, 0], [8, 14, 0, 0], 0, 'p2c-borda'],
+                    ['sta', 'START', 'p', [9], [87, 63.5, 0, 0], [92, 14, 0, 0], 0]
+                ];
+                if (LAYOUT_ARCADE === '4') {
+                    const fr = diamante([74, 79]), fl = diamante([86, 56]);
+                    // mesmo losango do jogador 1: Y em cima, X à esquerda, B à direita, A embaixo
+                    return { pad8: [[22, 80], [14, 62], 140], itens: [
+                        ['y', 'Y', 'c', [3], fr[0], fl[0], F], ['x', 'X', 'c', [2], fr[1], fl[1], F],
+                        ['b', 'B', 'c', [1], fr[2], fl[2], F], ['a', 'A', 'c', [0], fr[3], fl[3], F]
+                    ].concat(sys) };
+                }
+                const g = (c, col, lin) => [c[0], c[1], (col - 1) * 62, lin ? 34 : -34];
+                const fr = [72, 79], fl = [82, 58];
+                const n = [['y', 'Y', 3], ['x', 'X', 2], ['l', 'L', 4], ['b', 'B', 1], ['a', 'A', 0], ['r', 'R', 5]];
+                return { pad8: [[22, 80], [14, 62], 140], itens: n.map((e, i) => [e[0], e[1], 'c', [e[2]], g(fr, i % 3, i >= 3), g(fl, i % 3, i >= 3), 54]).concat(sys) };
+            }
             if (core === 'atari2600') {
                 return { pad8: [[22, 81], [14, 60], 140], itens: [
                     ['fogo', '', 'c', [1], [78, 79, 0, 0], [88, 60, 0, 0], 66],
@@ -984,6 +1007,53 @@
             window.addEventListener('orientationchange', () => setTimeout(reposiciona, 150));
             reposiciona();
             return true;
+        }
+
+        // Layout dos jogos de arcade: sem &l= são 3 botões (A, B e SP); &l=4 mostra 4 botões; &l=6 mostra 6 botões (socos em cima, chutes embaixo)
+        const LAYOUT_ARCADE = new URLSearchParams(window.location.search).get('l');
+
+        function garantirBotaoExtraP1(id, texto, entrada) {
+            let btn = document.getElementById(id);
+            if (btn) return btn;
+            btn = document.createElement('div');
+            btn.id = id;
+            btn.className = 'p1x';
+            btn.innerText = texto;
+            document.body.appendChild(btn);
+            const apertar = (estado) => {
+                const gm = window.EJS_emulator && window.EJS_emulator.gameManager;
+                if (gm) gm.simulateInput(0, entrada, estado);
+            };
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); btn.classList.add('ativo'); apertar(1); }, { passive: false });
+            const soltar = (e) => { e.preventDefault(); btn.classList.remove('ativo'); apertar(0); };
+            btn.addEventListener('touchend', soltar, { passive: false });
+            btn.addEventListener('touchcancel', soltar, { passive: false });
+            return btn;
+        }
+
+        // 6 botões: Y X L (socos) em cima e B A R (chutes) embaixo, no lugar do losango do emulador
+        function posicionarSeisBotoesP1(gameContainer) {
+            const dir = gameContainer.querySelector('.ejs_virtualGamepad_right');
+            const bY = gameContainer.querySelector('.b_y'), bX = gameContainer.querySelector('.b_x');
+            const bB = gameContainer.querySelector('.b_b'), bA = gameContainer.querySelector('.b_a');
+            const bL = garantirBotaoExtraP1('p1-btn-l', 'L', 10), bR = garantirBotaoExtraP1('p1-btn-r', 'R', 11);
+            if (!dir || !bY || !bX || !bB || !bA) return;
+            const r = dir.getBoundingClientRect();
+            if (r.width === 0) return;
+            const T = 56, passo = 62;
+            const cx = Math.min(r.left + r.width / 2, window.innerWidth - passo - T / 2 - 8);
+            const cy = r.top + r.height / 2;
+            const lin = [cy - T / 2 - 3, cy + T / 2 + 3];
+            const pos = [[bY, 0, 0], [bX, 1, 0], [bL, 2, 0], [bB, 0, 1], [bA, 1, 1], [bR, 2, 1]];
+            pos.forEach(([el, c, l]) => {
+                const x = cx + (c - 1) * passo - T / 2, y = lin[l] - T / 2;
+                if (el.classList.contains('p1x')) { el.style.display = 'flex'; el.style.left = x + 'px'; el.style.top = y + 'px'; }
+                else {
+                    el.style.setProperty('width', T + 'px', 'important');
+                    el.style.setProperty('height', T + 'px', 'important');
+                    fixarEm(el, x, y);
+                }
+            });
         }
 
         function injetarLayoutTatico(coreName) {
@@ -1068,9 +1138,15 @@
                 }
 
                 if (coreName === 'mame2003' || coreName === 'fbneo') {
-                    posicionarBotaoEspecialP1();
-                    if (btnX) btnX.style.setProperty('display', 'none', 'important');
-                    if (btnY) btnY.style.setProperty('display', 'none', 'important');
+                    if (LAYOUT_ARCADE === '4' || LAYOUT_ARCADE === '6') {
+                        const sp = document.getElementById('p1-btn-ab');
+                        if (sp) sp.style.display = 'none';
+                        if (LAYOUT_ARCADE === '6') posicionarSeisBotoesP1(gameContainer);
+                    } else {
+                        posicionarBotaoEspecialP1();
+                        if (btnX) btnX.style.setProperty('display', 'none', 'important');
+                        if (btnY) btnY.style.setProperty('display', 'none', 'important');
+                    }
 
                     if (btnSelect && btnStart) {
                         const isPortrait = window.innerHeight > window.innerWidth;
