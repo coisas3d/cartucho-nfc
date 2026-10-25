@@ -6,7 +6,8 @@
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Sistema">
+    <meta name="apple-mobile-web-app-title" content="Coisas 3D">
+    <link rel="apple-touch-icon" href="c3dlogo.png">
     
     <meta name="theme-color" content="#050505">
     <link rel="icon" type="image/png" href="c3dlogo.png">
@@ -294,6 +295,30 @@
             #p2-btn-start { top: 8%; right: 25%; transform: translateX(50%); }
             #p2-btn-ab { bottom: 55%; right: 20%; }
         }
+
+        /* ===== Continuar, instalar, meus jogos, menu de backup ===== */
+        .ps-sec { margin-top: 12px; background: transparent; color: #cfcfcf; border: 1px solid rgba(255,255,255,0.28); border-radius: 999px; padding: 11px 26px; font-size: 0.95rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .ps-sec:active { transform: scale(0.96); }
+        .ps-sec[hidden], .ps-aviso[hidden] { display: none !important; }
+        .ps-aviso { margin-top: 14px; max-width: 300px; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,190,60,0.6); background: rgba(255,170,0,0.1); color: #ffd27a; font-size: 0.82rem; line-height: 1.4; }
+        .ps-bench { margin-top: 8px; font: 12px ui-monospace, Consolas, monospace; color: #7ad07a; }
+        .ps-nota { margin-top: 10px; color: #8a8a8a; font-size: 0.75rem; max-width: 300px; }
+        #dica-instalar { display: none; position: fixed; inset: 0; z-index: 200000; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; padding: 20px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        #dica-instalar .di-caixa { max-width: 340px; background: #161616; border: 1px solid #2a2a2a; border-radius: 16px; padding: 20px; color: #fff; line-height: 1.5; font-size: 0.95rem; }
+        #dica-instalar h3 { margin: 0 0 8px; color: var(--laranja-claro); }
+        #dica-instalar button { margin-top: 12px; width: 100%; padding: 12px; border: 0; border-radius: 10px; background: var(--laranja); color: #000; font-weight: 800; font-size: 1rem; }
+        #mj-msg { margin: 6px 4px 2px; color: #9a9a9a; font-size: 0.78rem; text-align: center; min-height: 1.1em; }
+        #home { display: none; position: fixed; inset: 0; z-index: 10000; overflow-y: auto; touch-action: pan-y; -webkit-user-select: none; user-select: none; color: #fff; text-align: center; padding: 28px 16px 40px;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; background: radial-gradient(ellipse at 50% 0%, rgba(255,106,0,0.22) 0%, rgba(255,106,0,0) 60%), #070707; }
+        #home img.h-logo { width: 110px; height: 110px; border-radius: 50%; }
+        #home h1 { margin: 12px 0 4px; font-size: 1.5rem; }
+        #home h1 span { color: var(--laranja); }
+        #home p { color: #9a9a9a; margin: 4px auto 14px; max-width: 360px; font-size: 0.92rem; line-height: 1.45; }
+        #home .h-lista { max-width: 420px; margin: 18px auto 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+        #home a.h-jogo { display: block; padding: 14px 16px; border-radius: 14px; background: #161616; border: 1px solid #2a2a2a; color: #fff; text-decoration: none; }
+        #home a.h-jogo:active { border-color: var(--laranja); }
+        #home a.h-jogo b { display: block; font-size: 1.02rem; }
+        #home a.h-jogo small { color: var(--laranja-claro); }
     </style>
 </head>
 <body>
@@ -310,8 +335,13 @@
                 <div class="ps-sub">Tudo pronto para jogar</div>
                 <button id="power-btn" type="button">
                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.9-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg>
-                    <span>Toque para jogar</span>
+                    <span id="power-btn-txt">Toque para jogar</span>
                 </button>
+                <button id="power-btn2" type="button" class="ps-sec" hidden>Iniciar do começo</button>
+                <div class="ps-nota" id="ps-nota" hidden>O progresso salvo dentro do próprio jogo (ex.: “Salvar” do Pokémon) continua disponível.</div>
+                <div class="ps-aviso" id="ps-aviso" hidden></div>
+                <div class="ps-bench" id="ps-bench" hidden></div>
+                <button id="ps-instalar" type="button" class="ps-sec" hidden>Instalar no celular</button>
                 <div class="ps-hint">Quer jogar em dupla? Depois de iniciar, toque em “Convidar P2”.</div>
             </div>
         </div>
@@ -325,6 +355,15 @@
 
     <div id="game-container"><div id="game"></div></div>
     
+    <div id="home">
+        <img class="h-logo" src="c3dlogo.png" alt="Coisas 3D">
+        <h1>Coisas 3D <span>Games</span></h1>
+        <p id="h-sub">Encoste um cartucho no celular para jogar.</p>
+        <div class="h-lista" id="h-lista"></div>
+        <button id="h-instalar" type="button" class="ps-sec" hidden>Instalar no celular</button>
+    </div>
+    <div id="dica-instalar"><div class="di-caixa" id="di-caixa"></div></div>
+
     <div id="status-msg">
         <div class="err-box">
             <img src="c3dlogo.png" alt="Coisas 3D Personalizados" width="110" height="110">
@@ -341,8 +380,10 @@
             <div class="mj-titulo">Menu do jogo</div>
             <button type="button" class="mj-bt" onclick="acaoMenuJogo('salvar')">Salvar jogo<small>Guarda o ponto atual neste celular</small></button>
             <button type="button" class="mj-bt" onclick="acaoMenuJogo('carregar')">Carregar jogo salvo<small>Volta para o último ponto salvo</small></button>
-            <button type="button" class="mj-bt" onclick="acaoMenuJogo('exportar')">Exportar save<small>Baixa o arquivo de save (backup)</small></button>
-            <button type="button" class="mj-bt" onclick="acaoMenuJogo('importar')">Importar save<small>Restaura um arquivo de save</small></button>
+            <button type="button" class="mj-bt" onclick="acaoMenuJogo('backup')">Backup dos saves<small>Baixa um arquivo com todos os seus saves</small></button>
+            <button type="button" class="mj-bt" onclick="acaoMenuJogo('restaurar')">Restaurar backup<small>Carrega um arquivo de backup</small></button>
+            <input type="file" id="mj-arquivo" accept=".json,application/json" hidden>
+            <div id="mj-msg"></div>
             <button type="button" class="mj-bt" id="mj-vibra" onclick="acaoMenuJogo('vibracao')">Vibração: ligada</button>
             <button type="button" class="mj-bt" onclick="acaoMenuJogo('reiniciar')">Reiniciar jogo</button>
             <button type="button" class="mj-fechar" onclick="fecharMenuJogo()">Voltar ao jogo</button>
@@ -373,10 +414,74 @@
         // Para ativar a contagem de uso, crie um site gratuito em goatcounter.com e cole aqui o endereço, ex.: 'https://meusite.goatcounter.com/count'
         const GOATCOUNTER_URL = '';
 
+
+        // ===== Saves próprios (IndexedDB) =====
+        // O EmulatorJS não guarda o save de bateria do jogo (ex.: "Salvar" do Pokémon) entre visitas.
+        // Aqui guardamos tudo num banco nosso: estado rápido (menu) + save do jogo (SRAM), e fazemos backup em arquivo.
+        const Saves = {
+            _db: null,
+            abrir() {
+                if (this._db) return this._db;
+                this._db = new Promise((ok, erro) => {
+                    try {
+                        const rq = indexedDB.open('c3d-saves', 1);
+                        rq.onupgradeneeded = () => rq.result.createObjectStore('kv', { keyPath: 'k' });
+                        rq.onsuccess = () => ok(rq.result);
+                        rq.onerror = () => erro(rq.error);
+                    } catch (e) { erro(e); }
+                });
+                return this._db;
+            },
+            async _tx(modo, fn) {
+                const db = await this.abrir();
+                return new Promise((ok, erro) => {
+                    const t = db.transaction('kv', modo), os = t.objectStore('kv');
+                    const rq = fn(os);
+                    t.oncomplete = () => ok(rq && rq.result);
+                    t.onerror = t.onabort = () => erro(t.error);
+                });
+            },
+            async put(k, d, t) { return this._tx('readwrite', os => os.put({ k: k, t: t || Date.now(), d: d })); },
+            async get(k) { try { const r = await this._tx('readonly', os => os.get(k)); return r ? r.d : null; } catch (e) { return null; } },
+            async reg(k) { try { return await this._tx('readonly', os => os.get(k)); } catch (e) { return null; } },
+            async todos() { try { return (await this._tx('readonly', os => os.getAll())) || []; } catch (e) { return []; } }
+        };
+        function paraB64(u8) {
+            let partes = [];
+            for (let i = 0; i < u8.length; i += 0x8000) partes.push(String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)));
+            return btoa(partes.join(''));
+        }
+        function deB64(b64) {
+            const bin = atob(b64), u8 = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+            return u8;
+        }
+
+        // Teste rápido de potência do celular (usado para avisar antes de jogos pesados, como N64).
+        // Os limites abaixo ficam desligados (null) até serem calibrados: abra o jogo com &bench=1 em cada celular e anote a nota e o FPS.
+        const POTENCIA = { n64: { minimo: null, ideal: null } };
+        function medirPotencia() {
+            return new Promise(ok => setTimeout(() => {
+                try {
+                    const a = new Float64Array(256);
+                    let x = 1.0001, n = 0, t = 0;
+                    const t0 = performance.now();
+                    do {
+                        for (let i = 0; i < 20000; i++) { x = x * 1.0000001 + Math.sin(i) * 1e-9; a[i & 255] += x; n++; }
+                        t = performance.now() - t0;
+                    } while (t < 500);
+                    ok(Math.round((n / t / 1000) * 10) / 10);
+                } catch (e) { ok(0); }
+            }, 700));
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const sys = urlParams.get('c');
         const dataId = urlParams.get('id');
         const salaDoAmigo = urlParams.get('sala');
+        const CHAVE_JOGO = (sys || '') + '/' + (dataId || '');
+        const BENCH = new URLSearchParams(window.location.search).get('bench') === '1';
+        let retomarEstado = false, sramPronto = false, sramUltimo = '';
         // No EmulatorJS, Game Boy e Game Boy Color usam o mesmo sistema ('gb' = core gambatte).
         // A pasta da ROM continua sendo a do endereço (roms/gbc/...), então as tags antigas seguem funcionando.
         const sisEmu = (sys === 'gbc') ? 'gb' : sys;
@@ -399,6 +504,7 @@
             fetch('jogos.json').then(r => r.ok ? r.json() : {}).catch(() => ({})).then(mapa => {
                 const info = mapa[sys + '/' + base] || mapa[sisEmu + '/' + base] || {};
                 const nome = info.nome || nomeDoArquivo(dataId);
+                window.__nomeJogo = nome || '';
                 if (nome) {
                     const t = document.getElementById('ps-titulo');
                     if (t) t.textContent = nome;
@@ -523,8 +629,14 @@
             preaquecerDownloads();
             mostrarInfoDoJogo();
             registrarEvento('/abriu/' + sys + '/' + dataId, 'Abriu ' + sys + '/' + dataId);
+            prepararTelaInicial();
 
+            document.getElementById('power-btn2').addEventListener('click', function() {
+                retomarEstado = false;
+                document.getElementById('power-btn').click();
+            });
             document.getElementById('power-btn').addEventListener('click', function() {
+                guardarRecente();
                 ativarTelaLigada();
                 registrarEvento('/jogou/' + sys + '/' + dataId, 'Jogou ' + sys + '/' + dataId);
                 const docElm = document.documentElement;
@@ -581,6 +693,7 @@
                     document.getElementById('loading-overlay').style.display = 'none';
                     document.getElementById('menu-btn').style.display = 'block';
                     monitorarDesempenho(sisEmu);
+                    iniciarSaves();
                     injetarLayoutTatico(sisEmu); 
                     configurarP2NoEmulador();
                     
@@ -631,7 +744,7 @@
 
         } else {
             document.getElementById('power-screen').style.display = 'none';
-            document.getElementById('status-msg').style.display = 'block';
+            montarHome();
         }
 
         // =====================================
@@ -1220,6 +1333,7 @@
             const emu = window.EJS_emulator;
             try { if (emu && emu.pause) emu.pause(); } catch (e) {}
             atualizarRotuloVibracao();
+            mostrarMsgMenu();
             document.getElementById('menu-jogo').style.display = 'flex';
         }
         function fecharMenuJogo() {
@@ -1239,13 +1353,193 @@
                 if (vibracaoLigada) vibrar(30);
                 return;
             }
+            if (acao === 'backup') { exportarBackup(); return; }
+            if (acao === 'restaurar') { document.getElementById('mj-arquivo').click(); return; }
             if (acao === 'reiniciar' && !window.confirm('Reiniciar o jogo? O que não foi salvo será perdido.')) return;
-            const mapa = { salvar: 'saveState', carregar: 'loadState', exportar: 'saveSavFiles', importar: 'loadSavFiles', reiniciar: 'restart' };
+            const mapa = { salvar: 'saveState', carregar: 'loadState', reiniciar: 'restart' };
             const b = botaoEJS(mapa[acao]);
             // salvar/carregar/reiniciar acontecem com o jogo rodando; exportar/importar abrem a janela de arquivos
             if (acao === 'salvar' || acao === 'carregar' || acao === 'reiniciar') fecharMenuJogo();
             if (b) b.click();
         }
+
+        // ===== Chave do jogo, "Continuar", save do jogo (SRAM) =====
+
+        function resumoBytes(u8) {
+            let h = 2166136261 >>> 0, vazio = true, p = u8[0];
+            for (let i = 0; i < u8.length; i++) { const v = u8[i]; if (v !== p) vazio = false; h = Math.imul(h ^ v, 16777619) >>> 0; }
+            return { h: h + ':' + u8.length, vazio: vazio };
+        }
+        async function guardarSram() {
+            try {
+                const emu = window.EJS_emulator;
+                if (!sramPronto || !emu || !emu.started || !emu.gameManager) return;
+                const f = await emu.gameManager.getSaveFile();
+                if (!f || !f.length) return;
+                const r = resumoBytes(f);
+                if (r.vazio || r.h === sramUltimo) return;
+                sramUltimo = r.h;
+                await Saves.put('sram:' + CHAVE_JOGO, new Uint8Array(f));
+            } catch (e) {}
+        }
+        async function restaurarSram() {
+            try {
+                const emu = window.EJS_emulator, d = await Saves.get('sram:' + CHAVE_JOGO);
+                if (!d || !emu || !emu.gameManager) return false;
+                const gm = emu.gameManager, path = gm.getSaveFilePath(), partes = path.split('/');
+                let cp = '';
+                for (let i = 0; i < partes.length - 1; i++) {
+                    if (partes[i] === '') continue;
+                    cp += '/' + partes[i];
+                    if (!gm.FS.analyzePath(cp).exists) gm.FS.mkdir(cp);
+                }
+                if (gm.FS.analyzePath(path).exists) gm.FS.unlink(path);
+                gm.FS.writeFile(path, d);
+                gm.loadSaveFiles();
+                sramUltimo = resumoBytes(d).h;
+                return true;
+            } catch (e) { return false; }
+        }
+        async function carregarEstadoSalvo() {
+            const emu = window.EJS_emulator;
+            try {
+                const st = await Saves.get('state:' + CHAVE_JOGO);
+                if (!st) { if (emu && emu.displayMessage) emu.displayMessage('NENHUM SAVE ENCONTRADO'); return false; }
+                emu.gameManager.loadState(new Uint8Array(st));
+                if (emu.displayMessage) emu.displayMessage('JOGO CARREGADO');
+                return true;
+            } catch (e) { if (emu && emu.displayMessage) emu.displayMessage('FALHA AO CARREGAR'); return false; }
+        }
+        async function iniciarSaves() {
+            const emu = window.EJS_emulator;
+            if (!emu) { sramPronto = true; return; }
+            try {
+                emu.on('saveState', async function(d) {
+                    try { await Saves.put('state:' + CHAVE_JOGO, new Uint8Array(d.state)); emu.displayMessage('JOGO SALVO'); }
+                    catch (e) { emu.displayMessage('FALHA AO SALVAR'); }
+                });
+                emu.on('loadState', function() { carregarEstadoSalvo(); });
+            } catch (e) {}
+            const restaurou = await restaurarSram();
+            sramPronto = true;
+            if (retomarEstado) setTimeout(carregarEstadoSalvo, 1500);
+            else if (restaurou) { try { emu.gameManager.restart(); } catch (e) {} }
+            setInterval(guardarSram, 15000);
+            document.addEventListener('visibilitychange', () => { if (document.hidden) guardarSram(); });
+            window.addEventListener('pagehide', guardarSram);
+        }
+
+        // ===== Backup dos saves em arquivo =====
+        function mostrarMsgMenu(txt) {
+            const el = document.getElementById('mj-msg');
+            if (!el) return;
+            if (txt) { el.textContent = txt; return; }
+            let u = ''; try { u = localStorage.getItem('c3d_ultimo_backup') || ''; } catch (e) {}
+            el.textContent = u ? 'Último backup: ' + new Date(parseInt(u)).toLocaleDateString('pt-BR') : 'Faça um backup de vez em quando para não perder seus saves.';
+        }
+        async function exportarBackup() {
+            try {
+                await guardarSram();
+                const itens = await Saves.todos();
+                if (!itens.length) { mostrarMsgMenu('Ainda não há saves para guardar. Salve o jogo primeiro.'); return; }
+                const out = { app: 'coisas3d', v: 1, criado: Date.now(), itens: itens.map(i => ({ k: i.k, t: i.t, d: paraB64(new Uint8Array(i.d)) })) };
+                const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
+                const a = document.createElement('a'), d = new Date();
+                a.href = URL.createObjectURL(blob);
+                a.download = 'saves-coisas3d-' + d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + '.json';
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+                try { localStorage.setItem('c3d_ultimo_backup', String(Date.now())); } catch (e) {}
+                mostrarMsgMenu('Backup baixado (' + itens.length + ' saves). Guarde o arquivo em local seguro.');
+            } catch (e) { mostrarMsgMenu('Não foi possível criar o backup.'); }
+        }
+        async function restaurarBackup(arquivo) {
+            try {
+                const dados = JSON.parse(await arquivo.text());
+                if (!dados || dados.app !== 'coisas3d' || !Array.isArray(dados.itens)) { mostrarMsgMenu('Este arquivo não é um backup da Coisas 3D.'); return; }
+                let n = 0;
+                for (const i of dados.itens) {
+                    const atual = await Saves.reg(i.k);
+                    if (atual && atual.t >= i.t) continue;
+                    await Saves.put(i.k, deB64(i.d), i.t); n++;
+                }
+                mostrarMsgMenu(n ? n + ' saves restaurados.' : 'Seus saves aqui já estão atualizados.');
+                if (n && window.confirm('Backup restaurado. Recarregar o jogo agora para usar os saves?')) location.reload();
+            } catch (e) { mostrarMsgMenu('Não foi possível ler este arquivo.'); }
+        }
+        document.getElementById('mj-arquivo').addEventListener('change', function() {
+            if (this.files && this.files[0]) restaurarBackup(this.files[0]);
+            this.value = '';
+        });
+
+        // ===== Tela inicial: continuar, aviso de potência =====
+        async function prepararTelaInicial() {
+            try {
+                const reg = await Saves.reg('state:' + CHAVE_JOGO);
+                if (reg) {
+                    retomarEstado = true;
+                    document.getElementById('power-btn-txt').textContent = 'Continuar de onde parou';
+                    document.getElementById('power-btn2').hidden = false;
+                    document.getElementById('ps-nota').hidden = false;
+                }
+            } catch (e) {}
+            const nota = await medirPotencia();
+            window.__nota = nota;
+            if (BENCH) { const b = document.getElementById('ps-bench'); b.hidden = false; b.textContent = 'Nota do celular: ' + nota; }
+            const lim = POTENCIA[sisEmu];
+            if (lim && lim.minimo !== null && nota > 0 && nota < lim.minimo) {
+                const av = document.getElementById('ps-aviso');
+                av.textContent = 'Este jogo exige um celular potente. O seu parece mais simples, então o jogo pode travar. Você pode tentar mesmo assim.';
+                av.hidden = false;
+            }
+        }
+
+        // ===== Meus jogos (lista dos últimos jogos abertos) =====
+        function guardarRecente() {
+            try {
+                const q = new URLSearchParams(window.location.search); q.delete('sala');
+                const lista = JSON.parse(localStorage.getItem('c3d_recentes') || '[]').filter(r => r.q !== '?' + q.toString());
+                lista.unshift({ q: '?' + q.toString(), n: window.__nomeJogo || nomeDoArquivo(dataId) || dataId, s: document.getElementById('ps-sys').textContent, t: Date.now() });
+                localStorage.setItem('c3d_recentes', JSON.stringify(lista.slice(0, 15)));
+            } catch (e) {}
+        }
+        function montarHome() {
+            let lista = [];
+            try { lista = JSON.parse(localStorage.getItem('c3d_recentes') || '[]'); } catch (e) {}
+            const box = document.getElementById('h-lista');
+            lista.forEach(r => {
+                const a = document.createElement('a');
+                a.className = 'h-jogo'; a.href = location.pathname + r.q;
+                const b = document.createElement('b'); b.textContent = r.n;
+                const sm = document.createElement('small'); sm.textContent = r.s;
+                a.appendChild(b); a.appendChild(sm); box.appendChild(a);
+            });
+            if (lista.length) document.getElementById('h-sub').textContent = 'Continue de onde parou ou encoste outro cartucho no celular.';
+            document.getElementById('home').style.display = 'block';
+        }
+
+        // ===== Instalar no celular + modo offline =====
+        let pedidoInstalar = null;
+        const emStandalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+        const ehIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        function mostrarDicaInstalar(html) {
+            document.getElementById('di-caixa').innerHTML = html + '<button type="button" onclick="document.getElementById(\'dica-instalar\').style.display=\'none\'">Entendi</button>';
+            document.getElementById('dica-instalar').style.display = 'flex';
+        }
+        function cliqueInstalar() {
+            if (pedidoInstalar) { pedidoInstalar.prompt(); pedidoInstalar.userChoice.finally(() => { pedidoInstalar = null; atualizarBotoesInstalar(); }); return; }
+            if (ehIOS) mostrarDicaInstalar('<h3>Instalar no iPhone</h3>Toque no botão <b>Compartilhar</b> (quadrado com seta) do Safari, escolha <b>Adicionar à Tela de Início</b> e confirme.<br><br><b>Importante:</b> o app instalado tem seus próprios saves, separados do Safari. Use o <b>Backup dos saves</b> do menu para levar seu progresso.');
+            else mostrarDicaInstalar('<h3>Instalar no celular</h3>Abra o menu do navegador (três pontinhos) e toque em <b>Instalar aplicativo</b> ou <b>Adicionar à tela inicial</b>.');
+        }
+        function atualizarBotoesInstalar() {
+            const mostrar = !emStandalone && (pedidoInstalar || ehIOS);
+            ['ps-instalar', 'h-instalar'].forEach(id => { const b = document.getElementById(id); if (b) b.hidden = !mostrar; });
+        }
+        window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); pedidoInstalar = e; atualizarBotoesInstalar(); });
+        window.addEventListener('appinstalled', () => { pedidoInstalar = null; atualizarBotoesInstalar(); });
+        ['ps-instalar', 'h-instalar'].forEach(id => { const b = document.getElementById(id); if (b) b.addEventListener('click', cliqueInstalar); });
+        atualizarBotoesInstalar();
+        try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
 
         // Aviso quando o celular não consegue rodar o jogo na velocidade certa (mede a fluidez da tela nos primeiros segundos)
         function monitorarDesempenho(coreName) {
@@ -1261,6 +1555,7 @@
                     document.removeEventListener('visibilitychange', aoMudarVisibilidade);
                     if (interrompido) return;
                     const fps = quadros / 6;
+                    if (BENCH) { const b = document.getElementById('aviso-desempenho'); document.getElementById('ad-texto').textContent = 'BENCH: nota ' + (window.__nota || '?') + ' | FPS ' + fps.toFixed(1); b.style.display = 'flex'; return; }
                     if (fps < 40) mostrarAvisoDesempenho(coreName);
                 }, 6000);
             }, 5000);
