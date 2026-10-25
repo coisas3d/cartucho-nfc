@@ -1,9 +1,15 @@
 {
-  "name": "Sistema de Execução",
-  "short_name": "Sistema",
+  "id": "./",
+  "name": "Coisas 3D Games",
+  "short_name": "Coisas 3D",
+  "description": "Seus cartuchos NFC da Coisas 3D",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#000000",
-  "theme_color": "#000000",
-  "orientation": "landscape"
+  "theme_color": "#050505",
+  "icons": [
+    { "src": "c3dlogo.png", "sizes": "500x500", "type": "image/png", "purpose": "any" }
+  ]
 }
