@@ -24,6 +24,7 @@ h2{font-size:1rem;margin:0 0 6px;color:var(--laranja-claro)}
 <header><img src="c3dlogo.png" alt=""><h1>Gerador de links <span>NFC</span></h1></header>
 
 <div class="c"><h2>1. Escolha o jogo</h2>
+<div class="m" id="fonte"></div><div class="row" style="margin:6px 0 0"><button class="bt s" id="atu" type="button">Atualizar lista de jogos</button></div>
 <label for="con">Console</label><select id="con"></select>
 <label for="bus">Buscar</label><input type="text" id="bus" placeholder="digite parte do nome...">
 <label for="jog">Jogo</label><select id="jog"></select>
@@ -54,13 +55,28 @@ var BASE=(location.protocol==='https:'&&!/localhost|127\./.test(location.hostnam
 var NOMES={atari2600:'Atari 2600',fbneo:'Arcade (FBNeo)',mame2003:'Arcade (MAME 2003)',gb:'Game Boy / Color (pasta gb)',gbc:'Game Boy Color (pasta gbc)',gba:'Game Boy Advance',n64:'Nintendo 64',segaMD:'Mega Drive',snes:'Super Nintendo'};
 var J={},$=function(i){return document.getElementById(i)};
 function fmt(b){return b>1048576?(b/1048576).toFixed(1)+' MB':Math.round(b/1024)+' KB'}
-fetch('jogos.json').then(function(r){return r.json()}).catch(function(){return {}}).then(function(d){J=d;delete J['_leia-me'];iniCon();});
-function iniCon(){var cs={};for(var k in J)cs[k.split('/')[0]]=1;var h='';Object.keys(cs).sort().forEach(function(c){h+='<option value="'+c+'">'+(NOMES[c]||c)+'</option>'});
+var REPO=(function(){var h=location.hostname,p=location.pathname.split('/')[1];return(/\.github\.io$/.test(h)&&p)?{o:h.split('.')[0],r:p}:{o:'coisas3d',r:'cartucho-nfc'}})();
+function nomeAuto(arq){var b=arq.replace(/\.[^.]+$/,'');if(/^[0-9a-f]{32,}$/i.test(b))return '(sem nome) '+b.slice(0,8);var t=b.replace(/[_-]+/g,' ').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/([A-Za-z])(\d)/g,'$1 $2').trim();return t.charAt(0).toUpperCase()+t.slice(1)}
+function lerArvore(){var refs=['HEAD','main','master'],i=0;
+ function tenta(){if(i>=refs.length)return Promise.reject();var u='https://api.github.com/repos/'+REPO.o+'/'+REPO.r+'/git/trees/'+refs[i++]+'?recursive=1';
+  return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){if(!j.tree)throw 0;try{localStorage.setItem('c3d_arvore',JSON.stringify({t:Date.now(),tree:j.tree.filter(function(x){return /^roms\//.test(x.path)}).map(function(x){return [x.path,x.size||0]})}))}catch(e){}return j.tree.filter(function(x){return x.type==='blob'&&/^roms\//.test(x.path)}).map(function(x){return [x.path,x.size||0]})}).catch(tenta)}
+ return tenta().catch(function(){try{var c=JSON.parse(localStorage.getItem('c3d_arvore'));if(c&&c.tree)return c.tree}catch(e){}return null})}
+function carregar(){$('fonte').textContent='Procurando jogos no repositório...';
+ Promise.all([fetch('jogos.json?'+Date.now()).then(function(r){return r.json()}).catch(function(){return {}}),lerArvore()]).then(function(r){
+  var old=r[0],tree=r[1],n=0,novos=0;delete old['_leia-me'];J={};
+  if(tree){tree.forEach(function(x){var m=x[0].match(/^roms\/([^\/]+)\/([^\/]+)$/);if(!m)return;var core=m[1],arq=m[2];if(arq.charAt(0)==='.'||!/\.[A-Za-z0-9]+$/.test(arq))return;
+    var base=arq.replace(/\.[^.]+$/,'');if(core==='fbneo'&&/^neogeo$/i.test(base))return;
+    var o=old[core+'/'+base]||null;J[core+'/'+arq]={nome:(o&&o.nome)||nomeAuto(arq),arq:arq,tam:x[1]||(o&&o.tam)||0,l:o&&o.l,b:o&&o.b,novo:!o};n++;if(!o)novos++});
+   $('fonte').innerHTML='<span class="ok">'+n+' jogos encontrados no repositório</span>'+(novos?' ('+novos+' ainda sem nome no jogos.json, aparecem como "novo")':'')+'.'}
+  else{for(var k in old){var o=old[k];if(o&&o.arq){J[k]=o;n++}}$('fonte').innerHTML='<span class="er">Não consegui ler o repositório agora (limite do GitHub ou sem internet).</span> Mostrando '+n+' jogos do jogos.json.'}
+  iniCon();})}
+
+function iniCon(){var sel=$('con').value,cs={};for(var k in J)cs[k.split('/')[0]]=1;var h='';Object.keys(cs).sort().forEach(function(c){h+='<option value="'+c+'">'+(NOMES[c]||c)+'</option>'});
  if(!h)h=Object.keys(NOMES).map(function(c){return '<option value="'+c+'">'+NOMES[c]+'</option>'}).join('');
- $('con').innerHTML=h;lista();}
+ $('con').innerHTML=h;if(sel&&cs[sel])$('con').value=sel;lista();}
 function arc(){return /^(fbneo|mame2003)$/.test($('con').value)}
 function lista(){var c=$('con').value,q=$('bus').value.toLowerCase(),h='';
- Object.keys(J).filter(function(k){return k.split('/')[0]===c&&(J[k].nome+k).toLowerCase().indexOf(q)>-1}).sort(function(a,b){return J[a].nome.localeCompare(J[b].nome)}).forEach(function(k){h+='<option value="'+k+'">'+J[k].nome+' ('+J[k].arq+')</option>'});
+ Object.keys(J).filter(function(k){return k.split('/')[0]===c&&(J[k].nome+k).toLowerCase().indexOf(q)>-1}).sort(function(a,b){return J[a].nome.localeCompare(J[b].nome)}).forEach(function(k){h+='<option value="'+k+'">'+J[k].nome+(J[k].novo?' [novo]':'')+' ('+J[k].arq+')</option>'});
  $('jog').innerHTML=h;$('arc').hidden=!arc();padrao();}
 function padrao(){var j=J[$('jog').value];$('lay').value=(j&&j.l)||'';$('neo').checked=!!(j&&j.b==='neogeo');gerar();}
 function montar(c,arq,l,b){var u=BASE+'index.html?c='+c+'&id='+encodeURIComponent(arq);if(l)u+='&l='+l;if(b)u+='&b='+b;return u}
@@ -78,12 +94,13 @@ function gerar(){var c=$('con').value,arq,tam=0;
 function copiar(t,b){var f=function(){var o=b.textContent;b.textContent='Copiado!';setTimeout(function(){b.textContent=o},1400)};
  if(navigator.clipboard)navigator.clipboard.writeText(t).then(f,function(){});else{var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();f()}}
 function baixarQR(el,nome){var c=el.querySelector('canvas'),i=el.querySelector('img'),a=document.createElement('a');a.href=c?c.toDataURL('image/png'):(i&&i.src);a.download=nome;a.click()}
-$('con').onchange=lista;$('bus').oninput=lista;$('jog').onchange=padrao;$('lay').onchange=gerar;$('neo').onchange=gerar;$('parq').oninput=gerar;
+$('atu').onclick=carregar;$('con').onchange=lista;$('bus').oninput=lista;$('jog').onchange=padrao;$('lay').onchange=gerar;$('neo').onchange=gerar;$('parq').oninput=gerar;
 $('pers').onchange=function(){$('pbox').hidden=!this.checked;$('jog').disabled=this.checked;gerar()};
 $('cp').onclick=function(){copiar(ult,this)};$('dq').onclick=function(){baixarQR($('qr'),'qr-tag.png')};
-$('csv').onclick=function(){var l=['Console;Jogo;Arquivo;Link'];Object.keys(J).sort().forEach(function(k){var j=J[k],c=k.split('/')[0],a=/^(fbneo|mame2003)$/.test(c);if(/^[0-9a-f]{32,}$/i.test(k.split('/')[1]))return;
+$('csv').onclick=function(){var l=['Console;Jogo;Arquivo;Link'];Object.keys(J).sort().forEach(function(k){var j=J[k],c=k.split('/')[0],a=/^(fbneo|mame2003)$/.test(c);if(/^[0-9a-f]{32,}$/i.test(j.arq.replace(/\.[^.]+$/,'')))return;
  l.push([c,j.nome,j.arq,montar(c,j.arq,a?j.l||'':'',a&&j.b?j.b:'')].join(';'))});
  var b=new Blob(['﻿'+l.join('\r\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='links-tags.csv';a.click()};
+carregar();
 var PJ=BASE+'como-jogar.html';$('cj').href=PJ;$('cpj').onclick=function(){copiar(PJ,this)};$('dqj').onclick=function(){baixarQR($('qrj'),'qr-como-jogar.png')};
 window.addEventListener('load',function(){try{new QRCode($('qrj'),{text:PJ,width:160,height:160,correctLevel:QRCode.CorrectLevel.M})}catch(e){}});
 </script></body></html>
