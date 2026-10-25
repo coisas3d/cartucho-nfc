@@ -150,6 +150,7 @@
         .p2-btn-ficha.press { background: var(--branco); }
         .p2-btn-combo { font-size: 15px; letter-spacing: 0.06em; border-color: rgba(255,255,255,0.85); box-shadow: 0 0 14px rgba(255,255,255,0.22), inset 0 0 12px rgba(255,106,0,0.14); }
         .p2-btn-combo.press { background: var(--branco); color: var(--preto); box-shadow: 0 0 26px rgba(255,255,255,0.7); }
+        body { touch-action: none; }
         .p2x { margin: 0; }
         .p2-pill { border-radius: 999px; font-size: 12px; letter-spacing: 0.1em; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 2px 10px rgba(0,0,0,0.6); }
         .p2-pill.press { background: var(--branco); color: var(--preto); box-shadow: 0 0 20px rgba(255,255,255,0.5); }
@@ -213,7 +214,7 @@
         #game .ejs_dpad_down_pressed .ejs_dpad_vertical:after { border-top-color: var(--branco) !important; }
 
         /* Cruz com 8 direções (SNES, Mega Drive, N64, GB, GBA, Atari) */
-        .pad8 { position: fixed; display: none; box-sizing: border-box; border-radius: 50%; z-index: 9999; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; --r: 50px;
+        .pad8 { pointer-events: none; position: fixed; display: none; box-sizing: border-box; border-radius: 50%; z-index: 9999; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; --r: 50px;
             background: radial-gradient(circle, rgba(10,10,10,0.62) 0%, rgba(10,10,10,0.62) 58%, rgba(255,106,0,0.24) 100%); border: 2px solid var(--laranja);
             box-shadow: 0 0 16px rgba(255,106,0,0.35), inset 0 0 18px rgba(255,106,0,0.12); }
         .pad8::before { content: ''; position: absolute; left: 50%; top: 50%; width: 46%; height: 46%; transform: translate(-50%, -50%); border-radius: 50%; border: 1px solid rgba(255,255,255,0.14); }
@@ -378,51 +379,26 @@
                     gameDiv.innerHTML = `
                         <img class="p2-marca" src="c3dlogo.png" alt="">
                         <div class="p2-topo"><img src="c3dlogo.png" alt=""><span>JOGADOR 2</span></div>
-                        <div id="joystick-zone"></div>
-                        <div id="p2-btn-b" class="p2-btn" data-pad="1">B</div>
-                        <div id="p2-btn-a" class="p2-btn" data-pad="0">A</div>
+                        <div id="p2-btn-b" class="p2-btn" data-pad="0">B</div>
+                        <div id="p2-btn-a" class="p2-btn" data-pad="1">A</div>
                         <div id="p2-btn-select" class="p2-btn p2-sys-btn ${btnSelectClasse}" data-pad="8">${btnSelectTexto}</div>
                         <div id="p2-btn-start" class="p2-btn p2-sys-btn" data-pad="9">START</div>
                         ${btnEspecial}
                     `;
 
-                    const joystick = nipplejs.create({
-                        zone: document.getElementById('joystick-zone'),
-                        mode: 'static',
-                        position: { left: '50%', top: '50%' },
-                        color: 'white',
-                        size: 110
-                    });
-
-                    let activeDpad = { 12: 0, 13: 0, 14: 0, 15: 0 };
-                    
-                    joystick.on('move', function(evt, data) {
-                        const x = Math.cos(data.angle.radian);
-                        const y = Math.sin(data.angle.radian);
-                        
-                        const newDpad = {
-                            12: y > 0.4 ? 1 : 0,
-                            13: y < -0.4 ? 1 : 0,
-                            14: x < -0.4 ? 1 : 0,
-                            15: x > 0.4 ? 1 : 0
-                        };
-                        
-                        for (let btn in newDpad) {
-                            if (newDpad[btn] !== activeDpad[btn]) {
-                                conexao.send({ b: parseInt(btn), s: newDpad[btn] });
-                                activeDpad[btn] = newDpad[btn];
-                            }
-                        }
-                    });
-
-                    joystick.on('end', function() {
-                        for (let btn in activeDpad) {
-                            if (activeDpad[btn] === 1) {
-                                conexao.send({ b: parseInt(btn), s: 0 });
-                                activeDpad[btn] = 0;
-                            }
-                        }
-                    });
+                    // cruz de 8 direções flutuante (as direções vão para os índices 12 a 15 do gamepad do P2)
+                    const padAntigo = garantirPad8({ id: 'p2-pad8', container: gameDiv, enviarDir: (k, v) => conexao.send({ b: P2_DIR[k], s: v }) });
+                    const posPadAntigo = () => {
+                        const retrato = window.innerHeight > window.innerWidth;
+                        const t = 140, cx = window.innerWidth * (retrato ? 0.22 : 0.14), cy = window.innerHeight * (retrato ? 0.79 : 0.56);
+                        padAntigo.style.width = padAntigo.style.height = t + 'px';
+                        padAntigo.style.setProperty('--r', (t * 0.36) + 'px');
+                        if (padAntigo.dataset.flutua !== '1') { padAntigo.style.left = (cx - t / 2) + 'px'; padAntigo.style.top = (cy - t / 2) + 'px'; }
+                        padAntigo.style.display = 'block';
+                        padAntigo._guardarCasa();
+                    };
+                    window.addEventListener('resize', posPadAntigo);
+                    posPadAntigo();
 
                     const botoes = gameDiv.querySelectorAll('.p2-btn');
                     botoes.forEach(btn => {
@@ -530,7 +506,7 @@
                 setTimeout(() => {
                     peerHost = new Peer();
                     peerHost.on('open', function(meuID) {
-                        const linkConvite = window.location.origin + window.location.pathname + "?c=" + sys + "&id=" + dataId + "&sala=" + meuID;
+                        const linkConvite = window.location.origin + window.location.pathname + "?c=" + sys + "&id=" + dataId + "&sala=" + meuID + (LAYOUT_ARCADE ? "&l=" + LAYOUT_ARCADE : "");
                         new QRCode(document.getElementById("meu-qrcode"), { text: linkConvite, width: 180, height: 180 });
                     });
                     peerHost.on('connection', function(conexao) {
@@ -646,7 +622,7 @@
         // Cruz com 8 direções (inclui as diagonais) para SNES, Mega Drive, N64, GB, GBA e Atari.
         // Fica no lugar da cruz nativa do emulador e envia as mesmas entradas (4=cima, 5=baixo, 6=esquerda, 7=direita).
         // =====================================
-        const CORES_COM_PAD8 = ['snes', 'sfc', 'segaMD', 'gb', 'gba', 'atari2600', 'n64'];
+        const CORES_COM_PAD8 = ['snes', 'sfc', 'segaMD', 'gb', 'gba', 'atari2600', 'n64', 'fbneo', 'mame2003'];
 
         function garantirPad8(opc) {
             opc = opc || {};
@@ -706,31 +682,50 @@
                 enviar(novo);
                 mostrar(novo, fx, fy);
             };
+            // Cruz flutuante: o toque em qualquer lugar livre da área do polegar leva a cruz para o dedo; ao soltar, ela volta para casa
+            const casa = () => {
+                const t = pad.offsetWidth;
+                if (pad._casa) { pad.style.left = (pad._casa.x - t / 2) + 'px'; pad.style.top = (pad._casa.y - t / 2) + 'px'; }
+            };
             const soltar = () => {
                 ponteiro = null;
                 const zero = { u: 0, d: 0, l: 0, r: 0 };
                 enviar(zero);
                 mostrar(zero, 0, 0);
+                if (pad.dataset.flutua === '1') { pad.dataset.flutua = '0'; casa(); }
             };
-
-            pad.addEventListener('pointerdown', (ev) => {
+            const SELETOR_BOTOES = '.ejs_virtualGamepad_button, .p1x, #p1-btn-ab, #btn-vel, #btn-convidar, .p2-btn, #tela-convite, .nipple';
+            const regiaoPadrao = (x, y) => (window.innerHeight > window.innerWidth) ? (x < window.innerWidth * 0.5 && y > window.innerHeight * 0.5) : (x < window.innerWidth * 0.4);
+            document.addEventListener('pointerdown', (ev) => {
+                if (ponteiro !== null || !pad.offsetWidth || pad.style.display === 'none') return;
+                if (ev.target && ev.target.closest && ev.target.closest(SELETOR_BOTOES)) return;
+                const r = pad.getBoundingClientRect();
+                const sobrePad = Math.hypot(ev.clientX - (r.left + r.width / 2), ev.clientY - (r.top + r.height / 2)) <= r.width / 2;
+                if (!sobrePad && (pad.dataset.fixo === '1' || !(opc.regiao || regiaoPadrao)(ev.clientX, ev.clientY))) return;
                 ev.preventDefault();
-                if (ponteiro !== null) return;
                 ponteiro = ev.pointerId;
-                try { pad.setPointerCapture(ev.pointerId); } catch (e) {}
+                if (!sobrePad) {
+                    const t = r.width, m = 4;
+                    const x = Math.min(Math.max(ev.clientX - t / 2, m), window.innerWidth - t - m);
+                    const y = Math.min(Math.max(ev.clientY - t / 2, m), window.innerHeight - t - m);
+                    pad.dataset.flutua = '1';
+                    pad.style.left = x + 'px';
+                    pad.style.top = y + 'px';
+                }
                 ler(ev);
-            });
-            pad.addEventListener('pointermove', (ev) => { if (ev.pointerId === ponteiro) { ev.preventDefault(); ler(ev); } });
+            }, true);
+            document.addEventListener('pointermove', (ev) => { if (ev.pointerId === ponteiro) { ev.preventDefault(); ler(ev); } }, true);
             const fim = (ev) => { if (ev.pointerId === ponteiro) soltar(); };
-            pad.addEventListener('pointerup', fim);
-            pad.addEventListener('pointercancel', fim);
-            pad.addEventListener('lostpointercapture', fim);
+            document.addEventListener('pointerup', fim, true);
+            document.addEventListener('pointercancel', fim, true);
             pad._ler = ler; // usado nos testes
+            pad._guardarCasa = () => { if (pad.dataset.flutua === '1') return; const r = pad.getBoundingClientRect(); pad._casa = { x: r.left + r.width / 2, y: r.top + r.height / 2 }; };
             return pad;
         }
 
         function posicionarPad8(coreName) {
             const pad = garantirPad8();
+            if (pad.dataset.flutua === '1') return;
             const esq = document.querySelector('#game .ejs_virtualGamepad_left');
             const r = esq ? esq.getBoundingClientRect() : null;
             if (!r || r.width === 0) { pad.style.display = 'none'; return; }
@@ -743,7 +738,9 @@
             pad.style.setProperty('--r', (tam * 0.36) + 'px');
             pad.style.left = (cx - tam / 2) + 'px';
             pad.style.top = (cy - tam / 2) + 'px';
+            pad.dataset.fixo = (coreName === 'n64') ? '1' : '0';
             pad.style.display = 'block';
+            pad._guardarCasa();
             // esconde a cruz nativa do emulador (sem desmontar, para não quebrar o layout)
             document.querySelectorAll('#game .b_dpad').forEach(el => {
                 el.style.setProperty('visibility', 'hidden', 'important');
@@ -908,23 +905,32 @@
                 }
                 return { pad8: [P.pad, P.padL, 140], itens };
             }
-            if ((core === 'fbneo' || core === 'mame2003') && (LAYOUT_ARCADE === '4' || LAYOUT_ARCADE === '6')) {
+            if ((core === 'fbneo' || core === 'mame2003') && ['3', '4', '6'].includes(LAYOUT_ARCADE)) {
+                // No arcade os botões do P1 são: A = entrada 0 (índice 1), B = entrada 8 (índice 0), X = entrada 1 (índice 3), Y = entrada 9 (índice 2), L = 4, R = 5
                 const sys = [
                     ['sel', 'FICHA', 'p', [8], [13, 63.5, 0, 0], [8, 14, 0, 0], 0, 'p2c-borda'],
                     ['sta', 'START', 'p', [9], [87, 63.5, 0, 0], [92, 14, 0, 0], 0]
                 ];
+                if (LAYOUT_ARCADE === '3') {
+                    // 3 botões (ex.: Metal Slug): A, B e C, como no jogador 1
+                    return { pad8: [[22, 80], [14, 62], 140], itens: [
+                        ['c', 'C', 'c', [3], [72, 73, 0, 0], [80, 36, 0, 0], F],
+                        ['b', 'B', 'c', [0], [66, 88, 0, 0], [78, 70, 0, 0], F],
+                        ['a', 'A', 'c', [1], [86, 81, 0, 0], [92, 52, 0, 0], F]
+                    ].concat(sys) };
+                }
                 if (LAYOUT_ARCADE === '4') {
                     const fr = diamante([74, 79]), fl = diamante([86, 56]);
                     // mesmo losango do jogador 1: Y em cima, X à esquerda, B à direita, A embaixo
                     return { pad8: [[22, 80], [14, 62], 140], itens: [
-                        ['y', 'Y', 'c', [3], fr[0], fl[0], F], ['x', 'X', 'c', [2], fr[1], fl[1], F],
-                        ['b', 'B', 'c', [1], fr[2], fl[2], F], ['a', 'A', 'c', [0], fr[3], fl[3], F]
+                        ['y', 'Y', 'c', [2], fr[0], fl[0], F], ['x', 'X', 'c', [3], fr[1], fl[1], F],
+                        ['b', 'B', 'c', [0], fr[2], fl[2], F], ['a', 'A', 'c', [1], fr[3], fl[3], F]
                     ].concat(sys) };
                 }
                 const g = (c, col, lin) => [c[0], c[1], (col - 1) * 62, lin ? 34 : -34];
                 const fr = [72, 79], fl = [82, 58];
-                const n = [['y', 'Y', 3], ['x', 'X', 2], ['l', 'L', 4], ['b', 'B', 1], ['a', 'A', 0], ['r', 'R', 5]];
-                return { pad8: [[22, 80], [14, 62], 140], itens: n.map((e, i) => [e[0], e[1], 'c', [e[2]], g(fr, i % 3, i >= 3), g(fl, i % 3, i >= 3), 54]).concat(sys) };
+                const n = [['y', 'Y', 2], ['x', 'X', 3], ['l', 'L', 4], ['b', 'B', 0], ['a', 'A', 1], ['r', 'R', 5]];
+                return { pad8: [[22, 80], [14, 62], 140], itens: n.map((e, i) => [e[0], e[1], 'c', [e[2]], g(fr, i % 3, i >= 3), g(fr === null ? fl : fl, i % 3, i >= 3), 54]).concat(sys) };
             }
             if (core === 'atari2600') {
                 return { pad8: [[22, 81], [14, 60], 140], itens: [
@@ -955,7 +961,9 @@
                 pad.style.width = pad.style.height = t + 'px';
                 pad.style.setProperty('--r', (t * 0.36) + 'px');
                 posiciona(pad, [p[0], p[1], 0, 0], t, t);
+                pad.dataset.fixo = lay.stick ? '1' : '0';
                 pad.style.display = 'block';
+                pad._guardarCasa();
             });
 
             // analógico do N64
@@ -1009,7 +1017,7 @@
             return true;
         }
 
-        // Layout dos jogos de arcade: sem &l= são 3 botões (A, B e SP); &l=4 mostra 4 botões; &l=6 mostra 6 botões (socos em cima, chutes embaixo)
+        // Layout dos jogos de arcade: sem &l= são 3 botões (A, B e SP); &l=3 mostra A, B e C; &l=4 mostra 4 botões; &l=6 mostra 6 botões (socos em cima, chutes embaixo)
         const LAYOUT_ARCADE = new URLSearchParams(window.location.search).get('l');
 
         function garantirBotaoExtraP1(id, texto, entrada) {
@@ -1138,10 +1146,25 @@
                 }
 
                 if (coreName === 'mame2003' || coreName === 'fbneo') {
-                    if (LAYOUT_ARCADE === '4' || LAYOUT_ARCADE === '6') {
+                    if (['3', '4', '6'].includes(LAYOUT_ARCADE)) {
                         const sp = document.getElementById('p1-btn-ab');
                         if (sp) sp.style.display = 'none';
                         if (LAYOUT_ARCADE === '6') posicionarSeisBotoesP1(gameContainer);
+                        if (LAYOUT_ARCADE === '3') {
+                            // 3 botões: A, B e um botão C próprio (entrada 1) no lugar do SP
+                            if (btnX) btnX.style.setProperty('display', 'none', 'important');
+                            if (btnY) btnY.style.setProperty('display', 'none', 'important');
+                            const c = garantirBotaoExtraP1('p1-btn-c', 'C', 1);
+                            const a3 = gameContainer.querySelector('.b_a'), b3 = gameContainer.querySelector('.b_b');
+                            if (a3 && b3) {
+                                const ra = a3.getBoundingClientRect(), rb = b3.getBoundingClientRect();
+                                if (ra.width > 0 && rb.width > 0) {
+                                    c.style.display = 'flex';
+                                    c.style.left = ((ra.left + ra.width / 2 + rb.left + rb.width / 2) / 2 - 28) + 'px';
+                                    c.style.top = Math.max(0, Math.min(ra.top, rb.top) - 66) + 'px';
+                                }
+                            }
+                        }
                     } else {
                         posicionarBotaoEspecialP1();
                         if (btnX) btnX.style.setProperty('display', 'none', 'important');
