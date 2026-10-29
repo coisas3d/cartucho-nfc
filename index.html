@@ -307,6 +307,8 @@
         #dica-instalar .di-caixa { max-width: 340px; background: #161616; border: 1px solid #2a2a2a; border-radius: 16px; padding: 20px; color: #fff; line-height: 1.5; font-size: 0.95rem; }
         #dica-instalar h3 { margin: 0 0 8px; color: var(--laranja-claro); }
         #dica-instalar button { margin-top: 12px; width: 100%; padding: 12px; border: 0; border-radius: 10px; background: var(--laranja); color: #000; font-weight: 800; font-size: 1rem; }
+        #c3d-toast { position: fixed; left: 50%; top: 18px; transform: translate(-50%, -20px); z-index: 100002; padding: 10px 18px; border-radius: 999px; background: rgba(10,10,10,0.92); border: 1px solid var(--laranja); color: var(--branco); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 0.9rem; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; white-space: nowrap; }
+        #c3d-toast.on { opacity: 1; transform: translate(-50%, 0); }
         #mj-msg { margin: 6px 4px 2px; color: #9a9a9a; font-size: 0.78rem; text-align: center; min-height: 1.1em; }
         #home { display: none; position: fixed; inset: 0; z-index: 10000; overflow-y: auto; touch-action: pan-y; -webkit-user-select: none; user-select: none; color: #fff; text-align: center; padding: 28px 16px 40px;
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; background: radial-gradient(ellipse at 50% 0%, rgba(255,106,0,0.22) 0%, rgba(255,106,0,0) 60%), #070707; }
@@ -378,8 +380,8 @@
     <div id="menu-jogo">
         <div class="mj-caixa">
             <div class="mj-titulo">Menu do jogo</div>
-            <button type="button" class="mj-bt" onclick="acaoMenuJogo('salvar')">Salvar jogo<small>Guarda o ponto atual neste celular</small></button>
-            <button type="button" class="mj-bt" onclick="acaoMenuJogo('carregar')">Carregar jogo salvo<small>Volta para o último ponto salvo</small></button>
+            <button type="button" class="mj-bt" onclick="acaoMenuJogo('salvar')">Salvar agora<small>Guarda este momento exato do jogo neste celular</small></button>
+            <button type="button" class="mj-bt" onclick="acaoMenuJogo('carregar')">Carregar save<small id="mj-info-save">Volta para o último ponto salvo</small></button>
             <button type="button" class="mj-bt" onclick="acaoMenuJogo('backup')">Backup dos saves<small>Baixa um arquivo com todos os seus saves</small></button>
             <button type="button" class="mj-bt" onclick="acaoMenuJogo('restaurar')">Restaurar backup<small>Carrega um arquivo de backup</small></button>
             <input type="file" id="mj-arquivo" accept=".json,application/json" hidden>
@@ -1329,10 +1331,57 @@
             const b = emu && emu.elements && emu.elements.bottomBar && emu.elements.bottomBar[nome];
             return b && b[0];
         }
+        function avisar(txt) {
+            let el = document.getElementById('c3d-toast');
+            if (!el) { el = document.createElement('div'); el.id = 'c3d-toast'; document.body.appendChild(el); }
+            el.textContent = txt;
+            el.classList.add('on');
+            clearTimeout(avisar._t);
+            avisar._t = setTimeout(() => el.classList.remove('on'), 2200);
+        }
+        function quandoFoi(t) {
+            const d = new Date(t), hoje = new Date();
+            const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            return d.toDateString() === hoje.toDateString() ? 'hoje às ' + hora : d.toLocaleDateString('pt-BR') + ' às ' + hora;
+        }
+        async function atualizarInfoSave() {
+            const el = document.getElementById('mj-info-save');
+            if (!el) return;
+            const r = await Saves.reg('state:' + CHAVE_JOGO);
+            el.textContent = r ? 'Último save: ' + quandoFoi(r.t) : 'Nenhum save ainda neste celular';
+        }
+        // Lê o estado do emulador direto do núcleo (não depende dos botões do EmulatorJS)
+        async function lerEstadoEmulador() {
+            const gm = window.EJS_emulator && window.EJS_emulator.gameManager;
+            if (!gm) return null;
+            let st = null;
+            try { if (typeof gm.getState === 'function') st = await gm.getState(); } catch (e) {}
+            if (!st || !st.length) {
+                try {
+                    gm.quickSave(1);
+                    for (const nome of ['/1-quick.state', '1-quick.state', '/current.state']) {
+                        try { if (gm.FS.analyzePath(nome).exists) { st = gm.FS.readFile(nome); break; } } catch (e) {}
+                    }
+                } catch (e) {}
+            }
+            return st && st.length ? new Uint8Array(st) : null;
+        }
+        async function salvarEstado() {
+            try {
+                const st = await lerEstadoEmulador();
+                if (!st) { avisar('Não foi possível salvar'); return false; }
+                await Saves.put('state:' + CHAVE_JOGO, st);
+                guardarSram();
+                vibrar(25);
+                avisar('Jogo salvo!');
+                return true;
+            } catch (e) { avisar('Não foi possível salvar'); return false; }
+        }
         function abrirMenuJogo() {
             const emu = window.EJS_emulator;
             try { if (emu && emu.pause) emu.pause(); } catch (e) {}
             atualizarRotuloVibracao();
+            atualizarInfoSave();
             mostrarMsgMenu();
             document.getElementById('menu-jogo').style.display = 'flex';
         }
@@ -1355,12 +1404,14 @@
             }
             if (acao === 'backup') { exportarBackup(); return; }
             if (acao === 'restaurar') { document.getElementById('mj-arquivo').click(); return; }
-            if (acao === 'reiniciar' && !window.confirm('Reiniciar o jogo? O que não foi salvo será perdido.')) return;
-            const mapa = { salvar: 'saveState', carregar: 'loadState', reiniciar: 'restart' };
-            const b = botaoEJS(mapa[acao]);
-            // salvar/carregar/reiniciar acontecem com o jogo rodando; exportar/importar abrem a janela de arquivos
-            if (acao === 'salvar' || acao === 'carregar' || acao === 'reiniciar') fecharMenuJogo();
-            if (b) b.click();
+            if (acao === 'salvar') { fecharMenuJogo(); setTimeout(salvarEstado, 150); return; }
+            if (acao === 'carregar') { fecharMenuJogo(); setTimeout(carregarEstadoSalvo, 150); return; }
+            if (acao === 'reiniciar') {
+                if (!window.confirm('Reiniciar o jogo? O que não foi salvo será perdido.')) return;
+                fecharMenuJogo();
+                const gm = window.EJS_emulator && window.EJS_emulator.gameManager;
+                try { gm.restart(); } catch (e) { const b = botaoEJS('restart'); if (b) b.click(); }
+            }
         }
 
         // ===== Chave do jogo, "Continuar", save do jogo (SRAM) =====
@@ -1404,19 +1455,23 @@
             const emu = window.EJS_emulator;
             try {
                 const st = await Saves.get('state:' + CHAVE_JOGO);
-                if (!st) { if (emu && emu.displayMessage) emu.displayMessage('NENHUM SAVE ENCONTRADO'); return false; }
+                if (!st) { avisar('Nenhum save encontrado'); return false; }
                 emu.gameManager.loadState(new Uint8Array(st));
-                if (emu.displayMessage) emu.displayMessage('JOGO CARREGADO');
+                avisar('Jogo carregado!');
                 return true;
-            } catch (e) { if (emu && emu.displayMessage) emu.displayMessage('FALHA AO CARREGAR'); return false; }
+            } catch (e) { avisar('Não foi possível carregar'); return false; }
         }
         async function iniciarSaves() {
             const emu = window.EJS_emulator;
             if (!emu) { sramPronto = true; return; }
             try {
+                // Se alguém usar os botões do próprio EmulatorJS, o save também vai para o nosso banco
                 emu.on('saveState', async function(d) {
-                    try { await Saves.put('state:' + CHAVE_JOGO, new Uint8Array(d.state)); emu.displayMessage('JOGO SALVO'); }
-                    catch (e) { emu.displayMessage('FALHA AO SALVAR'); }
+                    try {
+                        const st = d && d.state ? new Uint8Array(d.state) : await lerEstadoEmulador();
+                        if (!st) throw 0;
+                        await Saves.put('state:' + CHAVE_JOGO, st); avisar('Jogo salvo!');
+                    } catch (e) { avisar('Não foi possível salvar'); }
                 });
                 emu.on('loadState', function() { carregarEstadoSalvo(); });
             } catch (e) {}
