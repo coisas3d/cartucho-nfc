@@ -77,7 +77,13 @@
   #girar img { width: 110px; height: 110px; image-rendering: pixelated; }
   #girar b { font-size: 20px; letter-spacing: 0.08em; }
   #girar span { color: var(--cinza); font-size: 14px; max-width: 320px; }
-  @media (orientation: portrait) and (max-width: 900px) { body:not(.controle) #girar { display: flex; } }
+  /* celular em pé: jogo em cima, botões grandes embaixo */
+  body.vertical #b-esq { width: 112px; height: 112px; left: 5vw; bottom: calc(8vh + env(safe-area-inset-bottom)); }
+  body.vertical #b-dir { width: 112px; height: 112px; left: calc(5vw + 124px); bottom: calc(8vh + env(safe-area-inset-bottom)); }
+  body.vertical #b-acel { width: 128px; height: 128px; right: 5vw; bottom: calc(8vh + 70px + env(safe-area-inset-bottom)); }
+  body.vertical #b-freio { width: 96px; height: 96px; right: calc(5vw + 16px); bottom: calc(4vh + env(safe-area-inset-bottom)); }
+  body.vertical #btn-pausa { top: auto; bottom: calc(2vh + env(safe-area-inset-bottom)); }
+  body.vertical { background: radial-gradient(ellipse at 50% 100%, rgba(255,106,0,0.16), rgba(0,0,0,0) 60%), #000; }
 
   /* celular do jogador 2 (controle) */
   #p2 { display: none; position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 100%, rgba(78,196,30,0.22), rgba(0,0,0,0) 62%), #050505; }

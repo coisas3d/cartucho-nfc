@@ -6,15 +6,15 @@ window.DADOS = (function () {
   // perfil: ROIA (anda devagar) ou McNAMARA (acelera muito) | ritmo: o quanto a IA acelera
   // foto: recorte realista | tampa: posição do bocal do tanque na foto (fração)
   const PERSONAGENS = [
-    { id: 'jellison', nome: 'JELLISON', moto: 'BRMC VRS 650 TOURER', cc: 650, tanque: 21, motor: 'twin', perfil: 'ROIA', ritmo: 0.86,
+    { id: 'jellison', nome: 'JELLISON', moto: 'BRMC VRS 650 TOURER', cc: 650, tanque: 21, motor: 'twin', perfil: 'ROIA', ritmo: 0.97,
       sprite: 'piloto', foto: 'foto_versys', tampa: [0.40, 0.31], retrato: 'retrato_jellison', voz: 190,
-      vel: 205, acel: 0.70, economia: 0.80, curva: 0.80, capacete: '#2a2c32' },
-    { id: 'leosao', nome: 'LEOSÃO', moto: 'BRMC GS 850 RALLYE', cc: 853, tanque: 15, motor: 'twin', perfil: 'McNAMARA', ritmo: 0.98,
+      vel: 190, acel: 0.70, economia: 0.80, curva: 0.80, capacete: '#2a2c32' },
+    { id: 'leosao', nome: 'LEOSÃO', moto: 'BRMC GS 850 RALLYE', cc: 853, tanque: 15, motor: 'twin', perfil: 'McNAMARA', ritmo: 1.0,
       sprite: 'piloto_leosao', foto: 'foto_gs850', tampa: [0.42, 0.25], retrato: 'retrato_leosao', voz: 150,
-      vel: 215, acel: 0.82, economia: 0.70, curva: 0.85, capacete: '#b0b4ba' },
-    { id: 'jefao', nome: 'JEFÃO', moto: 'BRMC GS 1300', cc: 1300, tanque: 19, motor: 'boxer', perfil: 'ROIA', ritmo: 0.79,
-      sprite: 'piloto_gs1300', foto: 'foto_gs1300', tampa: [0.43, 0.30], retrato: 'retrato_jefao', voz: 120,
-      vel: 225, acel: 0.90, economia: 0.60, curva: 0.80, capacete: '#52565e' }
+      vel: 200, acel: 0.82, economia: 0.70, curva: 0.85, capacete: '#b0b4ba' },
+    { id: 'jefao', nome: 'JEFÃO', moto: 'BRMC GS 1300', cc: 1300, tanque: 19, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
+      sprite: 'piloto_gs1300', foto: 'foto_gs1300', tampa: [0.37, 0.33], retrato: 'retrato_jefao', voz: 120,
+      vel: 225, acel: 0.90, economia: 0.48, curva: 0.80, capacete: '#52565e' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
