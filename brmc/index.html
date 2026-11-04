@@ -6,12 +6,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="BRMC Racing">
+<meta name="apple-mobile-web-app-title" content="Black Rock MC">
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/emblema_96.png">
-<link rel="icon" type="image/png" href="assets/emblema_64.png">
-<title>BRMC Racing | Black Rock MC</title>
+<link rel="apple-touch-icon" href="hd/emblema_192.png">
+<link rel="icon" type="image/png" href="hd/emblema_64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<title>Black Rock MC - The Game</title>
 <style>
   :root { --verde: #4ec41e; --verde-esc: #146e3c; --preto: #050505; --branco: #fff; --cinza: #9a9a9a; }
   html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden;
@@ -22,6 +25,8 @@
   /* controles de toque (P1) */
   #controles { display: none; position: fixed; inset: 0; z-index: 10; pointer-events: none; }
   #controles.on { display: block; }
+  .bt, .pilula, .caixa, #toast, #girar b { font-family: 'Press Start 2P', system-ui, sans-serif; }
+  .bt { font-size: 10px; }
   .bt { position: absolute; pointer-events: auto; display: flex; align-items: center; justify-content: center;
     border-radius: 50%; border: 2px solid rgba(255,255,255,0.55); background: rgba(0,0,0,0.28); color: #fff;
     font-weight: 900; letter-spacing: 0.06em; font-size: 13px; box-sizing: border-box; touch-action: none;
@@ -100,9 +105,7 @@
   <div class="bt" id="b-acel" data-k="acel">ACELERA</div>
 </div>
 
-<button class="pilula" id="btn-convidar" type="button">CONVIDAR P2</button>
 <button class="pilula" id="btn-pausa" type="button">II</button>
-<button class="pilula" id="btn-som" type="button">SOM: LIGADO</button>
 
 <div id="convite">
   <div class="caixa">
@@ -116,13 +119,13 @@
 <div id="toast"></div>
 
 <div id="girar">
-  <img src="assets/emblema_96.png" alt="">
+  <img src="hd/emblema_128.png" alt="">
   <b>GIRE O CELULAR</b>
-  <span>O BRMC Racing é jogado com o celular deitado. Para tela cheia no iPhone, use Compartilhar → Adicionar à Tela de Início.</span>
+  <span>Black Rock MC - The Game é jogado com o celular deitado. Para tela cheia no iPhone, use Compartilhar → Adicionar à Tela de Início.</span>
 </div>
 
 <div id="p2">
-  <div id="p2-topo"><img src="assets/emblema_64.png" alt=""><b>JOGADOR 2</b><span id="p2-status">CONECTANDO...</span></div>
+  <div id="p2-topo"><img src="hd/emblema_64.png" alt=""><b>JOGADOR 2</b><span id="p2-status">CONECTANDO...</span></div>
   <div class="bt" id="p2-esq" data-k="esq"><svg viewBox="0 0 24 24"><path d="M16 3 6 12l10 9z"/></svg></div>
   <div class="bt" id="p2-dir" data-k="dir"><svg viewBox="0 0 24 24"><path d="M8 3l10 9-10 9z"/></svg></div>
   <div class="bt" id="p2-freio" data-k="freio">FREIO</div>
@@ -131,6 +134,9 @@
 
 <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="dados.js" defer></script>
+<script src="som.js" defer></script>
+<script src="arte.js" defer></script>
 <script src="jogo.js" defer></script>
 </body>
 </html>
