@@ -1,0 +1,14 @@
+{
+  "name": "BRMC Racing - Black Rock MC",
+  "short_name": "BRMC Racing",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    { "src": "assets/emblema_96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "assets/emblema_64.png", "sizes": "64x64", "type": "image/png" }
+  ]
+}
