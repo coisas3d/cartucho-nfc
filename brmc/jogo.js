@@ -961,7 +961,7 @@ function telaResultado() {
         const y = 30 + i * 16, h = c.humano >= 0;
         if (h) { ctx.fillStyle = 'rgba(78,196,30,0.18)'; ctx.fillRect(40, y - 3, W - 80, 14); }
         txt((i + 1) + 'º', 50, y, i === 0 ? '#ffdc28' : '#fff', 2);
-        ctx.drawImage(c.quadros[2], 0, 0, 40, 68, 78, y - 4, 9, 15);
+        { const q = c.quadros[2], hq = 15, wq = Math.round(q.width * hq / q.height); ctx.drawImage(q, 0, 0, q.width, q.height, 84 - (wq >> 1), y - 4, wq, hq); }
         txt(c.nome + (h ? (humanos.length > 1 ? ' (P' + (c.humano + 1) + ')' : ' (VOCE)') : ''), 94, y, h ? '#4ec41e' : '#fff', 2);
         txt(c.fim ? fmtTempo(c.tempo) : '+' + fmtTempo(c._t), W - 50, y, '#c8c8d2', 2, 'd');
       });
