@@ -79,7 +79,7 @@ function txt(s, x, y, cor, e, al, sombra) {
 }
 
 // ============================================================ IMAGENS
-const NOMES = ['piloto', 'lateral_versys', 'emblema_64', 'emblema_96', 'car_rear', 'car_front', 'truck_rear', 'truck_front',
+const NOMES = ['piloto', 'lateral_versys', 'piloto_leosao', 'lateral_gs', 'retrato_jellison', 'retrato_jellison_p', 'retrato_leosao', 'retrato_leosao_p', 'emblema_64', 'emblema_96', 'car_rear', 'car_front', 'truck_rear', 'truck_front',
   'carreta_rear', 'moto_rear', 'moto_front', 'tree', 'pine', 'bush', 'rock', 'placa_posto', 'placa_posto2', 'seta_e', 'seta_d',
   'posto', 'arco_largada', 'arco_chegada'];
 const IMG = {};
@@ -125,16 +125,18 @@ function inclinar(cnv, k) {
   return c;
 }
 const cacheMotos = {};
-function quadrosMoto(cor) {
-  const chave = cor ? cor.join(',') : 'orig';
+function quadrosMoto(def) {
+  const cor = def.cor, spr = def.sprite || 'piloto';
+  const chave = spr + (cor ? cor.join(',') : '');
   if (cacheMotos[chave]) return cacheMotos[chave];
-  const base = cor ? trocarVerde(IMG.piloto, cor) : paraCanvas(IMG.piloto);
+  const base = cor ? trocarVerde(IMG[spr], cor) : paraCanvas(IMG[spr]);
   return (cacheMotos[chave] = [-0.13, -0.065, 0, 0.065, 0.13].map(k => k ? inclinar(base, k) : base));
 }
 const cacheLateral = {};
-function lateral(cor) {
-  const chave = cor ? cor.join(',') : 'orig';
-  return cacheLateral[chave] || (cacheLateral[chave] = cor ? trocarVerde(IMG.lateral_versys, cor) : IMG.lateral_versys);
+function lateral(def) {
+  const cor = def.cor, spr = def.lateral || 'lateral_versys';
+  const chave = spr + (cor ? cor.join(',') : '');
+  return cacheLateral[chave] || (cacheLateral[chave] = cor ? trocarVerde(IMG[spr], cor) : IMG[spr]);
 }
 const cacheVeic = {};
 function spriteVeic(nome, cor) {
@@ -145,8 +147,8 @@ function spriteVeic(nome, cor) {
 // ============================================================ PILOTOS
 // Atributos: vel = velocidade final (km/h), acel/economia/curva de 0 a 1.
 const PERSONAGENS = [
-  { id: 'jellison', nome: 'JELLISON', moto: 'BRMC VRS 650 TOURER', estilo: 'TRAIL TOURING', cor: null, vel: 205, acel: 0.70, economia: 0.80, curva: 0.80 },
-  { id: 'membro2', nome: 'MEMBRO 2', moto: 'AGUARDANDO FOTOS', estilo: 'PROVISORIO', cor: [214, 40, 40], vel: 222, acel: 0.85, economia: 0.45, curva: 0.65 }
+  { id: 'jellison', nome: 'JELLISON', moto: 'BRMC VRS 650 TOURER', estilo: 'TRAIL TOURING', cor: null, sprite: 'piloto', lateral: 'lateral_versys', retrato: 'retrato_jellison', vel: 205, acel: 0.70, economia: 0.80, curva: 0.80 },
+  { id: 'leosao', nome: 'LEOSÃO', moto: 'BRMC GS 850 RALLYE', estilo: 'BIG TRAIL', cor: null, sprite: 'piloto_leosao', lateral: 'lateral_gs', retrato: 'retrato_leosao', vel: 215, acel: 0.82, economia: 0.70, curva: 0.85 }
 ];
 const RIVAIS = [
   { nome: 'MEMBRO 3', cor: [40, 96, 226], vel: 212, acel: 0.75, economia: 0.6, curva: 0.7 },
@@ -429,7 +431,7 @@ let tremor = [0, 0];
 function criarCorredor(def, i, humano) {
   const max = def.vel * KMH;
   return {
-    nome: def.nome, def, cor: def.cor, quadros: quadrosMoto(def.cor), max, acel: max / (6.4 - def.acel * 3.2),
+    nome: def.nome, def, cor: def.cor, quadros: quadrosMoto(def), max, acel: max / (6.4 - def.acel * 3.2),
     consumo: 1.45 - def.economia * 0.9, curva: def.curva, z: 0, x: 0, v: 0, comb: 100, crash: 0, fim: false, tempo: null,
     humano, auto: humano < 0, steer: 0, bg: 0, abastecendo: false, msgPosto: 0,
     ia: { skill: rnd(0.86, 0.95), faixa: rnd(0.25, 0.75), encher: 0 }
@@ -870,36 +872,42 @@ function telaSelecao() {
       alvosToque = [];
       ctx.fillStyle = '#07090b'; ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#0f1a12'; for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 1);
-      txt('ESCOLHA SEU PILOTO', W / 2, 8, '#4ec41e', 2, 'c');
+      if (nJog() === 1) txt('ESCOLHA SEU PILOTO', W - 8, 8, '#4ec41e', 2, 'd'); else txt('ESCOLHA SEU PILOTO', W / 2, 8, '#4ec41e', 2, 'c');
       const n = nJog();
       for (let j = 0; j < n; j++) {
         const v = n === 1 ? { x: 0, w: W } : { x: j * W / 2, w: W / 2 };
-        const p = PERSONAGENS[st.sel[j]], lat = lateral(p.cor), cx = v.x + v.w / 2;
+        const p = PERSONAGENS[st.sel[j]], lat = lateral(p), cx = v.x + v.w / 2;
         if (n > 1) txt('JOGADOR ' + (j + 1), cx, 22, j ? '#5ab4ff' : '#ffdc28', 1, 'c');
         const esc = n === 1 ? 2 : 1;
-        const lx = n === 1 ? 14 : Math.round(cx - lat.width / 2), ly = n === 1 ? 34 : 34;
+        const lx = n === 1 ? 140 - lat.width : v.x + v.w - lat.width - 4, ly = n === 1 ? 192 - lat.height * 2 : 110 - lat.height;
         ctx.drawImage(lat, lx, ly, lat.width * esc, lat.height * esc);
-        const sx = n === 1 ? 286 : v.x + 12, sy = n === 1 ? 40 : 116;
+        const ret = p.retrato && IMG[p.retrato + (n === 1 ? '' : '_p')];
+        if (ret) {
+          const rx = n === 1 ? 299 : v.x + 6, ry = n === 1 ? 22 : 30;
+          ctx.fillStyle = '#4ec41e'; ctx.fillRect(rx - 2, ry - 2, ret.width + 4, ret.height + 4);
+          ctx.fillStyle = '#0f1a12'; ctx.fillRect(rx - 1, ry - 1, ret.width + 2, ret.height + 2);
+          ctx.drawImage(ret, rx, ry);
+        }
+        const sx = n === 1 ? 286 : v.x + 12, sy = n === 1 ? 98 : 116;
         txt(p.nome, n === 1 ? sx : cx, sy, '#fff', 2, n === 1 ? 'e' : 'c');
         txt(p.moto, n === 1 ? sx : cx, sy + 14, '#c8c8d2', 1, n === 1 ? 'e' : 'c');
         const est = [['VELOCIDADE', (p.vel - 170) / 70], ['ACELERACAO', p.acel], ['ECONOMIA', p.economia], ['CURVAS', p.curva]];
         const bx = n === 1 ? sx : v.x + 14, bw = n === 1 ? 88 : v.w - 70;
         est.forEach(([r, f], i) => {
-          const yy = sy + (n === 1 ? 30 : 24) + i * (n === 1 ? 14 : 10);
+          const yy = sy + (n === 1 ? 26 : 24) + i * (n === 1 ? 12 : 10);
           txt(r, bx, yy, '#9a9aa4', 1, 'e', false);
           barra(n === 1 ? bx : bx + 44, n === 1 ? yy + 7 : yy, n === 1 ? bw : bw, 3, f, '#4ec41e');
         });
-        if (n === 1) ctx.drawImage(IMG.emblema_64, 314, 130, 32, 32);
         // controles
         if (!st.ok[j]) {
-          const by = n === 1 ? 184 : 188;
+          const by = n === 1 ? 196 : 190;
           if (j === 0) {
-            botao(v.x + 8, by, 34, 20, '<', () => mudar(0, -1));
-            botao(v.x + v.w - 42, by, 34, 20, '>', () => mudar(0, 1));
-            botao(cx - 40, by, 80, 20, 'CONFIRMAR', () => confirmar(0), '#2a8a1a');
+            botao(v.x + 8, by, 34, 16, '<', () => mudar(0, -1));
+            botao(v.x + v.w - 42, by, 34, 16, '>', () => mudar(0, 1));
+            botao(cx - 40, by, 80, 16, 'CONFIRMAR', () => confirmar(0), '#2a8a1a');
           } else txt('USE O CELULAR DO P2', cx, by + 7, '#9a9aa4', 1, 'c');
         } else txt('PRONTO!', cx, n === 1 ? 190 : 194, '#4ec41e', 2, 'c');
-        txt('<  ' + (st.sel[j] + 1) + '/' + PERSONAGENS.length + '  >', n === 1 ? 330 : cx, n === 1 ? 170 : 176, '#777', 1, 'c');
+        txt('<  ' + (st.sel[j] + 1) + '/' + PERSONAGENS.length + '  >', n === 1 ? 330 : cx, n === 1 ? 180 : 176, '#777', 1, 'c');
       }
       if (n > 1) { ctx.fillStyle = '#4ec41e'; ctx.fillRect(W / 2, 20, 1, H - 24); }
       botao(4, 4, 34, 14, 'VOLTAR', () => irPara(telaTitulo()), '#333');
