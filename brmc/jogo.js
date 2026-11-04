@@ -15,6 +15,7 @@ const MOTO_HW = 70 * PX2N;
 const GUARD_X = -1.16, ACOST = 1.38;
 const params = new URLSearchParams(location.search);
 const SALA = params.get('sala'), DEV2P = params.get('dev2p') === '1';
+window.FONTE_TESTE = params.get('fonteteste') === '1';
 
 // ============================================================ UTIL
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -61,9 +62,15 @@ function hiMangueira(x1, y1, x2, y2, clip) {
   hiCtx.fillStyle = '#9aa0a8'; hiCtx.fillRect(-14 * s, -2 * s, 14 * s, 4 * s); hiCtx.fillStyle = '#ff6a00'; hiCtx.fillRect(10 * s, -6 * s, 10 * s, 4 * s);
   hiCtx.restore(); hiUsado = true;
 }
+let vertical = false;
 function ajustarTela() {
-  const vw = innerWidth, vh = innerHeight, dpr = Math.min(devicePixelRatio || 1, 3), e = Math.min(vw / W, vh / H);
+  const vw = innerWidth, vh = innerHeight, dpr = Math.min(devicePixelRatio || 1, 3);
+  vertical = vh > vw;
+  const e = vertical ? vw / W : Math.min(vw / W, vh / H);
   const cw = Math.floor(W * e), ch = Math.floor(H * e);
+  document.body.classList.toggle('vertical', vertical);
+  const topo = vertical ? Math.max(0, Math.round((vh - ch) * 0.18)) + 'px' : '50%', tr = vertical ? 'translate(-50%, 0)' : 'translate(-50%, -50%)';
+  for (const el of [tela, hi]) { el.style.top = topo; el.style.transform = tr; }
   tela.style.width = cw + 'px'; tela.style.height = ch + 'px'; tela.width = Math.round(cw * dpr); tela.height = Math.round(ch * dpr);
   hi.style.width = cw + 'px'; hi.style.height = ch + 'px'; hi.width = tela.width; hi.height = tela.height; hiUsado = true;
 }
@@ -329,7 +336,7 @@ tela.addEventListener('pointerdown', e => {
 let corredores = [], humanos = [], tempoCorrida = 0, contagem = 0, chegada = [], fimTimer = 0, demo = false, pausado = false;
 const CONS = () => 100 / (DIST * 0.5);
 const MARCHAS = [0.2, 0.36, 0.52, 0.68, 0.84, 1.01];
-const tempoTanque = def => 3 + (def.cc || 800) / 250;          // segundos para encher o tanque todo
+const tempoTanque = def => 2 + Math.pow((def.cc || 800) / 250, 1.4);   // segundos para encher o tanque todo (650: 5,8 s | 853: 7,6 s | 1300: 12 s)
 
 function criarCorredor(def, humano) {
   const max = def.vel * KMH;
@@ -362,11 +369,11 @@ function pilotoIA(c, seg) {
   if (c.fim) alvoV = c.max * 0.32;
   else if (!demo && humanos.length) {
     const lider = Math.max.apply(null, humanos.map(h => h.z)), d = c.z - lider;
-    if (d > 5000) alvoV *= 0.9; else if (d < -9000) alvoV *= 1.05;
+    if (d > 16000) alvoV *= 0.95; else if (d < -5000) alvoV *= 1.1;
   }
   let curvaMax = 0;
   for (let j = 0; j < 36; j += 3) curvaMax = Math.max(curvaMax, Math.abs(segs[Math.min(seg.i + j, segs.length - 1)].curva));
-  if (curvaMax > 0.5) alvoV = Math.min(alvoV, c.max * clamp(0.82 / (curvaMax * 0.4 * (1.15 - 0.35 * c.curva)), 0.5, 1));
+  if (curvaMax > 0.5) alvoV = Math.min(alvoV, c.max * clamp(0.95 / (curvaMax * 0.4 * (1.15 - 0.35 * c.curva)), 0.55, 1));
   // combustível
   const p = proximoPosto(c.z);
   if (p && !c.fim) {
@@ -414,7 +421,7 @@ function bater(c, novaV) {
 }
 
 function atualizarCorredor(c, dt) {
-  const seg = segEm(c.z), max = c.max * (c.vacuo ? 1.07 : 1);
+  const seg = segEm(c.z), max = c.max;
   let inp;
   if (contagem > 0) { inp = c.humano >= 0 ? entrada[c.humano] : { acel: Math.random() < 0.5 }; c.gas = inp.acel ? 1 : 0; c.rpm = lerp(c.rpm, c.gas ? 0.75 + Math.random() * 0.2 : 0.15, 0.2); return; }
   // ---- abastecimento
@@ -964,6 +971,22 @@ function telaCarregando() {
     ctx.fillStyle = '#222'; ctx.fillRect(W / 2 - 120, 200, 240, 6); ctx.fillStyle = '#ff6a00'; ctx.fillRect(W / 2 - 120, 200, 240 * prog, 6);
   } };
 }
+function telaAbertura() {
+  return {
+    nome: 'abertura',
+    toqueGeral() { SOM.iniciar(); SOM.confirma(); irPara(telaTitulo()); },
+    update() { if (apertou(0, 'acel')) { SOM.iniciar(); irPara(telaTitulo()); } },
+    render() {
+      fundoEscuro('#120a06', '#020202');
+      luz(ctx, W / 2, 140, 260, 'rgba(255,106,0,A)', 0.25 + Math.sin(tempoReal * 2) * 0.08);
+      logo(W / 2, 120, 1.15);
+      txt('BLACK ROCK MC', W / 2, 205, '#fff', 32, 'c', '#7a2a00');
+      txt('THE GAME', W / 2, 245, '#ff6a00', 16, 'c');
+      if (Math.floor(tempoReal * 2) % 2) txt('TOQUE PARA COMEÇAR', W / 2, 296, '#ffd23a', 16, 'c');
+      txt('MELHOR COM SOM LIGADO', W / 2, 330, '#777', 8, 'c');
+    }
+  };
+}
 function telaTitulo() {
   let sel = 0;
   const itens = [['1 JOGADOR', () => irPara(telaSelecao(1))], ['2 JOGADORES', () => doisJogadores()], ['OPÇÕES', () => irPara(telaOpcoes())]];
@@ -1022,15 +1045,15 @@ function telaSelecao(n) {
         const v = n === 1 ? { x: 0, w: W } : { x: j * W / 2, w: W / 2 }, p = PERSONAGENS[st.sel[j]], cx = v.x + v.w / 2, an = Math.min(1, st.anim[j] * 2.5);
         luz(ctx, n === 1 ? 190 : cx, 210, n === 1 ? 210 : 150, 'rgba(255,170,90,A)', 0.18);
         ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fillRect(v.x, 262, v.w, 98);
-        const foto = IMG[p.foto], fw = n === 1 ? 370 : 236, fh = foto ? fw * foto.height / foto.width : 0;
-        const fx = n === 1 ? 192 - fw / 2 + (1 - an) * -40 : cx - fw / 2, fy = (n === 1 ? 268 : 252) - fh;
+        const foto = IMG[p.foto], fw = n === 1 ? 330 : 236, fh = foto ? fw * foto.height / foto.width : 0;
+        const fx = n === 1 ? 170 - fw / 2 + (1 - an) * -40 : cx - fw / 2, fy = (n === 1 ? 270 : 252) - fh;
         ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(fx + fw / 2, fy + fh - 3, fw * 0.46, 7, 0, 0, 7); ctx.fill();
         hiFoto(foto, fx, fy, fw, fh, an, true);
-        const ret = p.retrato && IMG[p.retrato], rx = n === 1 ? 400 : v.x + 10, ry = n === 1 ? 44 : 30, rs = n === 1 ? 128 : 64;
+        const ret = p.retrato && IMG[p.retrato], rx = n === 1 ? 344 : v.x + 10, ry = n === 1 ? 40 : 30, rs = n === 1 ? 128 : 64;
         ctx.fillStyle = '#ff6a00'; ctx.fillRect(rx - 3, ry - 3, rs + 6, rs + 6);
         const gr = ctx.createLinearGradient(0, ry, 0, ry + rs); gr.addColorStop(0, '#2a3a4a'); gr.addColorStop(1, '#10161e'); ctx.fillStyle = gr; ctx.fillRect(rx, ry, rs, rs);
         if (ret) ctx.drawImage(ret, rx, ry, rs, rs);
-        const tx = rx + rs + (n === 1 ? 14 : 10);
+        const tx = rx + rs + (n === 1 ? 8 : 10);
         txt(n === 1 ? 'PILOTO' : 'JOGADOR ' + (j + 1), tx, ry + 2, j ? '#5ab4ff' : '#ff8a2a', 8);
         txt(p.nome, tx, ry + 16, '#fff', 16);
         txt(p.moto, tx, ry + 40, '#c8c8d2', 8);
@@ -1038,7 +1061,7 @@ function telaSelecao(n) {
         txt('PERFIL: ' + p.perfil, tx, ry + (n === 1 ? 70 : 66), p.perfil === 'ROIA' ? '#5ab4ff' : '#ff4a2a', 8);
         if (n === 1) txt('ABASTECE EM ' + tempoTanque(p).toFixed(1) + ' S', tx, ry + 86, '#9a9aa4', 8);
         const est = [['VELOCIDADE', (p.vel - 170) / 70], ['ACELERAÇÃO', p.acel], ['ECONOMIA', p.economia], ['CURVAS', p.curva]];
-        const sx = n === 1 ? 400 : v.x + 14, sy = n === 1 ? 192 : 262, bw = n === 1 ? 220 : v.w - 28;
+        const sx = n === 1 ? 344 : v.x + 14, sy = n === 1 ? 186 : 262, bw = n === 1 ? 284 : v.w - 28;
         est.forEach(([r, f], i) => {
           const yy = sy + i * (n === 1 ? 16 : 11);
           txt(r, sx, yy, '#9a9aa4', 8, 'e', false);
@@ -1056,14 +1079,14 @@ function telaSelecao(n) {
         } else txt('PRONTO!', cx, 326, '#4ef03a', 16, 'c');
       }
       if (n > 1) { ctx.fillStyle = '#ff6a00'; ctx.fillRect(W / 2 - 1, 26, 2, H - 34); }
-      txt('ESCOLHA SEU PILOTO', n === 1 ? 400 : W / 2, n === 1 ? 14 : 8, '#ff8a2a', n === 1 ? 16 : 8, n === 1 ? 'e' : 'c');
+      txt('ESCOLHA SEU PILOTO', W / 2, n === 1 ? 10 : 8, '#ff8a2a', n === 1 ? 16 : 8, 'c');
       botao(8, 8, 70, 22, 'VOLTAR', () => irPara(telaTitulo()));
     }
   };
 }
 function telaRota(escolhas) {
   let t = 0;
-  const v = VIAGEM, pts = v.mapa.map(([nome, la, lo, lado]) => [nome, 190 + (lo + 45.45) / 1.1 * 280, 92 + (-20.0 - la) / 2.9 * 236, lado]);
+  const v = VIAGEM, pts = v.mapa.map(([nome, la, lo, lado]) => [nome, 190 + (lo + 45.45) / 1.1 * 280, 88 + (-20.0 - la) / 2.9 * 218, lado]);
   const partir = () => { if (t > 1.2) { novaCorrida(escolhas, false); irPara(telaCorrida()); } };
   return {
     nome: 'rota', toqueGeral: partir,
@@ -1088,7 +1111,7 @@ function telaRota(escolhas) {
         const esq = p[3][0] === 'e', dy = p[3].length > 1 ? (p[3][1] === 'b' ? 8 : -12) : -4; txt(p[0], p[1] + (esq ? -8 : 8), p[2] + dy, fim ? '#ffd23a' : '#c8c8d2', 8, esq ? 'd' : 'e');
       });
       if (prog >= 1) { const u = pts[pts.length - 1]; ctx.drawImage(tingir(ART.basilica, [255, 200, 120]), u[1] - 190, u[2] - 40, 84, 44); }
-      if (t > 1.2 && Math.floor(tempoReal * 2) % 2) txt('TOQUE PARA PARTIR', W / 2, H - 30, '#ffd23a', 16, 'c');
+      if (t > 1.2 && Math.floor(tempoReal * 2) % 2) txt('TOQUE PARA PARTIR', W - 20, H - 26, '#ffd23a', 16, 'd');
     }
   };
 }
@@ -1219,9 +1242,9 @@ function iniciar() {
   ligarBotoes(elControles, fontes.toque, (k, v) => { if (v) pulso[0][k] = true; });
   requestAnimationFrame(quadro);
   const fonte = document.fonts && document.fonts.load ? Promise.race([document.fonts.load('16px "Press Start 2P"'), new Promise(r => setTimeout(r, 2500))]) : Promise.resolve();
-  Promise.all([carregar(p => car.setProg(p)), fonte]).then(() => { gerarArte(); montarViagem(VIAGENS[0]); irPara(telaTitulo()); });
+  Promise.all([carregar(p => car.setProg(p)), fonte]).then(() => { gerarArte(); montarViagem(VIAGENS[0]); irPara(SOM.ac ? telaTitulo() : telaAbertura()); });
 }
 window.BRMC = { simular(s) { for (let i = 0; i < s * 60; i++) { juntarEntrada(); estado.update(STEP); guardarAnterior(); } }, get estado() { return estado; }, get corredores() { return corredores; },
-  get humanos() { return humanos; }, get tempo() { return tempoCorrida; }, get radio() { return radio; }, get postos() { return POSTOS; }, get pedagios() { return PEDAGIOS; }, entrada: fontes };
+  get humanos() { return humanos; }, get tempo() { return tempoCorrida; }, get radio() { return radio; }, get postos() { return POSTOS; }, get pedagios() { return PEDAGIOS; }, dist: () => [DIST, START_I * SEG, FIM_Z, CONS()], entrada: fontes };
 iniciar();
 })();

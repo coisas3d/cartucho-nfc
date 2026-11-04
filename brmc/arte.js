@@ -9,10 +9,16 @@ window.ARTE = (function () {
   // texto em fonte pixel (tamanhos múltiplos de 8 ficam nítidos)
   function txt(g, s, x, y, cor, tam, al, sombra) {
     tam = tam || 8; s = norm(s);
-    g.font = tam + 'px ' + FONTE; g.textBaseline = 'top'; g.textAlign = al === 'c' ? 'center' : al === 'd' ? 'right' : 'left';
+    const teste = window.FONTE_TESTE;
+    const fonte = t => { g.font = t + 'px ' + (teste ? 'monospace' : FONTE); if ('letterSpacing' in g) g.letterSpacing = teste ? (t * 0.4) + 'px' : '0px'; };
+    fonte(tam); g.textBaseline = 'top'; g.textAlign = al === 'c' ? 'center' : al === 'd' ? 'right' : 'left';
+    // nunca deixa o texto sair da tela: reduz a fonte se precisar
+    const W = g.canvas.width; let w = g.measureText(s).width;
+    const livre = al === 'c' ? Math.min(x, W - x) * 2 - 4 : al === 'd' ? x - 2 : W - x - 2;
+    if (w > livre && livre > 20) { const t2 = Math.max(5, Math.floor(tam * livre / w)); fonte(t2); w = g.measureText(s).width; tam = t2; }
     if (sombra !== false) { g.fillStyle = sombra || 'rgba(0,0,0,0.85)'; g.fillText(s, Math.round(x) + Math.max(1, tam / 8), Math.round(y) + Math.max(1, tam / 8)); }
     g.fillStyle = cor; g.fillText(s, Math.round(x), Math.round(y));
-    return g.measureText(s).width;
+    return w;
   }
 
   // ------------------------------------------------------------ vegetação e objetos de beira de estrada
@@ -64,7 +70,7 @@ window.ARTE = (function () {
     const [c, g] = mk(260, 170);
     g.fillStyle = '#5a5e66'; g.fillRect(40, 110, 10, 60); g.fillRect(210, 110, 10, 60);
     g.fillStyle = '#e8e4da'; g.fillRect(0, 0, 260, 116); g.fillStyle = '#111'; g.fillRect(6, 6, 248, 104);
-    if (tipo === 0) { if (emb) g.drawImage(emb, 14, 14, 88, 88); txt(g, 'BLACK ROCK', 110, 26, '#fff', 16); txt(g, 'MOTO CLUBE', 110, 50, '#9a9a9a', 8); txt(g, 'ITAÚNA-MG', 110, 74, '#ff6a00', 16); }
+    if (tipo === 0) { if (emb) g.drawImage(emb, 12, 22, 72, 72); txt(g, 'BLACK ROCK', 90, 26, '#fff', 16); txt(g, 'MOTO CLUBE', 90, 50, '#9a9a9a', 8); txt(g, 'ITAÚNA-MG', 90, 74, '#ff6a00', 16); }
     else { g.fillStyle = '#ff6a00'; g.fillRect(6, 6, 248, 104); txt(g, 'COISAS 3D', 130, 30, '#111', 24, 'c', false); txt(g, 'CHAVEIROS COM JOGOS', 130, 66, '#111', 8, 'c', false); txt(g, 'ENCOSTE O CELULAR!', 130, 84, '#fff', 8, 'c', false); }
     return c;
   }

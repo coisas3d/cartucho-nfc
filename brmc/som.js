@@ -46,6 +46,7 @@ window.SOM = (function () {
     // motores (até 2 jogadores)
     for (let j = 0; j < 2; j++) S.motores.push(criarMotor());
     setInterval(agendar, 25);
+    if (S.pedido) { const m = S.pedido; S.pedido = null; S.tocarMusica(m); }
   };
   function loopRuido(tipo, f, q) {
     const ac = S.ac, src = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
@@ -134,7 +135,7 @@ window.SOM = (function () {
 
   S.tocarMusica = function (modo) {
     S.modo = modo || 'jogo';
-    if (!S.ac) return;
+    if (!S.ac) { S.pedido = S.modo; return; }
     if (!S.tocando) { S.tocando = true; S.prox = S.ac.currentTime + 0.1; S.passo = 0; compasso = modo === 'menu' ? 0 : 4; refCont = 0; }
   };
   S.pararMusica = function () { S.tocando = false; };
