@@ -79,7 +79,7 @@ function txt(s, x, y, cor, e, al, sombra) {
 }
 
 // ============================================================ IMAGENS
-const NOMES = ['piloto', 'lateral_versys', 'piloto_leosao', 'lateral_gs', 'retrato_jellison', 'retrato_jellison_p', 'retrato_leosao', 'retrato_leosao_p', 'emblema_64', 'emblema_96', 'car_rear', 'car_front', 'truck_rear', 'truck_front',
+const NOMES = ['piloto', 'lateral_versys', 'piloto_leosao', 'lateral_gs', 'retrato_jellison', 'retrato_jellison_p', 'retrato_leosao', 'retrato_leosao_p', 'piloto_gs1300', 'lateral_gs1300', 'retrato_jefao', 'retrato_jefao_p', 'emblema_64', 'emblema_96', 'car_rear', 'car_front', 'truck_rear', 'truck_front',
   'carreta_rear', 'moto_rear', 'moto_front', 'tree', 'pine', 'bush', 'rock', 'placa_posto', 'placa_posto2', 'seta_e', 'seta_d',
   'posto', 'arco_largada', 'arco_chegada'];
 const IMG = {};
@@ -148,16 +148,17 @@ function spriteVeic(nome, cor) {
 // Atributos: vel = velocidade final (km/h), acel/economia/curva de 0 a 1.
 const PERSONAGENS = [
   { id: 'jellison', nome: 'JELLISON', moto: 'BRMC VRS 650 TOURER', estilo: 'TRAIL TOURING', cor: null, sprite: 'piloto', lateral: 'lateral_versys', retrato: 'retrato_jellison', vel: 205, acel: 0.70, economia: 0.80, curva: 0.80 },
-  { id: 'leosao', nome: 'LEOSÃO', moto: 'BRMC GS 850 RALLYE', estilo: 'BIG TRAIL', cor: null, sprite: 'piloto_leosao', lateral: 'lateral_gs', retrato: 'retrato_leosao', vel: 215, acel: 0.82, economia: 0.70, curva: 0.85 }
+  { id: 'leosao', nome: 'LEOSÃO', moto: 'BRMC GS 850 RALLYE', estilo: 'BIG TRAIL', cor: null, sprite: 'piloto_leosao', lateral: 'lateral_gs', retrato: 'retrato_leosao', vel: 215, acel: 0.82, economia: 0.70, curva: 0.85 },
+  { id: 'jefao', nome: 'JEFÃO', moto: 'BRMC GS 1300', estilo: 'BIG TRAIL', cor: null, sprite: 'piloto_gs1300', lateral: 'lateral_gs1300', retrato: 'retrato_jefao', vel: 225, acel: 0.90, economia: 0.60, curva: 0.80 }
 ];
 const RIVAIS = [
-  { nome: 'MEMBRO 3', cor: [40, 96, 226], vel: 212, acel: 0.75, economia: 0.6, curva: 0.7 },
-  { nome: 'MEMBRO 4', cor: [240, 200, 30], vel: 200, acel: 0.8, economia: 0.7, curva: 0.8 },
-  { nome: 'MEMBRO 5', cor: [244, 124, 20], vel: 218, acel: 0.7, economia: 0.5, curva: 0.6 },
-  { nome: 'MEMBRO 6', cor: [236, 236, 236], vel: 196, acel: 0.65, economia: 0.85, curva: 0.85 },
-  { nome: 'MEMBRO 7', cor: [150, 70, 210], vel: 208, acel: 0.8, economia: 0.6, curva: 0.75 },
-  { nome: 'MEMBRO 8', cor: [150, 154, 164], vel: 215, acel: 0.6, economia: 0.65, curva: 0.7 },
-  { nome: 'MEMBRO 9', cor: [30, 190, 200], vel: 204, acel: 0.75, economia: 0.7, curva: 0.7 }
+  { nome: 'MEMBRO 4', cor: [40, 96, 226], vel: 212, acel: 0.75, economia: 0.6, curva: 0.7 },
+  { nome: 'MEMBRO 5', cor: [240, 200, 30], vel: 200, acel: 0.8, economia: 0.7, curva: 0.8 },
+  { nome: 'MEMBRO 6', cor: [244, 124, 20], vel: 218, acel: 0.7, economia: 0.5, curva: 0.6 },
+  { nome: 'MEMBRO 7', cor: [236, 236, 236], vel: 196, acel: 0.65, economia: 0.85, curva: 0.85 },
+  { nome: 'MEMBRO 8', cor: [150, 70, 210], vel: 208, acel: 0.8, economia: 0.6, curva: 0.75 },
+  { nome: 'MEMBRO 9', cor: [150, 154, 164], vel: 215, acel: 0.6, economia: 0.65, curva: 0.7 },
+  { nome: 'MEMBRO 10', cor: [30, 190, 200], vel: 204, acel: 0.75, economia: 0.7, curva: 0.7 }
 ];
 
 // ============================================================ PISTAS
@@ -887,6 +888,11 @@ function telaSelecao() {
           ctx.fillStyle = '#4ec41e'; ctx.fillRect(rx - 2, ry - 2, ret.width + 4, ret.height + 4);
           ctx.fillStyle = '#0f1a12'; ctx.fillRect(rx - 1, ry - 1, ret.width + 2, ret.height + 2);
           ctx.drawImage(ret, rx, ry);
+        } else {
+          const rw = n === 1 ? 60 : 40, rh = n === 1 ? 70 : 47, rx = n === 1 ? 299 : v.x + 6, ry = n === 1 ? 22 : 30;
+          ctx.fillStyle = '#4ec41e'; ctx.fillRect(rx - 2, ry - 2, rw + 4, rh + 4);
+          ctx.fillStyle = '#0f1a12'; ctx.fillRect(rx - 1, ry - 1, rw + 2, rh + 2);
+          txt('?', rx + rw / 2, ry + rh / 2 - 7, '#4ec41e', 3, 'c');
         }
         const sx = n === 1 ? 286 : v.x + 12, sy = n === 1 ? 98 : 116;
         txt(p.nome, n === 1 ? sx : cx, sy, '#fff', 2, n === 1 ? 'e' : 'c');
