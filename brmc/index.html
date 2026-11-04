@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BRMC Racing">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/emblema_96.png">
+<link rel="icon" type="image/png" href="assets/emblema_64.png">
+<title>BRMC Racing | Black Rock MC</title>
+<style>
+  :root { --verde: #4ec41e; --verde-esc: #146e3c; --preto: #050505; --branco: #fff; --cinza: #9a9a9a; }
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden;
+    -webkit-user-select: none; user-select: none; touch-action: none; -webkit-touch-callout: none;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: var(--branco); }
+  #tela { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #000; }
+
+  /* controles de toque (P1) */
+  #controles { display: none; position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+  #controles.on { display: block; }
+  .bt { position: absolute; pointer-events: auto; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: 2px solid rgba(255,255,255,0.55); background: rgba(0,0,0,0.28); color: #fff;
+    font-weight: 900; letter-spacing: 0.06em; font-size: 13px; box-sizing: border-box; touch-action: none;
+    -webkit-tap-highlight-color: transparent; text-shadow: 0 1px 2px #000; }
+  .bt.press { background: var(--verde); border-color: var(--verde); color: #000; text-shadow: none; }
+  .bt svg { width: 46%; height: 46%; fill: currentColor; }
+  #b-esq { left: calc(14px + env(safe-area-inset-left)); bottom: 16px; width: 84px; height: 84px; }
+  #b-dir { left: calc(110px + env(safe-area-inset-left)); bottom: 16px; width: 84px; height: 84px; }
+  #b-acel { right: calc(14px + env(safe-area-inset-right)); bottom: 16px; width: 100px; height: 100px; border-color: var(--verde); }
+  #b-freio { right: calc(124px + env(safe-area-inset-right)); bottom: 12px; width: 72px; height: 72px; border-color: #e33; }
+
+  .pilula { position: fixed; z-index: 20; display: none; border: 1px solid rgba(255,255,255,0.6); border-radius: 999px;
+    background: rgba(0,0,0,0.55); color: #fff; font: 800 11px/1 system-ui, sans-serif; letter-spacing: 0.14em;
+    padding: 9px 14px; -webkit-tap-highlight-color: transparent; }
+  .pilula.on { display: block; }
+  #btn-convidar { top: 10px; left: 50%; transform: translateX(-50%); border-color: var(--verde); }
+  #btn-convidar::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%;
+    background: var(--verde); box-shadow: 0 0 8px var(--verde); vertical-align: 1px; }
+  #btn-pausa { top: 6px; left: 50%; transform: translateX(-50%); padding: 7px 14px; }
+  #btn-som { top: 10px; right: calc(10px + env(safe-area-inset-right)); }
+
+  /* convite P2 */
+  #convite { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.86); align-items: center; justify-content: center; }
+  #convite.on { display: flex; }
+  .caixa { background: #0d0d0d; border: 1px solid var(--verde); border-radius: 18px; padding: 18px 22px; text-align: center;
+    max-width: 92vw; max-height: 92vh; box-sizing: border-box; box-shadow: 0 0 40px rgba(78,196,30,0.35); overflow: auto; }
+  .caixa h2 { margin: 0 0 6px; font-size: 18px; letter-spacing: 0.06em; }
+  .caixa p { margin: 0; color: var(--cinza); font-size: 13px; }
+  #qr { display: flex; justify-content: center; align-items: center; width: 196px; height: 196px; margin: 14px auto;
+    background: #fff; border-radius: 14px; }
+  #qr img, #qr canvas { width: 172px; height: 172px; }
+  #convite-status { margin-top: 4px; color: var(--verde); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; }
+  .caixa button { margin-top: 12px; border: 0; border-radius: 999px; padding: 10px 26px; font-weight: 900; letter-spacing: 0.12em;
+    background: var(--verde); color: #000; }
+  @media (orientation: landscape) and (max-height: 500px) {
+    .caixa { display: grid; grid-template-columns: 196px 1fr; column-gap: 22px; align-items: center; text-align: left; }
+    #qr { grid-row: span 4; margin: 0; }
+  }
+
+  #toast { display: none; position: fixed; top: 48px; left: 50%; transform: translateX(-50%); z-index: 60; padding: 10px 18px;
+    border-radius: 999px; background: var(--verde); color: #000; font-weight: 900; font-size: 12px; letter-spacing: 0.12em; }
+
+  /* aviso de orientação */
+  #girar { display: none; position: fixed; inset: 0; z-index: 100; background: #000; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; gap: 14px; padding: 24px; box-sizing: border-box; }
+  #girar img { width: 110px; height: 110px; image-rendering: pixelated; }
+  #girar b { font-size: 20px; letter-spacing: 0.08em; }
+  #girar span { color: var(--cinza); font-size: 14px; max-width: 320px; }
+  @media (orientation: portrait) and (max-width: 900px) { body:not(.controle) #girar { display: flex; } }
+
+  /* celular do jogador 2 (controle) */
+  #p2 { display: none; position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 100%, rgba(78,196,30,0.22), rgba(0,0,0,0) 62%), #050505; }
+  body.controle #p2 { display: block; }
+  body.controle #tela { display: none; }
+  #p2-topo { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  #p2-topo img { width: 44px; height: 44px; image-rendering: pixelated; }
+  #p2-topo b { font-size: 11px; letter-spacing: 0.22em; }
+  #p2-status { font-size: 11px; color: var(--cinza); letter-spacing: 0.1em; }
+  #p2 .bt { width: 108px; height: 108px; font-size: 15px; }
+  #p2-esq { left: 6%; bottom: 14%; } #p2-dir { left: calc(6% + 124px); bottom: 14%; }
+  #p2-acel { right: 6%; bottom: 14%; width: 124px !important; height: 124px !important; border-color: var(--verde); }
+  #p2-freio { right: calc(6% + 138px); bottom: 10%; width: 88px !important; height: 88px !important; border-color: #e33; }
+  @media (orientation: portrait) {
+    #p2-esq { left: 8%; bottom: 40%; } #p2-dir { left: auto; right: 8%; bottom: 40%; }
+    #p2-acel { right: 8%; bottom: 8%; } #p2-freio { right: auto; left: 8%; bottom: 10%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="tela"></canvas>
+
+<div id="controles">
+  <div class="bt" id="b-esq" data-k="esq"><svg viewBox="0 0 24 24"><path d="M16 3 6 12l10 9z"/></svg></div>
+  <div class="bt" id="b-dir" data-k="dir"><svg viewBox="0 0 24 24"><path d="M8 3l10 9-10 9z"/></svg></div>
+  <div class="bt" id="b-freio" data-k="freio">FREIO</div>
+  <div class="bt" id="b-acel" data-k="acel">ACELERA</div>
+</div>
+
+<button class="pilula" id="btn-convidar" type="button">CONVIDAR P2</button>
+<button class="pilula" id="btn-pausa" type="button">II</button>
+<button class="pilula" id="btn-som" type="button">SOM: LIGADO</button>
+
+<div id="convite">
+  <div class="caixa">
+    <div id="qr"></div>
+    <h2>Convide o Jogador 2</h2>
+    <p>Peça para o seu parceiro escanear o QR code com a câmera do celular. O celular dele vira o controle do P2.</p>
+    <div id="convite-status">GERANDO CONVITE...</div>
+    <button type="button" id="fechar-convite">FECHAR</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<div id="girar">
+  <img src="assets/emblema_96.png" alt="">
+  <b>GIRE O CELULAR</b>
+  <span>O BRMC Racing é jogado com o celular deitado. Para tela cheia no iPhone, use Compartilhar → Adicionar à Tela de Início.</span>
+</div>
+
+<div id="p2">
+  <div id="p2-topo"><img src="assets/emblema_64.png" alt=""><b>JOGADOR 2</b><span id="p2-status">CONECTANDO...</span></div>
+  <div class="bt" id="p2-esq" data-k="esq"><svg viewBox="0 0 24 24"><path d="M16 3 6 12l10 9z"/></svg></div>
+  <div class="bt" id="p2-dir" data-k="dir"><svg viewBox="0 0 24 24"><path d="M8 3l10 9-10 9z"/></svg></div>
+  <div class="bt" id="p2-freio" data-k="freio">FREIO</div>
+  <div class="bt" id="p2-acel" data-k="acel">ACELERA</div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="jogo.js" defer></script>
+</body>
+</html>
