@@ -111,6 +111,7 @@ window.SOM = (function () {
     if (on && !S._bomba) { const o = S.ac.createOscillator(), g = S.ac.createGain(); o.type = 'triangle'; o.frequency.value = 118; g.gain.value = 0.06; o.connect(g); g.connect(S.fx); o.start(); S._bomba = { o, g }; }
     if (!on && S._bomba) { S._bomba.g.gain.setTargetAtTime(0, S.ac.currentTime, 0.05); S._bomba.o.stop(S.ac.currentTime + 0.3); S._bomba = null; tom(700, 0.06, 'square', 0.1); setTimeout(() => tom(500, 0.08, 'square', 0.1), 90); }
   };
+  S.cancela = () => { tom(1500, 0.08, 'sine', 0.15); setTimeout(() => tom(260, 0.3, 'sawtooth', 0.05, null, null, 520), 120); };
   S.chegada = () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => tom(f, 0.4, 'square', 0.14), i * 140)); };
 
   // ------------------------------------------------------------ TRILHA: rock épico original (Mi menor, 148 bpm)
