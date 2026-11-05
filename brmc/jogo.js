@@ -3,7 +3,7 @@
  */
 'use strict';
 (function () {
-const { PERSONAGENS, VIAGENS, CONQUISTAS, FALAS, SOBRE, DE, PUXA, ZOA } = window.DADOS;
+const { PERSONAGENS, VIAGENS, CONQUISTAS, FALAS, SOBRE, DE, PUXA, ZOA, ZOA_PESO } = window.DADOS;
 const SOM = window.SOM, A = window.ARTE;
 
 // ============================================================ CONSTANTES
@@ -85,7 +85,7 @@ addEventListener('resize', ajustarTela); addEventListener('orientationchange', (
 
 // ============================================================ IMAGENS
 const NOMES = ['piloto', 'piloto_leosao', 'piloto_gs1300', 'foto_versys', 'foto_gs850', 'foto_gs1300', 'retrato_jellison', 'retrato_leosao',
-  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a', 'piloto_cezar', 'piloto_cleimar', 'foto_adv_prata', 'foto_adv_preto', 'retrato_cezar', 'retrato_cleimar', 'piloto_mazinho', 'foto_adv40', 'retrato_mazinho', 'piloto_samuca', 'foto_gs1200', 'retrato_samuca'];
+  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a', 'piloto_cezar', 'piloto_cleimar', 'foto_adv_prata', 'foto_adv_preto', 'retrato_cezar', 'retrato_cleimar', 'piloto_mazinho', 'foto_adv40', 'retrato_mazinho', 'piloto_samuca', 'foto_gs1200', 'retrato_samuca', 'piloto_alan', 'foto_f750', 'retrato_alan'];
 const IMG = {};
 function carregar(prog) {
   let n = 0;
@@ -786,17 +786,20 @@ function falante(excluir) {
   if (fora.length) { const p = pick(fora); return { def: p, nome: p.nome, humano: -1 }; }
   return pick(ops.length ? ops : corredores);
 }
+// evita repetir a mesma frase em sequência
+const recentes = [];
+function pickNovo(arr) { const ok = arr.filter(t => recentes.indexOf(t) < 0), t = pick(ok.length ? ok : arr); recentes.push(t); if (recentes.length > 14) recentes.shift(); return t; }
 function falar(tipo, alvo, quem) {
   if (demo || radio.fila.length > 2) return;
   // o Mazinho pega o rádio pra puxar o saco do Fabinho Mecânico
   if (!quem && alvo && alvo.def.id === 'fabinho' && PUXA && PUXA[tipo] && Math.random() < 0.55) {
     const maz = corredores.find(c => c.def.id === 'mazinho' && c !== alvo);
-    if (maz) { radio.fila.push({ quem: maz, texto: pick(PUXA[tipo]), t: 0 }); return; }
+    if (maz) { radio.fila.push({ quem: maz, texto: pickNovo(PUXA[tipo]), t: 0 }); return; }
   }
-  // o Samuca adora zoar o Jellison e o Jefão
-  if (!quem && alvo && ZOA && ZOA[alvo.def.id] && Math.random() < 0.25) {
-    const sam = corredores.find(c => c.def.id === 'samuca' && c !== alvo);
-    if (sam) { radio.fila.push({ quem: sam, texto: pick(ZOA[alvo.def.id]), t: 0 }); return; }
+  // implicâncias: quem tem intimidade com o alvo pega o rádio (Samuca -> Jellison/Jefão, Alan -> Cleimar/Samuca...)
+  if (!quem && alvo && Math.random() < 0.25) {
+    const zoadores = corredores.filter(c => c !== alvo && ZOA[c.def.id] && ZOA[c.def.id][alvo.def.id]);
+    if (zoadores.length) { const z = pick(zoadores); radio.fila.push({ quem: z, texto: pickNovo(ZOA[z.def.id][alvo.def.id]), t: 0 }); return; }
   }
   quem = quem || falante(alvo); if (!quem) return;
   tipo = (VIAGEM.falas && VIAGEM.falas[tipo]) || tipo;
@@ -806,7 +809,7 @@ function falar(tipo, alvo, quem) {
   const so = alvo && alvo.def.id && SOBRE[alvo.def.id];
   if (so) { if (so[tipo]) so[tipo].forEach(t => { op.push(t); op.push(t); op.push(t); }); if (so.geral && Math.random() < 0.3) so.geral.forEach(t => op.push(t)); }
   if (!op.length) return;
-  const t = pick(op).replace(/\{alvo\}/g, alvo ? alvo.nome : 'galera');
+  const t = pickNovo(op).replace(/\{alvo\}/g, alvo ? alvo.nome : 'galera');
   radio.fila.push({ quem, texto: t, t: 0 });
 }
 function falarSobre(tipo, alvo, quem) { if (radio.cd > 0 && tipo !== 'batida' && tipo !== 'chegada') return; radio.cd = 5; falar(tipo, alvo, quem); }
@@ -842,9 +845,13 @@ function eventosRadio(dt) {
   if (geralT <= 0) {
     geralT = rnd(20, 32);
     const maz = corredores.find(c => c.def.id === 'mazinho'), fab = corredores.find(c => c.def.id === 'fabinho');
-    if (maz && fab && Math.random() < 0.35 && !radio.atual && !radio.fila.length) { radio.fila.push({ quem: maz, texto: pick(PUXA.geral), t: 0 }); return; }
-    const sam = corredores.find(c => c.def.id === 'samuca'), zoados = corredores.filter(c => ZOA[c.def.id] && c !== sam);
-    if (sam && zoados.length && Math.random() < 0.2 && !radio.atual && !radio.fila.length) { radio.fila.push({ quem: sam, texto: pick(ZOA[pick(zoados).def.id]), t: 0 }); return; }
+    if (maz && fab && Math.random() < 0.35 && !radio.atual && !radio.fila.length) { radio.fila.push({ quem: maz, texto: pickNovo(PUXA.geral), t: 0 }); return; }
+    const zs = corredores.filter(c => ZOA[c.def.id] && corredores.some(o => o !== c && ZOA[c.def.id][o.def.id]));
+    if (zs.length && Math.random() < 0.25 && !radio.atual && !radio.fila.length) {
+      const z = pick(zs), pesos = (ZOA_PESO && ZOA_PESO[z.def.id]) || {}, alvos = [];
+      corredores.forEach(o => { if (o !== z && ZOA[z.def.id][o.def.id]) for (let k = 0; k < (pesos[o.def.id] || 1); k++) alvos.push(o); });
+      radio.fila.push({ quem: z, texto: pickNovo(ZOA[z.def.id][pick(alvos).def.id]), t: 0 }); return;
+    }
     const alvo = pick(corredores), quem = falante(alvo), so = alvo.def.id && SOBRE[alvo.def.id], de = quem && quem.def.id && DE[quem.def.id];
     const op = [].concat(so && so.geral || [], de && de.geral || []);
     if (op.length && !radio.atual && !radio.fila.length) radio.fila.push({ quem, texto: pick(op).replace(/\{alvo\}/g, alvo.nome), t: 0 });
@@ -1303,7 +1310,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v3.9', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v4.0', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
