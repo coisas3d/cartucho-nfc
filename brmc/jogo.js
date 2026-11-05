@@ -18,6 +18,7 @@ const SALA = params.get('sala'), DEV2P = params.get('dev2p') === '1';
 window.FONTE_TESTE = params.get('fonteteste') === '1';
 // RANKING GLOBAL: endereço do Cloudflare Worker (veja servidor/worker.js). Vazio = só lê o ranking.json do site
 const RANKING_GLOBAL = params.get('rank') || 'https://brmc-ranking.coisas3d-contato.workers.dev';
+const VERSAO_JOGO = '5.2';                 // mostrada nas telas de abertura e inicial (mude junto com o sw.js)
 const LINK_JOGO = location.origin + location.pathname;
 let MODO = 'viagem';                       // viagem | cafe | relogio
 let CLIMA = { tipo: 'sol' };               // sol | chuva | neblina (na serra)
@@ -1332,6 +1333,12 @@ function telaCarregando() {
     ctx.fillStyle = '#222'; ctx.fillRect(W / 2 - 120, 200, 240, 6); ctx.fillStyle = '#ff6a00'; ctx.fillRect(W / 2 - 120, 200, 240 * prog, 6);
   } };
 }
+// selo com a versão no canto superior direito
+function seloVersao() {
+  const r = 'VERSÃO ' + VERSAO_JOGO, w = r.length * 8 + 16, x = W - w - 8, y = 8;
+  ctx.save(); caminhoArred(ctx, x, y, w, 18, 9); ctx.fillStyle = 'rgba(8,10,14,0.85)'; ctx.fill(); ctx.strokeStyle = '#ff6a00'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
+  txt(r, x + w / 2, y + 5, '#ffffff', 8, 'c', false);
+}
 function telaAbertura() {
   return {
     nome: 'abertura',
@@ -1348,6 +1355,7 @@ function telaAbertura() {
       txt('THE GAME', W / 2, 245, '#ff6a00', 16, 'c');
       if (Math.floor(tempoReal * 2) % 2) txt('TOQUE PARA COMEÇAR', W / 2, 296, '#ffd23a', 16, 'c');
       txt('MELHOR COM SOM LIGADO', W / 2, 330, '#777', 8, 'c');
+      seloVersao();
     }
   };
 }
@@ -1384,7 +1392,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v5.1', W - 8, H - 14, '#666', 8, 'd', false);
+      seloVersao();
     }
   };
 }
