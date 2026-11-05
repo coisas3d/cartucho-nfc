@@ -8,7 +8,7 @@ window.DADOS = (function () {
   const PERSONAGENS = [
     { id: 'jellison', nome: 'JELLISON', moto: 'BRMC VRS 650 TOURER', cc: 650, tanque: 21, motor: 'twin', perfil: 'ROIA', ritmo: 0.97,
       sprite: 'piloto', foto: 'foto_versys', tampa: [0.40, 0.31], retrato: 'retrato_jellison', voz: 190,
-      vel: 190, acel: 1.0, economia: 0.92, curva: 0.80, capacete: '#2a2c32' },
+      vel: 190, acel: 0.97, economia: 0.92, curva: 0.80, capacete: '#2a2c32' },
     { id: 'leosao', nome: 'LEOSÃO', moto: 'BRMC GS 850 RALLYE', cc: 853, tanque: 15, motor: 'twin', perfil: 'McNAMARA', ritmo: 1.0,
       sprite: 'piloto_leosao', foto: 'foto_gs850', tampa: [0.42, 0.25], retrato: 'retrato_leosao', voz: 150,
       vel: 200, acel: 0.82, economia: 0.70, curva: 0.85, capacete: '#b0b4ba' },
@@ -35,16 +35,19 @@ window.DADOS = (function () {
       vel: 220, acel: 0.91, economia: 0.58, curva: 0.84, capacete: '#222226', curto: 'CLEIMAR' },
     { id: 'mazinho', nome: 'MAZINHO', moto: 'BRMC GS 1250 ADV 40 ANOS', cc: 1254, tanque: 30, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.05, imprudente: true,
       sprite: 'piloto_mazinho', foto: 'foto_adv40', tampa: [0.44, 0.28], retrato: 'retrato_mazinho', voz: 175,
-      vel: 226, acel: 0.97, economia: 0.52, curva: 0.60, capacete: '#1c1c20', curto: 'MAZINHO' },
+      vel: 226, acel: 0.95, economia: 0.52, curva: 0.60, capacete: '#1c1c20', curto: 'MAZINHO' },
     { id: 'samuca', nome: 'SAMUCA', moto: 'BRMC GS 1200 ADV RALLYE', cc: 1170, tanque: 30, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
       sprite: 'piloto_samuca', foto: 'foto_gs1200', tampa: [0.45, 0.29], retrato: 'retrato_samuca', voz: 115,
       vel: 200, acel: 0.80, economia: 0.78, curva: 0.86, capacete: '#ee70a8', curto: 'SAMUCA' },
     { id: 'alan', nome: 'ALAN', moto: 'BRMC F 750 TRIPLE BLACK', cc: 853, tanque: 15, motor: 'twin', perfil: 'ROIA', ritmo: 0.95,
       sprite: 'piloto_alan', foto: 'foto_f750', tampa: [0.45, 0.33], retrato: 'retrato_alan', voz: 145,
-      vel: 196, acel: 0.95, economia: 0.90, curva: 0.84, capacete: '#e6e8ec', curto: 'ALAN' },
+      vel: 196, acel: 0.94, economia: 0.90, curva: 0.84, capacete: '#e6e8ec', curto: 'ALAN' },
     { id: 'ramon', nome: 'RAMON', moto: 'BRMC TRANSALP 700', cc: 680, tanque: 18, motor: 'twin', perfil: 'ROIA', ritmo: 0.93, novato: true,
       sprite: 'piloto_ramon', foto: 'foto_transalp', tampa: [0.47, 0.28], retrato: 'retrato_ramon', voz: 210,
-      vel: 185, acel: 0.78, economia: 0.84, curva: 0.76, capacete: '#e8eaee', curto: 'RAMON' }
+      vel: 185, acel: 0.78, economia: 0.84, curva: 0.76, capacete: '#e8eaee', curto: 'RAMON' },
+    { id: 'adriano', nome: 'ADRIANO RANDANDAN', moto: 'BRMC MT 09', cc: 890, tanque: 14, motor: 'cp3', perfil: 'McNAMARA', ritmo: 0.99,
+      sprite: 'piloto_adriano', foto: 'foto_mt09', tampa: [0.46, 0.27], retrato: 'retrato_adriano', voz: 160,
+      vel: 215, acel: 1.0, economia: 0.66, curva: 0.88, capacete: '#22242a', curto: 'ADRIANO' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -397,6 +400,23 @@ window.DADOS = (function () {
       pagador_espera: ['Ramon chegou primeiro no pedágio: novato esperto, já foi pagando!'],
       esperando_pagador: ['Esperando o novato... Ramon, se perdeu?', 'Cadê o Ramon? Deve tá lavando a moto no meio da estrada!']
     },
+    adriano: {
+      geral: ['Randandan! Dá pra ouvir o Adriano chegando lá de Itaúna!', 'Adriano, esse escapamento acorda até defunto!', 'O Adriano não precisa de buzina: o escape já avisa todo mundo!',
+        'Randandandan! Lá vem o Adriano espantando as vacas do pasto!', 'Adriano, a MT 09 é pelada, mas o barulho é de foguete!', 'O vizinho do Adriano já fez abaixo-assinado contra esse escape!'],
+      lider: ['Adriano na frente! Ninguém sai mais rápido que essa MT 09!', 'Só se ouve RANDANDAN lá na frente: é o Adriano!'],
+      lanterna: ['Adriano lá atrás? Parou pra mostrar o ronco pra alguém!', 'Cadê o Adriano? Tô sem ouvir o randandan!'],
+      ultrapassou: ['RANDANDANDAN! O Adriano passou rasgando!', 'Adriano arrancou e quase estourou meu tímpano!', 'Passou o Adriano: até o asfalto tremeu!'],
+      batida: ['Adriano caiu! Pelo menos agora tá em silêncio!', 'O Randandan virou randandom! Levanta, Adriano!'],
+      reserva: ['Adriano na reserva! Tanque pequeno e mão pesada não combinam!', 'A MT 09 do Adriano bebe gasolina igual faz barulho: muito!'],
+      abastecendo: ['Adriano no posto: o frentista tapou o ouvido!', 'Adriano abastecendo: catorze litros, que tanque pequeno!'],
+      pedagio: ['Adriano chegou no pedágio e a cancela abriu de susto com o ronco!'],
+      multa: ['Adriano multado! O radar pegou pelo barulho!', 'Adriano tomou multa por excesso de velocidade E de decibéis!'],
+      buzina: ['Adriano buzinou? Ninguém ouviu, o escape é mais alto!'],
+      chuva: ['Adriano na chuva: o randandan fica até mais grave!'],
+      pagador: ['Adriano é o pagador! Bora, Randandan, solta o dinheiro!', 'Sorteio: Adriano paga! O cobrador vai ficar surdo!'],
+      pagador_espera: ['Adriano chegou primeiro no pedágio, acelerando parado pra apressar a turma!'],
+      esperando_pagador: ['Esperando o Adriano... é só ficar quieto que dá pra ouvir ele chegando!']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -430,6 +450,11 @@ window.DADOS = (function () {
   };
   // ZOA[quem][alvo]: implicâncias preferidas de cada membro (peso = chance relativa)
   const ZOA = {
+    adriano: {
+      fabinho: ['Fabinho Mecânico, regula meu escape pra ficar mais alto ainda?', 'Fabinho, sua moto é linda, mas o ronco da minha ninguém bate!', 'Ô Fabinho, enquanto você conserta a moto dos outros eu já tô lá na frente!'],
+      leosao: ['Pastor, meu escape é o sino da sua igreja! Randandan, hora da missa!', 'Leosão, chegou 7h59? Eu cheguei 7h58 e acordei a cidade inteira!', 'Pastor, reza por mim que hoje eu vou acelerar!'],
+      jellison: ['Jellison, quando eu passar na sua rua a patroa vai saber que você saiu!', 'Jellison, quer que eu passe na sua casa acelerando pra avisar a patroa?', 'Ô Jellison, ouviu o randandan? Era a patroa ligando!']
+    },
     leosao: { ramon: ['Ramon, novato tem que chegar 7h50! Amanhã eu quero você na porta!', 'Ramon, no clube a regra é: novato não reclama, novato acompanha!'] },
     jefao: { ramon: ['Ramon, finalmente alguém mais devagar que eu!', 'Calma, Ramon, eu sou Roia há anos, depois te dou umas aulas!'] },
     jellison: { ramon: ['Ramon, lava minha moto antes da patroa ver a sujeira?', 'Ramon, se a patroa perguntar, eu tava com o novato aprendendo, tá?'] },
@@ -544,6 +569,13 @@ window.DADOS = (function () {
       batida: ['{alvo}, depois passa lá que eu lavo a moto de graça!'],
       reserva: ['Gente, alguém sabe quanto essa moto faz por litro? Esqueci de calcular...'],
       geral: ['Quem quiser lavar a moto depois da viagem, faço preço de membro!', 'Gente, é normal a moto fazer esse barulho? Primeira viagem longa!', 'Já tô aprendendo: Roia vai atrás, McNamara vai na frente!']
+    },
+    adriano: {
+      largada: ['RANDANDANDAN! Bora, Black Rock!', 'Escuta esse ronco, rapaziada! Bora!'],
+      passou_voce: ['Randandan, {alvo}! Tchau!', 'Ouviu esse barulho, {alvo}? Era eu passando!'],
+      ultrapassou: ['Aproveita, {alvo}, que na saída da próxima curva eu te pego!'],
+      batida: ['{alvo}, caiu de susto com meu escape? Kkkk'],
+      geral: ['Quer ouvir o ronco? Escuta: RANDANDANDAN!', 'Escape original? Isso é coisa de Roia!']
     },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],

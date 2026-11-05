@@ -73,12 +73,20 @@ window.SOM = (function () {
   // rpm 0-1, gas 0/1, tipo: twin | boxer
   S.motor = function (j, rpm, gas, vol, tipo) {
     const m = S.motores[j]; if (!m) return;
-    const t = S.ac.currentTime, base = tipo === 'boxer' ? 30 : tipo === 'triple' ? 44 : 36, f = base + rpm * (tipo === 'boxer' ? 105 : tipo === 'triple' ? 165 : 130);
+    const cp3 = tipo === 'cp3', tri = tipo === 'triple' || cp3;   // cp3 = tricilíndrico com escape esportivo (o "Randandan" do Adriano)
+    const t = S.ac.currentTime, base = tipo === 'boxer' ? 30 : tri ? 44 : 36, f = base + rpm * (tipo === 'boxer' ? 105 : tri ? 165 : 130);
     m.o1.frequency.setTargetAtTime(f, t, 0.03); m.o2.frequency.setTargetAtTime(f / 2, t, 0.03); m.o3.frequency.setTargetAtTime(f * 1.5, t, 0.03);
-    m.lfo.frequency.setTargetAtTime(f / (tipo === 'boxer' ? 2 : tipo === 'triple' ? 3 : 4), t, 0.03);
-    m.f.frequency.setTargetAtTime(500 + rpm * 1600 + gas * 900, t, 0.05);
-    m.g.gain.setTargetAtTime(vol * (0.035 + gas * 0.05 + rpm * 0.02), t, 0.06);
+    m.lfo.frequency.setTargetAtTime(f / (tipo === 'boxer' ? 2 : tri ? 3 : 4), t, 0.03);
+    m.f.frequency.setTargetAtTime((cp3 ? 900 : 500) + rpm * 1600 + gas * (cp3 ? 1500 : 900), t, 0.05);
+    m.g.gain.setTargetAtTime(vol * (0.035 + gas * 0.05 + rpm * 0.02) * (cp3 ? 1.9 : 1), t, 0.06);
+    // escape modificado: estalos (pipocos) quando solta o acelerador em giro alto
+    if (cp3 && m.gasAnt && !gas && m.rpmAnt > 0.55) estalos(vol);
+    m.gasAnt = gas; m.rpmAnt = rpm;
   };
+  function estalos(vol) {
+    const t0 = S.ac.currentTime, n = 3 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < n; i++) { const t = t0 + 0.05 + i * (0.06 + Math.random() * 0.07); ruido(0.05, 'bandpass', 600 + Math.random() * 500, 0.5 * vol, null, t, 1.5); tom(70 + Math.random() * 40, 0.05, 'square', 0.12 * vol, null, t, 40); }
+  }
   S.ambiente = function (vel, terra) {
     if (!S.ac) return; const t = S.ac.currentTime;
     S.vento.g.gain.setTargetAtTime(Math.pow(vel, 2) * 0.12, t, 0.2); S.vento.fl.frequency.setTargetAtTime(400 + vel * 900, t, 0.2);

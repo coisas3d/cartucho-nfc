@@ -85,7 +85,7 @@ addEventListener('resize', ajustarTela); addEventListener('orientationchange', (
 
 // ============================================================ IMAGENS
 const NOMES = ['piloto', 'piloto_leosao', 'piloto_gs1300', 'foto_versys', 'foto_gs850', 'foto_gs1300', 'retrato_jellison', 'retrato_leosao',
-  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a', 'piloto_cezar', 'piloto_cleimar', 'foto_adv_prata', 'foto_adv_preto', 'retrato_cezar', 'retrato_cleimar', 'piloto_mazinho', 'foto_adv40', 'retrato_mazinho', 'piloto_samuca', 'foto_gs1200', 'retrato_samuca', 'piloto_alan', 'foto_f750', 'retrato_alan', 'piloto_ramon', 'foto_transalp', 'retrato_ramon'];
+  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a', 'piloto_cezar', 'piloto_cleimar', 'foto_adv_prata', 'foto_adv_preto', 'retrato_cezar', 'retrato_cleimar', 'piloto_mazinho', 'foto_adv40', 'retrato_mazinho', 'piloto_samuca', 'foto_gs1200', 'retrato_samuca', 'piloto_alan', 'foto_f750', 'retrato_alan', 'piloto_ramon', 'foto_transalp', 'retrato_ramon', 'piloto_adriano', 'foto_mt09', 'retrato_adriano'];
 const IMG = {};
 function carregar(prog) {
   let n = 0;
@@ -1310,7 +1310,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v4.1', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v4.2', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
