@@ -41,7 +41,10 @@ window.DADOS = (function () {
       vel: 200, acel: 0.80, economia: 0.78, curva: 0.86, capacete: '#ee70a8', curto: 'SAMUCA' },
     { id: 'alan', nome: 'ALAN', moto: 'BRMC F 750 TRIPLE BLACK', cc: 853, tanque: 15, motor: 'twin', perfil: 'ROIA', ritmo: 0.95,
       sprite: 'piloto_alan', foto: 'foto_f750', tampa: [0.45, 0.33], retrato: 'retrato_alan', voz: 145,
-      vel: 196, acel: 0.95, economia: 0.90, curva: 0.84, capacete: '#e6e8ec', curto: 'ALAN' }
+      vel: 196, acel: 0.95, economia: 0.90, curva: 0.84, capacete: '#e6e8ec', curto: 'ALAN' },
+    { id: 'ramon', nome: 'RAMON', moto: 'BRMC TRANSALP 700', cc: 680, tanque: 18, motor: 'twin', perfil: 'ROIA', ritmo: 0.93, novato: true,
+      sprite: 'piloto_ramon', foto: 'foto_transalp', tampa: [0.47, 0.28], retrato: 'retrato_ramon', voz: 210,
+      vel: 185, acel: 0.78, economia: 0.84, curva: 0.76, capacete: '#e8eaee', curto: 'RAMON' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -377,6 +380,23 @@ window.DADOS = (function () {
       pagador_espera: ['Alan chegou primeiro no pedágio, sério, de braço cruzado, esperando a turma!'],
       esperando_pagador: ['Esperando o Alan... deve tá olhando a paisagem!']
     },
+    ramon: {
+      geral: ['Ramon, o novato! Já pagou o café de boas-vindas?', 'Ramon, lava a moto do Jellison quando chegar? Cobra desconto de membro!', 'Novato tem que ir atrás, Ramon, pra aprender o caminho!',
+        'A Transalp do Ramon é a mais limpa do clube: o cara lava moto o dia inteiro!', 'Ramon, a gente vai sujar a moto toda na serra só pra você ter serviço segunda-feira!', 'Ramon, cuidado pra não lavar a moto com o pano de prato da sua mãe!'],
+      lider: ['O novato na frente? Ramon, desacelera que você nem sabe o caminho!', 'Ramon liderando! Os veteranos tão passando vergonha!'],
+      lanterna: ['Ramon lá atrás, como todo bom novato!', 'Cadê o Ramon? Parou pra lavar a moto num lava-jato da estrada!', 'Ramon tá devagar pra não sujar a Transalp!'],
+      ultrapassou: ['Ramon ultrapassando! O novato tá ousado hoje!', 'Olha o Ramon passando! Moto lavadinha brilhando no sol!'],
+      batida: ['O novato caiu! Faz parte do batismo, Ramon!', 'Ramon caiu! Pelo menos ele sabe lavar a moto depois!', 'Levanta, Ramon! Novato no chão é tradição!'],
+      reserva: ['Ramon na reserva! Novato não sabe calcular o tanque!'],
+      abastecendo: ['Ramon no posto: aproveita e dá uma lavadinha na moto, né?', 'Ramon abastecendo e passando paninho no tanque!'],
+      pedagio: ['Ramon, novato não paga pedágio: paga o pedágio de todo mundo!'],
+      multa: ['O novato tomou multa! Batismo completo, Ramon!', 'Ramon multado! Vai ter que lavar muita moto pra pagar!'],
+      buzina: ['Ramon buzinando! O novato tá se achando!'],
+      chuva: ['Chuva! Ramon tá feliz: segunda-feira vai ter muita moto suja pra lavar!'],
+      pagador: ['Sorteio... ah, nem precisava: novato paga! Valeu, Ramon!', 'Ramon é o pagador! O dinheiro das lavagens tá rendendo!'],
+      pagador_espera: ['Ramon chegou primeiro no pedágio: novato esperto, já foi pagando!'],
+      esperando_pagador: ['Esperando o novato... Ramon, se perdeu?', 'Cadê o Ramon? Deve tá lavando a moto no meio da estrada!']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -410,6 +430,11 @@ window.DADOS = (function () {
   };
   // ZOA[quem][alvo]: implicâncias preferidas de cada membro (peso = chance relativa)
   const ZOA = {
+    leosao: { ramon: ['Ramon, novato tem que chegar 7h50! Amanhã eu quero você na porta!', 'Ramon, no clube a regra é: novato não reclama, novato acompanha!'] },
+    jefao: { ramon: ['Ramon, finalmente alguém mais devagar que eu!', 'Calma, Ramon, eu sou Roia há anos, depois te dou umas aulas!'] },
+    jellison: { ramon: ['Ramon, lava minha moto antes da patroa ver a sujeira?', 'Ramon, se a patroa perguntar, eu tava com o novato aprendendo, tá?'] },
+    mazinho: { ramon: ['Ô Ramon, novato! Vai buscar um café pro Fabinho!', 'Ramon, essa Transalp é seu primeiro carro, digo, sua primeira moto? Kkkk', 'Filmei o novato errando a marcha! Já tá no grupo!'] },
+    fabinho: { ramon: ['Ramon, depois passa na oficina que eu dou um jeito nessa Transalp!', 'Ramon, você lava, eu conserto: vamos abrir uma sociedade!'] },
     samuca: {
       jellison: ['Jellison, quer que eu leve um recado pra patroa? Faço entrega expressa!', 'Jellison, se a patroa ligar, eu digo que você tá na minha garupa!',
         'Ô Jellison, se precisar voltar cedo eu te levo de mototáxi!', 'Jellison, a patroa já te deu a senha do Pix pro pedágio?'],
@@ -417,6 +442,7 @@ window.DADOS = (function () {
         'Ô Jefão, até minha entrega de marmita chega antes de você!', 'Jefão, 1300 cilindradas e meu capacete rosa ainda te passa!']
     },
     alan: {
+      ramon: ['Ramon, quando você lavar minha moto, capricha no baú preto!'],
       cleimar: ['Cleimar, abaixa esse joinha e segura o guidão com as duas mãos!', 'Cleimar, se joinha desse gasolina, você tava com tanque cheio até o Natal!',
         'Ô Cleimar, sua moto tem 1250 e mesmo assim eu te vejo no retrovisor!', 'Cleimar, tira a mão do joinha e põe no freio, irmão!'],
       samuca: ['Samuca, capacete rosa combina com o meu branco: a gente é a dupla da moda!', 'Ô Samuca, liga o aplicativo que eu pago a corrida até o posto!',
@@ -510,6 +536,14 @@ window.DADOS = (function () {
       ultrapassou: ['Vai, {alvo}. Te encontro no posto... ah não, eu nem preciso parar!'],
       batida: ['{alvo}, tá inteiro? Levanta que a gente espera.'],
       geral: ['Quem gasta menos gasolina? Eu. De nada.', 'Moto pequena, coração grande.']
+    },
+    ramon: {
+      largada: ['Bora, galera! Primeira viagem grande com vocês!', 'Tô nervoso, mas bora! Me esperem, hein!'],
+      passou_voce: ['Desculpa, {alvo}! Com todo respeito aos veteranos!', 'Passei, {alvo}! O novato tá aprendendo!'],
+      ultrapassou: ['Pode passar, {alvo}, tô aprendendo com os mestres!'],
+      batida: ['{alvo}, depois passa lá que eu lavo a moto de graça!'],
+      reserva: ['Gente, alguém sabe quanto essa moto faz por litro? Esqueci de calcular...'],
+      geral: ['Quem quiser lavar a moto depois da viagem, faço preço de membro!', 'Gente, é normal a moto fazer esse barulho? Primeira viagem longa!', 'Já tô aprendendo: Roia vai atrás, McNamara vai na frente!']
     },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],
