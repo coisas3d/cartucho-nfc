@@ -14,7 +14,13 @@ window.DADOS = (function () {
       vel: 200, acel: 0.82, economia: 0.70, curva: 0.85, capacete: '#b0b4ba' },
     { id: 'jefao', nome: 'JEFÃO', moto: 'BRMC GS 1300', cc: 1300, tanque: 19, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
       sprite: 'piloto_gs1300', foto: 'foto_gs1300', tampa: [0.37, 0.33], retrato: 'retrato_jefao', voz: 120,
-      vel: 200, acel: 0.90, economia: 0.61, curva: 0.80, capacete: '#52565e' }
+      vel: 200, acel: 0.90, economia: 0.61, curva: 0.80, capacete: '#52565e' },
+    { id: 'lucas', nome: 'LUCAS CHURROS', moto: 'BRMC GS 1300 RALLYE', cc: 1300, tanque: 30, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
+      sprite: 'piloto_lucas', foto: 'foto_gs1300l', tampa: [0.43, 0.31], retrato: 'retrato_lucas', voz: 200,
+      vel: 210, acel: 0.86, economia: 0.80, curva: 0.80, capacete: '#e4e6e8' },
+    { id: 'fabinho', nome: 'FABINHO MECÂNICO', moto: 'BRMC GS 1300 RALLYE', cc: 1300, tanque: 30, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.02,
+      sprite: 'piloto_fabinho', foto: 'foto_gs1300r', tampa: [0.47, 0.32], retrato: 'retrato_fabinho', voz: 135,
+      vel: 225, acel: 0.95, economia: 0.50, curva: 0.88, capacete: '#cc2620' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -120,7 +126,7 @@ window.DADOS = (function () {
     { id: 'frentista', nome: 'AMIGO DO FRENTISTA', desc: 'ABASTEÇA 2 VEZES' },
     { id: 'bibi', nome: 'BI-BI!', desc: 'BUZINE 15 VEZES NUMA CORRIDA' },
     { id: 'patrocinador', nome: 'PATROCINADOR OFICIAL', desc: 'SEJA O PAGADOR NOS 2 PEDÁGIOS' },
-    { id: 'trinca', nome: 'TRINCA DE OURO', desc: 'VENÇA A VIAGEM COM OS 3 PILOTOS' }
+    { id: 'trinca', nome: 'TODO MUNDO VENCEU', desc: 'VENÇA A VIAGEM COM TODOS OS PILOTOS' }
   ];
 
   // ------------------------------------------------------------------ INTERCOMUNICADOR
@@ -194,6 +200,40 @@ window.DADOS = (function () {
       pagador_espera: ['Milagre! O Jefão chegou primeiro no pedágio! Agora espera, né?'],
       esperando_pagador: ['Esperando o Jefão no pedágio... alguém trouxe barraca?', 'Jefão vem aí com a carteira... na velocidade dele, chega semana que vem!']
     },
+    lucas: {
+      geral: ['Lucas Churros: a moto é 1300, mas o ritmo é de carrinho de churros!', 'Lucas, trouxe churros pra galera ou só o apelido?', 'Roia com doce de leite: Lucas Churros!',
+        'Lucas tá devagar porque tá equilibrando a bandeja de churros!', 'A GS do Lucas é tão econômica que roda com o cheiro da gasolina!'],
+      lanterna: ['Lucas parou pra vender churros no acostamento!', 'Cadê o Lucas? Deve ter montado a barraquinha no pedágio!'],
+      lider: ['Lucas na frente? O cheiro de churros puxou ele!', 'Um Roia na liderança? O Lucas comeu açúcar demais!'],
+      ultrapassou: ['Lucas Churros ultrapassando! Recheado de coragem hoje!', 'O Lucas passou! Foi no embalo do doce de leite!'],
+      batida: ['Lucas caiu! Salvem os churros!', 'Levanta, Lucas! Churros no chão não conta!'],
+      reserva: ['Lucas na reserva? Vai trocar churros por gasolina!'],
+      abastecendo: ['Lucas abastecendo... trinta litros! Dá pra fritar muito churros com isso!', 'Lucas, aproveita o posto e vende uns churros pros frentistas!'],
+      pedagio: ['Lucas quer pagar o pedágio em churros!'],
+      multa: ['Lucas multado?! Um Roia levando multa? O radar tava parado!', 'Lucas, a multa vai sair mais cara que mil churros!'],
+      buzina: ['Lucas buzinando: parece o carrinho de churros chegando!'],
+      chuva: ['Lucas, cuidado pra não molhar os churros!'],
+      pagador: ['Lucas Churros paga o pedágio... será que aceita churros?', 'O pagador é o Lucas! Hoje o pedágio sai com doce de leite!'],
+      pagador_espera: ['Lucas chegou primeiro no pedágio! Até deu tempo de fritar uns churros!'],
+      esperando_pagador: ['Esperando o Lucas... alguém liga pra ele largar a barraquinha!']
+    },
+    fabinho: {
+      geral: ['Fabinho Mecânico acelera porque sabe que, se quebrar, ele mesmo conserta!', 'Fabinho, pisa leve que essa GS bebe mais que a turma no bar!',
+        'O Fabinho acelera tanto que o posto já guarda a bomba pra ele!', 'Fabinho regulou a moto pra 225 e o consumo pro infinito!', 'Fabinho tem mais ferramenta no baú do que roupa!'],
+      lanterna: ['Fabinho em último? Deve ter parado pra consertar a moto de alguém!', 'Fabinho atrás? Tá no posto de novo!'],
+      lider: ['Fabinho na frente, óbvio: McNamara com chave de boca no bolso!', 'Lá vai o Fabinho! Ninguém segura o McNamara mecânico!'],
+      ultrapassou: ['Fabinho passou voando! 225 no talo!', 'O mecânico passou! Essa moto tá regulada demais!'],
+      batida: ['Fabinho caiu! Pelo menos o mecânico já tá no local!', 'Fabinho, levanta e aperta os parafusos aí!'],
+      reserva: ['Fabinho na reserva... de novo! Mecânico que não calcula consumo!', 'A GS do Fabinho bebeu tudo! Alguém tem um galão?'],
+      abastecendo: ['Fabinho no posto de novo? Essa GS é movida a gasolina ou a dinheiro?', 'Fabinho abastecendo! O frentista já sabe o nome dele!'],
+      pedagio: ['Fabinho chegou no pedágio xingando a cancela!'],
+      multa: ['Fabinho multado! Vai ter que consertar o radar pra apagar a foto!', 'McNamara mecânico multado! Bem feito, Fabinho!'],
+      buzina: ['Fabinho buzina e acelera ao mesmo tempo, que McNamara!'],
+      chuva: ['Fabinho na chuva: pra ele, freio é só um detalhe!'],
+      pagador: ['Fabinho paga! Depois cobra na revisão da moto de todo mundo!', 'O pagador é o Fabinho! Vai sair caro igual peça original!'],
+      pagador_espera: ['Fabinho chegou voando no pedágio e agora vai ter que esperar os Roias!', 'Senta aí, Fabinho! McNamara pagador espera a turma toda!'],
+      esperando_pagador: ['Esperando o Fabinho... deve ter parado no posto pela décima vez!']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -228,6 +268,21 @@ window.DADOS = (function () {
       ultrapassou: ['Pode ir, {alvo}. Roia, mas chego!'],
       batida: ['{alvo}, por isso que eu ando devagar!'],
       geral: ['Tô no modo econômico, galera.']
+    },
+    lucas: {
+      largada: ['Bora, rapaziada! Quem chegar primeiro ganha um churros!'],
+      passou_voce: ['Passei, {alvo}! Devagar, mas recheado!'],
+      ultrapassou: ['Vai lá, {alvo}! Roia que é Roia não briga!'],
+      batida: ['{alvo}, quer um churros pra adoçar o tombo?'],
+      geral: ['Tô de boa, aproveitando a viagem e o doce de leite.']
+    },
+    fabinho: {
+      largada: ['Moto revisada, pneu calibrado, bora acelerar!'],
+      passou_voce: ['Sai da frente, {alvo}! 225 no talo!'],
+      ultrapassou: ['Aproveita, {alvo}, que daqui a pouco eu paro no posto!'],
+      batida: ['{alvo}, depois passa na oficina que eu dou um jeito!'],
+      lanterna: ['Calma, {alvo}, já já eu volto pra te ajudar a empurrar!'],
+      geral: ['Essa GS tá redondinha, fui eu que regulei!', 'Alguém sabe onde é o próximo posto? Pergunto por nada...']
     },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],

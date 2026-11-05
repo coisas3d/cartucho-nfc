@@ -33,6 +33,7 @@ const guardar = {
   ler(k, d) { try { const v = localStorage.getItem('brmc_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   gravar(k, v) { try { localStorage.setItem('brmc_' + k, JSON.stringify(v)); } catch (e) {} }
 };
+const curto = n => n.length > 12 ? n.split(' ')[0] : n;
 const plural = (n, p) => (n || 0) + ' ' + p + ((n || 0) === 1 ? '' : 'S');
 function fmtTempo(t) { if (t == null || !isFinite(t)) return '--:--.-'; const m = Math.floor(t / 60), s = t - m * 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1); }
 const txt = (s, x, y, cor, tam, al, sombra) => A.txt(ctx, s, x, y, cor, tam, al, sombra);
@@ -84,7 +85,7 @@ addEventListener('resize', ajustarTela); addEventListener('orientationchange', (
 
 // ============================================================ IMAGENS
 const NOMES = ['piloto', 'piloto_leosao', 'piloto_gs1300', 'foto_versys', 'foto_gs850', 'foto_gs1300', 'retrato_jellison', 'retrato_leosao',
-  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo'];
+  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho'];
 const IMG = {};
 function carregar(prog) {
   let n = 0;
@@ -1288,7 +1289,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v3.1', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v3.2', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
@@ -1626,9 +1627,10 @@ function telaResultado() {
           txt(lugar + 'º', x + 60, by + 8, '#111', 16, 'c', false);
           const ret = c.def.retrato && IMG[c.def.retrato];
           if (ret) ctx.drawImage(ret, x + 28, by - 68, 64, 64);
-          txt(c.nome, x + 60, by + 30, '#111', 8, 'c', false); txt(fmtTempo(est(c)), x + 60, by + 44, '#222', 8, 'c', false);
+          txt(curto(c.nome), x + 60, by + 30, '#111', 8, 'c', false); txt(fmtTempo(est(c)), x + 60, by + 44, '#222', 8, 'c', false);
           if (c.multas) txt(c.multas + ' MULTA' + (c.multas > 1 ? 'S' : ''), x + 60, by + 58, '#8a1a10', 8, 'c', false);
         });
+        ordem.slice(3).forEach((c, i) => txt((i + 4) + 'º ' + c.nome + '  ' + fmtTempo(est(c)), 14, 96 + i * 14, c.humano >= 0 ? '#4ef03a' : '#ddd', 8));
         txt((novo ? 'NOVO RECORDE! ' : 'RECORDE: ') + fmtTempo(guardar.ler(chave, null)), 14, 42, novo ? '#ffd23a' : '#ddd', 8);
         humanos.forEach((q, i) => txt((humanos.length > 1 ? 'P' + (i + 1) + ': ' : 'VOCÊ: ') + posicao(q) + 'º • ' + plural(q.batidas, 'TOMBO') + ' • ' + plural(q.multas, 'MULTA'), 14, 58 + i * 14, '#fff', 8));
       }
@@ -1924,8 +1926,9 @@ function telaResultadoCliente(res) {
         const x = [W / 2 - 60, W / 2 - 180, W / 2 + 60][i], by = 290 - [120, 100, 80][i];
         ctx.fillStyle = ['#ffd23a', '#c0c0c8', '#c8804a'][i]; ctx.fillRect(x, by, 120, 300 - by);
         txt((i + 1) + 'º', x + 60, by + 8, '#111', 16, 'c', false); const r = IMG[c.def.retrato]; if (r) ctx.drawImage(r, x + 28, by - 68, 64, 64);
-        txt(c.nome + (c === eu ? ' (P2)' : c.humano === 0 ? ' (P1)' : ''), x + 60, by + 30, '#111', 8, 'c', false); txt(fmtTempo(c.tempo), x + 60, by + 44, '#222', 8, 'c', false);
+        txt(curto(c.nome) + (c === eu ? ' (P2)' : c.humano === 0 ? ' (P1)' : ''), x + 60, by + 30, '#111', 8, 'c', false); txt(fmtTempo(c.tempo), x + 60, by + 44, '#222', 8, 'c', false);
       });
+      ordem.slice(3).forEach((c, i) => txt((i + 4) + 'º ' + c.nome + '  ' + fmtTempo(c.tempo), 14, 70 + i * 14, c === eu ? '#4ef03a' : '#ddd', 8));
       if (eu) txt('VOCÊ: ' + (ordem.indexOf(eu) + 1) + 'º • ' + plural(eu.multas, 'MULTA') + ' • ' + plural(eu.batidas, 'TOMBO'), 14, 42, '#fff', 8);
       alvosToque = [];
       botao(20, H - 46, 260, 32, 'COMPARTILHAR', () => compartilhar(blob), false, '#1e6a3a');
