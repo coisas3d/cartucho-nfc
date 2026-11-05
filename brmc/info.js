@@ -6,6 +6,7 @@ window.INFO = (function () {
 
   // ===== HISTÓRICO DE VERSÕES (a primeira da lista é a versão atual do jogo) =====
   const VERSOES = [
+    ['5.5', ['Física de batida corrigida: ninguém atravessa mais carros e caminhões (a área de colisão agora tem o tamanho real do veículo), e o trânsito freia para as motos na frente.', 'Música começa já no aviso de abertura.', 'Adriano: MT-09 a 215 km/h e a pior economia do clube.', 'Pilotos do jogo também buzinam, principalmente os Rôias.', 'Caminhoneiro buzinado tem 50% de chance de fechar a ultrapassagem.', 'Tombo agora soma +3 s no tempo.', 'Multa pela gravidade: até 20% acima do limite +5 s, até 50% +10 s, acima de 50% +20 s.']],
     ['5.4', ['Emblema da Coisas 3D no aviso de abertura, na tela SOBRE e no rodapé da tela inicial.']],
     ['5.3', ['Novo botão COMO JOGAR com o manual completo do jogo.', 'Novo menu NOVIDADES com o histórico de versões.', 'Novo menu SOBRE com os créditos da Coisas 3D, Instagram e WhatsApp.', 'Aviso de abertura: projeto sem fins lucrativos, uma homenagem ao Black Rock MC.']],
     ['5.2', ['Versão do jogo visível nas telas de abertura e inicial.']],
@@ -22,7 +23,7 @@ window.INFO = (function () {
   const lista = a => '<ul>' + a.map(x => '<li>' + x + '</li>').join('') + '</ul>';
 
   const COMO_JOGAR =
-    sec('🎯 Objetivo', '<p>Pilotar com a turma do <b>Black Rock MC</b> de <b>Itaúna até Aparecida</b> e chegar na frente. Na estrada tem trânsito, postos, pedágios, radares, chuva e neblina na serra. O tempo final é o tempo da corrida <b>mais as multas</b>.</p>') +
+    sec('🎯 Objetivo', '<p>Pilotar com a turma do <b>Black Rock MC</b> de <b>Itaúna até Aparecida</b> e chegar na frente. Na estrada tem trânsito, postos, pedágios, radares, chuva e neblina na serra. O tempo final é o tempo da corrida <b>mais as penalidades</b> (multas e tombos).</p>') +
     sec('🎮 Controles', lista([
       '<b>Celular:</b> setas ◀ ▶ para desviar, <b>ACELERA</b>, <b>FREIO</b> e <b>BUZINA</b>. O botão <b>II</b> pausa.',
       '<b>Teclado (P1):</b> ← → desviar, ↑ / Z / Espaço acelerar, ↓ / X frear, H ou B buzinar, P ou Esc pausar.',
@@ -52,17 +53,18 @@ window.INFO = (function () {
     ])) +
     sec('📸 Radares', lista([
       'Antes de cada radar aparecem <b>3 placas</b> com a velocidade máxima, e o ícone de radar mostra a distância no painel.',
-      'Passou acima do limite: <b>flash</b> e <b>+5 segundos</b> de multa no seu tempo.',
+      'Passou acima do limite: <b>flash</b> e multa somada ao seu tempo, conforme a gravidade: até 20% acima <b>+5 s</b> (média), até 50% acima <b>+10 s</b> (grave), mais de 50% acima <b>+20 s</b> (gravíssima).',
       'Os McNamaras às vezes ignoram a placa… e pagam por isso.'
     ])) +
     sec('📯 Buzina', lista([
       'Toque rápido = "bi". Segure para buzinar mais tempo.',
       '<b>Carros, motos e membros do clube</b> na sua frente abrem passagem.',
-      '<b>Caminhões e carretas não saem da frente:</b> o motorista xinga e responde com a buzina a ar. Ultrapasse com cuidado!'
+      '<b>Caminhões e carretas não saem da frente:</b> o motorista xinga, responde com a buzina a ar e, em metade das vezes, ainda <b>fecha a ultrapassagem</b>. Ultrapasse com cuidado!',
+      'Os outros membros também buzinam, principalmente os Rôias.'
     ])) +
     sec('💨 Dicas de pilotagem', lista([
       '<b>Vácuo:</b> andar colado atrás de outra moto dá mais aceleração.',
-      'Freie <b>antes</b> das curvas fechadas. Sair da pista ou bater no trânsito derruba a moto.',
+      'Freie <b>antes</b> das curvas fechadas. Sair da pista ou bater no trânsito derruba a moto, e <b>cada tombo soma +3 s</b> no seu tempo.',
       'Na <b>chuva</b> o asfalto fica liso. Na <b>neblina</b>, devagar e atenção ao trânsito.',
       'Ouça o <b>rádio</b>: a turma avisa sobre radar, pedágio, chuva e quem está ficando para trás.'
     ])) +
@@ -78,7 +80,7 @@ window.INFO = (function () {
       'O jogo pede o seu nome uma vez e guarda no celular.',
       'Cada pessoa aparece <b>uma vez</b>, com o <b>melhor tempo</b>. Um tempo pior não apaga o seu recorde.',
       'Veja em <b>RECORDES → GLOBAL</b>. O botão "NESTE CELULAR" mostra o TOP 10 só do seu aparelho.',
-      'Precisa de internet para enviar. As multas entram no tempo!'
+      'Precisa de internet para enviar. Multas e tombos entram no tempo!'
     ])) +
     sec('🎖️ Conquistas e capacete dourado', '<p>São 14 desafios, como <b>Romeiro</b> (chegar em Aparecida), <b>Cidadão de bem</b> (viagem sem multa), <b>Pato na chuva</b> e <b>Patrocinador oficial</b> (pagar os 2 pedágios). Algumas conquistas dão o <b>capacete dourado</b> para o piloto usado. Veja em <b>RECORDES → CONQUISTAS</b>.</p>') +
     sec('⚙️ Opções', lista([
@@ -108,7 +110,7 @@ window.INFO = (function () {
 
   // ===== aviso antes de abrir o jogo =====
   const aviso = document.getElementById('aviso');
-  document.getElementById('aviso-ok').addEventListener('click', () => { aviso.classList.remove('on'); try { window.SOM && SOM.iniciar(); } catch (e) {} });
+  document.getElementById('aviso-ok').addEventListener('click', () => { aviso.classList.remove('on'); try { if (window.SOM) { SOM.iniciar(); SOM.tocarMusica('menu'); } } catch (e) {} });
   if (navigator.webdriver || new URLSearchParams(location.search).get('semaviso') === '1') aviso.classList.remove('on');
 
   return {
