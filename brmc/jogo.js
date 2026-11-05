@@ -85,7 +85,7 @@ addEventListener('resize', ajustarTela); addEventListener('orientationchange', (
 
 // ============================================================ IMAGENS
 const NOMES = ['piloto', 'piloto_leosao', 'piloto_gs1300', 'foto_versys', 'foto_gs850', 'foto_gs1300', 'retrato_jellison', 'retrato_leosao',
-  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a', 'piloto_cezar', 'piloto_cleimar', 'foto_adv_prata', 'foto_adv_preto', 'retrato_cezar', 'retrato_cleimar', 'piloto_mazinho', 'foto_adv40', 'retrato_mazinho', 'piloto_samuca', 'foto_gs1200', 'retrato_samuca', 'piloto_alan', 'foto_f750', 'retrato_alan'];
+  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a', 'piloto_cezar', 'piloto_cleimar', 'foto_adv_prata', 'foto_adv_preto', 'retrato_cezar', 'retrato_cleimar', 'piloto_mazinho', 'foto_adv40', 'retrato_mazinho', 'piloto_samuca', 'foto_gs1200', 'retrato_samuca', 'piloto_alan', 'foto_f750', 'retrato_alan', 'piloto_ramon', 'foto_transalp', 'retrato_ramon'];
 const IMG = {};
 function carregar(prog) {
   let n = 0;
@@ -1310,7 +1310,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v4.0', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v4.1', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
@@ -1349,7 +1349,7 @@ function telaSelecao(n, cli) {   // cli = celular do P2 mostrando a escolha dele
         const v = n === 1 ? { x: 0, w: W } : { x: j * W / 2, w: W / 2 }, p = PERSONAGENS[st.sel[j]], cx = v.x + v.w / 2, an = Math.min(1, st.anim[j] * 2.5);
         luz(ctx, n === 1 ? 190 : cx, 210, n === 1 ? 210 : 150, 'rgba(255,170,90,A)', 0.18);
         ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fillRect(v.x, 262, v.w, 98);
-        const foto = IMG[p.foto], fw = n === 1 ? 330 : 236, fh = foto ? fw * foto.height / foto.width : 0;
+        const foto = IMG[p.foto], fw0 = n === 1 ? 330 : 236, fw = foto ? Math.min(fw0, (n === 1 ? 228 : 168) * foto.width / foto.height) : fw0, fh = foto ? fw * foto.height / foto.width : 0;   // fotos altas não invadem o título
         const fx = n === 1 ? 170 - fw / 2 + (1 - an) * -40 : cx - fw / 2, fy = (n === 1 ? 270 : 252) - fh;
         ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(fx + fw / 2, fy + fh - 3, fw * 0.46, 7, 0, 0, 7); ctx.fill();
         hiFoto(foto, fx, fy, fw, fh, an, true);
