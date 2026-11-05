@@ -123,11 +123,39 @@ window.SOM = (function () {
   };
   S.cancela = () => { tom(1500, 0.08, 'sine', 0.15); setTimeout(() => tom(260, 0.3, 'sawtooth', 0.05, null, null, 520), 120); };
   // buzina de moto (duas notas desafinadas, levemente distorcidas)
-  S.buzina = (grave) => {
-    if (!S.ac) return; const ac = S.ac, t = ac.currentTime, f = ac.createBiquadFilter(), g = ac.createGain();
-    f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 0.7; env(g, t, 0.01, 0.42, 0.22); f.connect(g); g.connect(S.fx);
-    [grave ? 340 : 410, grave ? 425 : 512].forEach(fr => { const o = ac.createOscillator(); o.type = 'square'; o.frequency.value = fr; o.connect(f); o.start(t); o.stop(t + 0.45); });
+  // Buzina realista: dupla de disco (2 tons desafinados), saturada e com ressonancias metalicas
+  let curvaBz = null, bzAtiva = null;
+  function curvaSat() { if (curvaBz) return curvaBz; const n = 1024, c = new Float32Array(n); for (let k = 0; k < n; k++) { const x = k / (n - 1) * 2 - 1; c[k] = Math.tanh(x * 3.2) * 0.9 + 0.1 * Math.sign(x) * Math.pow(Math.abs(x), 0.4); } return (curvaBz = c); }
+  S.buzinaOn = (grave) => {
+    if (!S.ac) return; S.buzinaOff(true); const ac = S.ac, t = ac.currentTime;
+    const sat = ac.createWaveShaper(); sat.curve = curvaSat(); sat.oversample = '2x';
+    const pre = ac.createGain(); pre.gain.value = 1.6;
+    const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 280; hp.Q.value = 0.8;
+    const r1 = ac.createBiquadFilter(); r1.type = 'peaking'; r1.frequency.value = 1650; r1.Q.value = 2.2; r1.gain.value = 9;
+    const r2 = ac.createBiquadFilter(); r2.type = 'peaking'; r2.frequency.value = 2900; r2.Q.value = 3; r2.gain.value = 6;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 4800; lp.Q.value = 0.5;
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.17, t + 0.012);
+    pre.connect(sat); sat.connect(hp); hp.connect(r1); r1.connect(r2); r2.connect(lp); lp.connect(g); g.connect(S.fx);
+    const base = grave ? [352, 418] : [420, 498];
+    const osc = base.map((fr, k) => {
+      const o = ac.createOscillator(), og = ac.createGain(); o.type = k ? 'square' : 'sawtooth';
+      o.frequency.setValueAtTime(fr * 0.93, t); o.frequency.exponentialRampToValueAtTime(fr, t + 0.035); // "blat" do diafragma
+      const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 23 + k * 7; lg.gain.value = fr * 0.004; lfo.connect(lg); lg.connect(o.frequency); lfo.start(t);
+      og.gain.value = k ? 0.32 : 0.45; o.connect(og); og.connect(pre); o.start(t); return [o, lfo];
+    });
+    // estalo inicial do diafragma
+    const nb = ac.createBufferSource(); nb.buffer = S.ruido; const nf = ac.createBiquadFilter(), ng = ac.createGain();
+    nf.type = 'bandpass'; nf.frequency.value = 2200; nf.Q.value = 1.2; env(ng, t, 0.002, 0.04, 0.18); nb.connect(nf); nf.connect(ng); ng.connect(S.fx); nb.start(t); nb.stop(t + 0.06);
+    bzAtiva = { g, osc, ini: t };
   };
+  S.buzinaOff = (ja) => {
+    if (!bzAtiva || !S.ac) return; const b = bzAtiva; bzAtiva = null; const ac = S.ac;
+    const t = ja ? ac.currentTime : Math.max(ac.currentTime, b.ini + 0.13);
+    b.g.gain.setTargetAtTime(0, t, 0.012);
+    b.osc.forEach(([o, l]) => { o.stop(t + 0.09); l.stop(t + 0.09); });
+  };
+  S.buzina = (grave) => { S.buzinaOn(grave); S.buzinaOff(); };
+  S.buzinaToque = (grave, dur) => { if (!S.ac) return; S.buzinaOn(grave); const b = bzAtiva; setTimeout(() => { if (bzAtiva === b) S.buzinaOff(); }, (dur || 0.25) * 1000); };
   S.flash = () => { tom(2400, 0.04, 'square', 0.12); ruido(0.12, 'highpass', 6000, 0.25); setTimeout(() => tom(1800, 0.05, 'sine', 0.1), 60); };
   S.multa = () => { [784, 659, 523].forEach((f, i) => setTimeout(() => tom(f, 0.14, 'square', 0.1), i * 120)); };
   S.trovao = () => { ruido(2.6, 'lowpass', 160, 0.9, null, null, 0.7); setTimeout(() => ruido(1.8, 'lowpass', 260, 0.5), 200); };
