@@ -206,6 +206,8 @@ window.DADOS = (function () {
     radar: ['Radar à frente! Segura o McNamara aí!', 'Olha o radar, turma! Respeita a placa!'],
     radar_oculto: ['Radar escondido atrás da árvore! Isso é covardia!', 'Tinha radar escondido! Quem passou voando já era!'],
     buzina: ['Bi-bi! Abre caminho que o Black Rock vem aí!', 'Que buzina é essa, {alvo}? Parece pato!'],
+    xingado: ['O caminhoneiro xingou o {alvo}! Carreta não sai da frente, não!', '{alvo}, buzinar pra carreta é pedir pra ser xingado!', 'Kkkk o caminhoneiro mandou o {alvo} buzinar pra mãe dele!', 'Paciência, {alvo}! Caminhão não abre, ultrapassa com cuidado!'],
+    abre_passagem: ['Calma, {alvo}! Já tô saindo da frente!', 'Tá bom, tá bom, {alvo}! Passa aí, apressado!', 'Abri o corredor pro {alvo}! Vai com Deus!', 'Opa, {alvo}! Pode passar, a estrada é sua!'],
     chuva: ['Começou a chover na serra! Devagar nas curvas!', 'Chuva! Quem esqueceu a capa levanta a mão!', 'Asfalto molhado, freia com carinho, rapaziada!'],
     neblina: ['Neblina na Mantiqueira! Liga o farol e reza!', 'Não tô vendo nem o para-lama, que neblina!'],
     galao: ['{alvo} ficou sem gasolina! Lá vem o galão de socorro!', 'Galão de 5 litros pro {alvo}! Planejamento zero!', 'Empurra não, {alvo}! O galão chegou!'],
