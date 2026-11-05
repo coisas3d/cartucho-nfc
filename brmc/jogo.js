@@ -228,7 +228,7 @@ function montarViagem(v) {
       addSpr(ok - 80, A.placaVerde(['POSTO BRMC', '500 M', '']), 1.5, 0.9, true);
     } else if (m.pedagio) {
       const k = PEDAGIOS.length;
-      PEDAGIOS.push({ k, i: m.i, z: m.i * SEG });
+      PEDAGIOS.push({ k, i: m.i, z: m.i * SEG, estado: 'livre', pagador: -1, sorteio: 0, pagT: 0, anuncio: 0 });
       for (let j = m.i - 30; j < m.i + 14; j++) segs[j].pedagio = true;
       segs[m.i].cancela = k;
       addSpr(m.i + 3, ART.pedagio, 0, 1.25, false, { cruza: true });
@@ -310,13 +310,13 @@ const CORES_VEIC = [[200, 30, 30], [30, 80, 200], [228, 228, 228], [34, 34, 38],
 let trafego = [];
 function sortear() { let r = Math.random(); for (const t of TIPOS) { if ((r -= t.p) < 0) return t; } return TIPOS[0]; }
 const tipoEm = z => segEm(z).tipo;
-function criarVeic(z, oposto) {
-  const t = sortear(), cor = CORES_VEIC[Math.floor(Math.random() * CORES_VEIC.length)];
+function criarVeic(z, oposto, spec) {   // spec (P2): [tipo, cor, oposto, z, x*1000, vBase]
+  const ti = spec ? spec[0] : TIPOS.indexOf(sortear()), t = TIPOS[ti], ci = spec ? spec[1] : Math.floor(Math.random() * CORES_VEIC.length), cor = CORES_VEIC[ci];
   const usa = t.cores === true || (t.cores === 'frente' && oposto);
-  const v = rnd(t.vmin, t.vmax) * KMH, D = tipoEm(z) === 'D';
+  const v = spec ? spec[5] : rnd(t.vmin, t.vmax) * KMH, D = tipoEm(z) === 'D';
   const faixaD = oposto ? (Math.random() < 0.5 ? -2.55 : -3.45) : (t.pesado ? 0.5 : (Math.random() < 0.6 ? 0.5 : -0.5));
-  const x = D ? faixaD : (oposto ? -0.5 : 0.5);
-  return { z, x, alvoX: x, faixaD, v: oposto ? -v : v, vBase: v, img: spriteVeic(oposto ? t.frente : t.tras, usa ? cor : null), hw: t.w * PX2N * 0.5, len: t.len, oposto, pesado: !!t.pesado, pisca: 0, freio: 0 };
+  const x = spec ? spec[4] / 1000 : D ? faixaD : (oposto ? -0.5 : 0.5);
+  return { ti, ci, z, x, alvoX: x, faixaD, v: oposto ? -v : v, vBase: v, img: spriteVeic(oposto ? t.frente : t.tras, usa ? cor : null), hw: t.w * PX2N * 0.5, len: t.len, oposto, pesado: !!t.pesado, pisca: 0, freio: 0 };
 }
 function gerarTrafego() {
   trafego = [];
@@ -422,6 +422,7 @@ function novaCorrida(escolhas, ehDemo) {
   humanos = corredores.filter(c => c.humano >= 0).sort((a, b) => a.humano - b.humano);
   gerarTrafego(); particulas = [[], []]; radio.fila = []; radio.atual = null; radio.cd = 0;
   for (const m of MARCOS) m.feito = false;
+  resetPedagios();
   tempoCorrida = 0; contagem = demo ? 0 : 4.0; chegada = []; fimTimer = 0; pausado = false; ranking = null; lanternaDita = false;
   climaDito = false; trovaoT = 8; relampago = 0; flashT = [0, 0];
   // contra o relógio: carrega o fantasma do recorde e começa a gravar o novo
@@ -582,7 +583,7 @@ function atualizarCorredor(c, dt) {
   const T = PEDAGIOS.find(p => p.z > c.z - 30 && !c.pag[p.k]);
   if (T) {
     const d = T.z - 60 - c.z;
-    if (d < 500 && c.v < 6 * KMH && c.crash <= 0) { c.pagT += dt; if (c.pagT > 1.3) { c.pag[T.k] = true; c.pagT = 0; c.abriu = 1.6; if (c.humano >= 0 && !demo) SOM.cancela(); } }
+    if (!grupo() && d < 500 && c.v < 6 * KMH && c.crash <= 0) { c.pagT += dt; if (c.pagT > 1.3) { c.pag[T.k] = true; c.pagT = 0; c.abriu = 1.6; if (c.humano >= 0 && !demo) SOM.cancela(); } }
     else c.pagT = 0;
     if (!c.pag[T.k] && c.z + dist > T.z - 60) {
       if (c.v > 18 * KMH && Math.abs(c.x) < 1.05) { bater(c, 0); if (c.humano >= 0 && !demo) falarSobre('cancela', c); }
@@ -657,6 +658,83 @@ function colisoes() {
     }
   }
 }
+// ============================================================ PEDÁGIO EM GRUPO: um pagador sorteado, só passa com a turma toda junta
+const EST_PED = ['livre', 'sorteio', 'esperando', 'pagando', 'aberto'];
+const grupo = () => corredores.length > 1;
+function resetPedagios() { for (const T of PEDAGIOS) Object.assign(T, { estado: 'livre', pagador: -1, sorteio: 0, pagT: 0, anuncio: 0, ditoEspera: false, ditoPagador: false }); }
+const chegouPedagio = (c, T) => c.z > T.z - 60 - 1100 && c.v < 8 * KMH;
+const presoPedagio = c => c.comb <= 0 && !c.abast;
+function atualizarPedagios(dt) {
+  if (!grupo()) return;
+  for (const T of PEDAGIOS) {
+    T.anuncio = Math.max(0, T.anuncio - dt);
+    if (T.estado === 'aberto') continue;
+    if (T.estado === 'livre') {
+      const lider = Math.max.apply(null, corredores.map(c => c.z));
+      if (lider > T.z - 280 * SEG) { T.estado = 'sorteio'; T.sorteio = demo ? 0.01 : 2.2; T.pagador = Math.floor(Math.random() * corredores.length); if (!demo) SOM.radio(); }
+      continue;
+    }
+    const pg = corredores[T.pagador];
+    if (T.estado === 'sorteio') {
+      T.sorteio -= dt;
+      if (T.sorteio <= 0) { T.estado = 'esperando'; T.anuncio = 2.6; if (!demo) { SOM.confirma(); radio.cd = 0; falarSobre('pagador', pg); } }
+      continue;
+    }
+    const chegaram = corredores.filter(c => chegouPedagio(c, T) || presoPedagio(c));
+    if (T.estado === 'esperando') {
+      if (!demo && !T.ditoEspera && chegouPedagio(pg, T) && chegaram.length < corredores.length) { T.ditoEspera = true; radio.cd = 0; falarSobre('pagador_espera', pg); }
+      if (!demo && !T.ditoPagador && !chegouPedagio(pg, T) && chegaram.length === corredores.length - 1) { T.ditoPagador = true; radio.cd = 0; falarSobre('esperando_pagador', pg); }
+      if (chegaram.length === corredores.length) { T.estado = 'pagando'; T.pagT = 0; }
+    } else if (T.estado === 'pagando') {
+      T.pagT += dt;
+      if (T.pagT > 1.4) {
+        T.estado = 'aberto'; pg.pagou = (pg.pagou || 0) + 1;
+        for (const c of corredores) { c.pag[T.k] = true; c.abriu = 1.6; }
+        if (!demo) { SOM.cancela(); radio.cd = 0; falarSobre('pedagio_pago', pg); }
+      }
+    }
+  }
+}
+// sorteio na tela: roleta de retratos + nome do pagador
+function hudPedagio(v, c, dois) {
+  if (!grupo()) return;
+  const T = PEDAGIOS.find(p => p.estado !== 'livre' && p.estado !== 'aberto' && !c.pag[p.k]); if (!T) return;
+  const e = dois ? 0.62 : 1, cx = v.x + v.w / 2, N = corredores.length, pg = corredores[T.pagador];
+  if (T.estado === 'sorteio' || T.anuncio > 0) {
+    const w = 236 * e, h = 82 * e, x = cx - w / 2, y = v.y + v.h * (dois ? 0.3 : 0.37);
+    ctx.fillStyle = 'rgba(8,10,14,0.92)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = '#ffd23a'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+    txt('SORTEIO DO PEDÁGIO', cx, y + 6 * e, '#ffd23a', 8, 'c', false);
+    const q = T.estado === 'sorteio' ? corredores[Math.floor(tempoReal * (6 + 10 * T.sorteio)) % N] : pg, rs = 44 * e;
+    const ret = IMG[q.def.retrato]; ctx.fillStyle = T.estado === 'sorteio' ? '#5ab4ff' : '#ffd23a'; ctx.fillRect(x + 10 * e - 2, y + 26 * e - 2, rs + 4, rs + 4);
+    if (ret) ctx.drawImage(ret, x + 10 * e, y + 26 * e, rs, rs);
+    txt(T.estado === 'sorteio' ? 'QUEM PAGA?' : 'QUEM PAGA:', x + 64 * e, y + 30 * e, '#c8c8d2', 8, 'e', false);
+    txt(T.estado === 'sorteio' ? q.nome + '?' : q.nome + '!', x + 64 * e, y + 46 * e, T.estado === 'sorteio' ? '#fff' : '#4ef03a', dois ? 8 : 16, 'e', false);
+    if (T.estado !== 'sorteio') txt('SÓ PASSA COM TODO MUNDO', x + 64 * e, y + 66 * e, '#9ad0ff', 8, 'e', false);
+    return;
+  }
+  // selo do pagador + painel de espera na cancela
+  const bx = v.x + (dois ? 4 : 8), by = v.y + (dois ? 96 : 128), ret = IMG[pg.def.retrato];
+  ctx.fillStyle = 'rgba(6,8,12,0.8)'; ctx.fillRect(bx - 4, by - 4, dois ? 92 : 118, dois ? 26 : 34);
+  ctx.fillStyle = '#ffd23a'; ctx.fillRect(bx - 1, by - 1, (dois ? 18 : 26) + 2, (dois ? 18 : 26) + 2); if (ret) ctx.drawImage(ret, bx, by, dois ? 18 : 26, dois ? 18 : 26);
+  txt('PAGADOR', bx + (dois ? 22 : 32), by, '#ffd23a', 8, 'e', false); txt(pg.nome, bx + (dois ? 22 : 32), by + (dois ? 10 : 14), '#fff', 8, 'e', false);
+  if (!chegouPedagio(c, T) && T.estado === 'esperando') return;
+  const w = Math.min(v.w - 20, 300 * e + 20), h = 74 * e, x = cx - w / 2, y = v.y + v.h * (dois ? 0.42 : 0.5);
+  ctx.fillStyle = 'rgba(8,10,14,0.9)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = '#ff6a00'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+  let t1;
+  if (T.estado === 'pagando') t1 = pg.nome + ' PAGANDO NA TAG...';
+  else if (!chegouPedagio(pg, T)) t1 = 'ESPERANDO O PAGADOR: ' + pg.nome;
+  else t1 = c === pg ? 'VOCÊ PAGA! ESPERE A TURMA' : pg.nome + ' ESPERA A TURMA';
+  txt(t1, cx, y + 6 * e, '#ffd23a', 8, 'c', false);
+  const rs = 30 * e, gap = 30 * e, tot = N * rs + (N - 1) * gap;
+  corredores.forEach((o, i) => {
+    const ox = cx - tot / 2 + i * (rs + gap), oy = y + 20 * e, ok = chegouPedagio(o, T) || presoPedagio(o), r = IMG[o.def.retrato];
+    ctx.fillStyle = o === pg ? '#ffd23a' : ok ? '#4ef03a' : '#555'; ctx.fillRect(ox - 2, oy - 2, rs + 4, rs + 4);
+    if (r) { ctx.globalAlpha = ok ? 1 : 0.45; ctx.drawImage(r, ox, oy, rs, rs); ctx.globalAlpha = 1; }
+    const falta = Math.max(0, T.z - 60 - o.z);
+    const km = falta / SEG / (FIM_I - START_I) * VIAGEM.km; txt(ok ? 'OK' : km < 1 ? Math.max(10, Math.round(km * 100) * 10) + 'M' : km.toFixed(1) + 'KM', ox + rs / 2, oy + rs + 3, ok ? '#4ef03a' : '#ff9a6a', 8, 'c', false);
+  });
+  if (T.estado === 'pagando') { ctx.fillStyle = '#222'; ctx.fillRect(x + 10, y + h - 6, w - 20, 3); ctx.fillStyle = '#4ef03a'; ctx.fillRect(x + 10, y + h - 6, (w - 20) * Math.min(1, T.pagT / 1.4), 3); }
+}
 function posicao(c) { let p = 1; for (const o of corredores) { if (o === c) continue; if (o.fim && c.fim) { if (o.tempo < c.tempo) p++; } else if (o.fim) p++; else if (!c.fim && o.z > c.z) p++; } return p; }
 
 let tremor = [0, 0], ranking = null, rankT = 0, lanternaT = 0, lanternaDita = false, liderT = 0, geralT = 18;
@@ -681,6 +759,7 @@ function atualizarCorrida(dt) {
   }
   atualizarTrafego(dt);
   for (const c of corredores) atualizarCorredor(c, dt);
+  atualizarPedagios(dt);
   colisoes();
   for (let j = 0; j < 2; j++) tremor[j] = Math.max(0, tremor[j] - dt);
   if (!demo) eventosRadio(dt);
@@ -691,7 +770,7 @@ function atualizarCorrida(dt) {
   if (SOM.ac) {
     if (demo || pausado) SOM.silenciar();
     else {
-      humanos.forEach((h, j) => SOM.motor(j, h.abast ? 0.12 : h.rpm, h.gas, j === 0 ? 1 : 0.55, h.def.motor));
+      humanos.forEach((h, j) => SOM.motor(j, h.abast ? 0.12 : h.rpm, h.gas, j === 0 ? 1 : p2Remoto() ? 0 : 0.55, h.def.motor));
       const h0 = humanos[0]; SOM.ambiente(h0.v / h0.max, h0.fora); SOM.chuva && SOM.chuva(chuvaEm(h0.z));
     }
   }
@@ -722,7 +801,7 @@ function falar(tipo, alvo, quem) {
 function falarSobre(tipo, alvo, quem) { if (radio.cd > 0 && tipo !== 'batida' && tipo !== 'chegada') return; radio.cd = 5; falar(tipo, alvo, quem); }
 function atualizarRadio(dt) {
   radio.cd = Math.max(0, radio.cd - dt);
-  if (!radio.atual && radio.fila.length) { radio.atual = radio.fila.shift(); radio.atual.dur = Math.max(3.6, radio.atual.texto.length / 34 + 2.6); SOM.radio(); }
+  if (!radio.atual && radio.fila.length) { radio.atual = radio.fila.shift(); radio.atual.dur = Math.max(3.6, radio.atual.texto.length / 34 + 2.6); SOM.radio(); if (p2Remoto()) enviarP2({ t: 'radio', q: radio.atual.quem.def.id, n: radio.atual.quem.nome, x: radio.atual.texto }); }
   if (radio.atual) {
     const r = radio.atual, antes = Math.floor(r.t * 36); r.t += dt; const dep = Math.floor(r.t * 36);
     if (dep !== antes && dep % 2 === 0 && dep < r.texto.length) SOM.voz(r.quem.def.voz || 170);
@@ -758,7 +837,7 @@ function eventosRadio(dt) {
   const lider = Math.max.apply(null, humanos.map(h => h.z));
   for (const m of MARCOS) if (!m.feito && lider >= m.z) {
     m.feito = true;
-    if (m.fala === 'pedagio') { radio.cd = 0; falarSobre('pedagio', pick(corredores)); }
+    if (m.fala === 'pedagio') { if (!grupo()) { radio.cd = 0; falarSobre('pedagio', pick(corredores)); } }
     else if (m.fala === 'radar_oculto') { radio.cd = 0; falarSobre(m.fala, humanos[0]); }
     else if (m.fala) { radio.cd = 0; falarSobre(m.fala, humanos[0]); }
   }
@@ -1098,9 +1177,11 @@ function hud(v, c, idx) {
   if (TP && !c.fim) {
     const d = TP.z - 60 - c.z;
     const my = v.y + v.h * 0.55;
-    if (c.pagT > 0) { msg('PAGANDO NA TAG...', cx, my, '#ffd23a', dois ? 8 : 16); ctx.fillStyle = '#222'; ctx.fillRect(cx - 60, my + 26, 120, 6); ctx.fillStyle = '#4ef03a'; ctx.fillRect(cx - 60, my + 26, 120 * Math.min(1, c.pagT / 1.3), 6); }
+    if (grupo()) { if (d < 90 * SEG && d > 1200 && TP.estado !== 'sorteio' && TP.anuncio <= 0 && Math.floor(tempoReal * 2.5) % 2) msg('PEDÁGIO • PARE NA CANCELA', cx, my + 40, '#ffd23a', 8); }
+    else if (c.pagT > 0) { msg('PAGANDO NA TAG...', cx, my, '#ffd23a', dois ? 8 : 16); ctx.fillStyle = '#222'; ctx.fillRect(cx - 60, my + 26, 120, 6); ctx.fillStyle = '#4ef03a'; ctx.fillRect(cx - 60, my + 26, 120 * Math.min(1, c.pagT / 1.3), 6); }
     else if (d < 90 * SEG && Math.floor(tempoReal * 2.5) % 2) msg('PEDÁGIO • PARE NA CANCELA', cx, my, '#ffd23a', 8);
   }
+  hudPedagio(v, c, dois);
   if (c.abriu > 0) msg('CANCELA ABERTA • ACELERA!', cx, v.y + v.h * 0.55, '#4ef03a', dois ? 8 : 16);
   if (c.fim) { txt('CHEGADA!', cx, cy - T / 2, '#fff', T, 'c'); txt(pos + 'º LUGAR  ' + fmtTempo(c.tempo), cx, cy + T * 0.8, '#ffd23a', dois ? 8 : 16, 'c'); }
   else if (c.comb <= 0 && !c.abast) txt('SEM COMBUSTÍVEL!', cx, cy, '#ff3a2a', dois ? 8 : 16, 'c');
@@ -1113,7 +1194,7 @@ function hud(v, c, idx) {
 }
 function hudRadio() {
   const r = radio.atual; if (!r) return;
-  const w = 300, h = 50, x = W / 2 - w / 2, y = humanos.length > 1 ? H / 2 - h / 2 : (vertical ? 8 : 40);
+  const w = 300, h = 50, x = W / 2 - w / 2, y = dividida() ? H / 2 - h / 2 : (vertical ? 8 : 40);
   const a = Math.min(Math.min(1, r.t * 6), Math.min(1, (r.dur - r.t) * 5));
   ctx.globalAlpha = Math.max(0, a);
   ctx.fillStyle = 'rgba(8,10,14,0.9)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = '#ff6a00'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
@@ -1131,7 +1212,7 @@ function quebrar(s, n) { const p = s.split(' '), out = []; let l = ''; for (cons
 
 // ============================================================ TELAS
 let estado = {}, tempoReal = 0, fade = 0;
-function irPara(e) { estado = e; alvosToque = []; fade = 1; e.entrar && e.entrar(); atualizarHTML(); }
+function irPara(e) { estado = e; alvosToque = []; fade = 1; e.entrar && e.entrar(); atualizarHTML(); if (!CLIENTE) enviarTela(e); }
 function botao(x, y, w, h, rotulo, fn, ativo, cor) {
   alvosToque.push({ x, y, w, h, fn });
   const pulsa = ativo ? 0.5 + Math.sin(tempoReal * 6) * 0.5 : 0;
@@ -1207,7 +1288,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v3.0', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v3.1', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
@@ -1215,24 +1296,28 @@ function doisJogadores() { if (DEV2P || p2Conectado) { irPara(telaSelecao(2)); r
 function telaOpcoes() {
   let sel = 0;
   const ops = () => [['MÚSICA: ' + (SOM.musicaOn ? 'SIM' : 'NÃO'), () => SOM.alternarMusica()], ['EFEITOS: ' + (SOM.efeitosOn ? 'SIM' : 'NÃO'), () => SOM.alternarEfeitos()],
-    ['VIBRAR: ' + (guardar.ler('vibrar', true) ? 'SIM' : 'NÃO'), () => guardar.gravar('vibrar', !guardar.ler('vibrar', true))], ['VOLTAR', () => irPara(telaTitulo())]];
+    ['VIBRAR: ' + (guardar.ler('vibrar', true) ? 'SIM' : 'NÃO'), () => guardar.gravar('vibrar', !guardar.ler('vibrar', true))],
+    ['2 JOGADORES: ' + (telaP2() === 'propria' ? 'CADA UM NO SEU CELULAR' : 'TELA DIVIDIDA'), () => { guardar.gravar('telaP2', telaP2() === 'propria' ? 'dividida' : 'propria'); enviarP2({ t: 'modo', tela: telaP2() === 'propria' ? 'propria' : 'controle' }); }], ['VOLTAR', () => irPara(telaTitulo())]];
   return {
     nome: 'opcoes',
     update() { const o = ops(); if (apertou(0, 'esq')) sel = (sel + o.length - 1) % o.length; if (apertou(0, 'dir')) sel = (sel + 1) % o.length; if (apertou(0, 'acel')) { SOM.confirma(); o[sel][1](); } if (apertou(0, 'freio')) irPara(telaTitulo()); },
     render() {
       fundoEscuro(); logo(W / 2, 64, 0.6); txt('OPÇÕES', W / 2, 120, '#fff', 24, 'c'); alvosToque = [];
-      ops().forEach(([r, fn], i) => botao(W / 2 - 150, 162 + i * 42, 300, 32, r, () => { sel = i; SOM.confirma(); fn(); }, i === sel));
+      ops().forEach(([r, fn], i) => botao(W / 2 - 170, 150 + i * 38, 340, 30, r, () => { sel = i; SOM.confirma(); fn(); }, i === sel));
     }
   };
 }
-function telaSelecao(n) {
-  const st = { sel: [0, Math.min(1, PERSONAGENS.length - 1)], ok: [false, false], anim: [0, 0] };
-  const mudar = (j, d) => { if (st.ok[j]) return; st.sel[j] = (st.sel[j] + d + PERSONAGENS.length) % PERSONAGENS.length; st.anim[j] = 0; SOM.clique(); };
-  const conf = j => { if (st.ok[j]) return; st.ok[j] = true; SOM.confirma(); };
+function telaSelecao(n, cli) {   // cli = celular do P2 mostrando a escolha dele
+  const st = { sel: [cli ? 1 : 0, Math.min(1, PERSONAGENS.length - 1)], ok: [false, false], anim: [0, 0] }; let envio = '';
+  const mudar = (j, d) => { if (cli) { toqueHost(d < 0 ? 'esq' : 'dir'); return; } if (st.ok[j]) return; st.sel[j] = (st.sel[j] + d + PERSONAGENS.length) % PERSONAGENS.length; st.anim[j] = 0; SOM.clique(); };
+  const conf = j => { if (cli) { toqueHost('acel'); return; } if (st.ok[j]) return; st.ok[j] = true; SOM.confirma(); };
   return {
-    nome: 'selecao',
+    nome: 'selecao', n,
+    sync(i, ok) { if (st.sel[0] !== i) { st.sel[0] = i; st.anim[0] = 0; SOM.clique(); } if (ok && !st.ok[0]) SOM.confirma(); st.ok[0] = ok; },
     update(dt) {
       st.anim[0] += dt; st.anim[1] += dt;
+      if (cli) return;
+      if (n > 1 && p2Remoto()) { const k = st.sel[1] + ',' + st.ok[1]; if (k !== envio || selForcar) { selForcar = false; envio = k; enviarP2({ t: 'sel', i: st.sel[1], ok: st.ok[1] }); } }
       for (let j = 0; j < n; j++) { if (apertou(j, 'esq')) mudar(j, -1); if (apertou(j, 'dir')) mudar(j, 1); if (apertou(j, 'acel')) conf(j); if (apertou(j, 'freio')) { if (st.ok[j]) st.ok[j] = false; else if (j === 0) irPara(telaTitulo()); } }
       if (st.ok.slice(0, n).every(Boolean)) irPara(telaRota(st.sel.slice(0, n)));
     },
@@ -1253,7 +1338,7 @@ function telaSelecao(n) {
         const temOuro = guardar.ler('ouro_' + p.id, false);
         if (temOuro) { ctx.fillStyle = '#ffd23a'; ctx.beginPath(); ctx.arc(rx + rs - 2, ry + 2, n === 1 ? 11 : 8, 0, 7); ctx.fill(); txt('★', rx + rs - 2, ry - 3, '#7a4a00', 8, 'c', false); }
         const tx = rx + rs + (n === 1 ? 8 : 10);
-        txt(n === 1 ? 'PILOTO' : 'JOGADOR ' + (j + 1), tx, ry + 2, j ? '#5ab4ff' : '#ff8a2a', 8);
+        txt(cli ? 'JOGADOR 2' : n === 1 ? 'PILOTO' : 'JOGADOR ' + (j + 1), tx, ry + 2, j || cli ? '#5ab4ff' : '#ff8a2a', 8);
         txt(p.nome, tx, ry + 16, '#fff', 16);
         txt(p.moto, tx, ry + 40, '#c8c8d2', 8);
         txt(p.cc + ' CC • ' + p.tanque + ' L', tx, ry + 54, '#9a9aa4', 8);
@@ -1268,20 +1353,20 @@ function telaSelecao(n) {
           const gx = ctx.createLinearGradient(bx, 0, bx + bw - 96, 0); gx.addColorStop(0, '#c44a00'); gx.addColorStop(1, '#ffb02a');
           ctx.fillStyle = gx; ctx.fillRect(bx, yy + 1, (bw - 96) * f * an, 6);
         });
-        if (n === 1 && temOuro) botao(344, 252, 284, 22, 'CAPACETE: ' + (usaOuro(p) ? 'DOURADO ★' : 'ORIGINAL'), () => { guardar.gravar('usarOuro_' + p.id, !usaOuro(p)); SOM.clique(); }, false, usaOuro(p) ? '#7a5a10' : null);
+        if (n === 1 && temOuro && !cli) botao(344, 252, 284, 22, 'CAPACETE: ' + (usaOuro(p) ? 'DOURADO ★' : 'ORIGINAL'), () => { guardar.gravar('usarOuro_' + p.id, !usaOuro(p)); SOM.clique(); }, false, usaOuro(p) ? '#7a5a10' : null);
         if (!st.ok[j]) {
           if (j === 0) {
             const by = n === 1 ? 314 : 320;
             botao(v.x + 12, by, 44, 30, '<', () => mudar(0, -1));
             botao(v.x + v.w - 56, by, 44, 30, '>', () => mudar(0, 1));
             botao(cx - 80, by, 160, 30, 'CONFIRMAR', () => conf(0), true);
-          } else txt('USE O CELULAR DO P2', cx, 332, '#9a9aa4', 8, 'c');
-        } else txt('PRONTO!', cx, 326, '#4ef03a', 16, 'c');
+          } else txt(p2Remoto() ? 'P2 ESCOLHENDO NO CELULAR DELE' : 'USE O CELULAR DO P2', cx, 332, '#9a9aa4', 8, 'c');
+        } else txt(cli ? 'PRONTO! AGUARDANDO O P1' : 'PRONTO!', cx, 326, '#4ef03a', cli ? 8 : 16, 'c');
       }
       if (n > 1) { ctx.fillStyle = '#ff6a00'; ctx.fillRect(W / 2 - 1, 26, 2, H - 34); }
       txt('ESCOLHA SEU PILOTO', W / 2, n === 1 ? 10 : 8, '#ff8a2a', n === 1 ? 16 : 8, 'c');
-      if (n === 1) txt(MODO === 'cafe' ? 'TOMAR UM CAFEZINHO' : MODO === 'relogio' ? 'CONTRA O RELÓGIO' : 'VIAGEM COMPLETA', 170, 36, '#9ad0ff', 8, 'c');
-      botao(8, 8, 70, 22, 'VOLTAR', () => irPara(telaTitulo()));
+      if (n === 1 && !cli) txt(MODO === 'cafe' ? 'TOMAR UM CAFEZINHO' : MODO === 'relogio' ? 'CONTRA O RELÓGIO' : 'VIAGEM COMPLETA', 170, 36, '#9ad0ff', 8, 'c');
+      botao(8, 8, 70, 22, 'VOLTAR', () => cli ? toqueHost('freio') : irPara(telaTitulo()));
     }
   };
 }
@@ -1295,9 +1380,9 @@ function iconeClima(x, y, tipo, e) {
   else { ctx.fillStyle = 'rgba(220,224,230,0.8)'; for (let i = 0; i < 3; i++) ctx.fillRect(x - 16 * e, y + (12 + i * 5) * e, 32 * e, 2 * e); }
 }
 const TXT_CLIMA = { sol: ['SOL', 'PISTA SECA'], chuva: ['CHUVA NA SERRA', 'PISTA MOLHADA: FREIA ANTES'], neblina: ['NEBLINA NA SERRA', 'VISIBILIDADE BAIXA'] };
-function telaRota(escolhas) {
+function telaRota(escolhas, cli) {
   let t = 0;
-  CLIMA = sortearClima();
+  if (!cli) CLIMA = sortearClima();
   const v = VIAGEM, mp = v.mapa;
   // projeta o mapa na área livre (ajuste automático para qualquer viagem)
   const la = mp.map(q => q[1]), lo = mp.map(q => q[2]);
@@ -1305,10 +1390,10 @@ function telaRota(escolhas) {
   const esc = Math.min(260 / dLo, 200 / dLa), cLa = (Math.max(...la) + Math.min(...la)) / 2, cLo = (Math.max(...lo) + Math.min(...lo)) / 2;
   const pts = mp.map(([nome, a, o, lado]) => [nome, 330 + (o - cLo) * esc, 200 - (a - cLa) * esc, lado]);
   const recRel = guardar.ler('recorde_' + v.id + '_relogio', null);
-  const partir = () => { if (t > 1.2) { novaCorrida(escolhas, false); irPara(telaCorrida()); } };
+  const partir = () => { if (cli) { toqueHost('acel'); return; } if (t > 1.2) { novaCorrida(escolhas, false); irPara(telaCorrida()); } };
   return {
     nome: 'rota', toqueGeral: partir,
-    update(dt) { t += dt; if (apertou(0, 'acel') || apertou(1, 'acel')) partir(); if (apertou(0, 'freio')) irPara(telaSelecao(escolhas.length)); },
+    update(dt) { t += dt; if (cli) return; if (apertou(0, 'acel') || apertou(1, 'acel')) partir(); if (apertou(0, 'freio')) irPara(telaSelecao(escolhas.length)); },
     render() {
       fundoEscuro('#0b1622', '#03060a');
       ctx.strokeStyle = 'rgba(90,180,255,0.07)'; ctx.lineWidth = 1;
@@ -1338,7 +1423,7 @@ function telaRota(escolhas) {
         if (v.basilica) ctx.drawImage(tingir(ART.basilica, [255, 200, 120]), u[1] - 190, u[2] - 40, 84, 44);
         else xicara(u[1] + 40, u[2] + 22, 1.4);
       }
-      if (t > 1.2 && Math.floor(tempoReal * 2) % 2) txt('TOQUE PARA PARTIR', W - 20, H - 26, '#ffd23a', 16, 'd');
+      if (t > 1.2 && Math.floor(tempoReal * 2) % 2) txt(cli ? 'AGUARDANDO A LARGADA' : 'TOQUE PARA PARTIR', W - 20, H - 26, '#ffd23a', 16, 'd');
     }
   };
 }
@@ -1356,7 +1441,7 @@ function telaCorrida() {
     entrar() { SOM.tocarMusica('jogo'); },
     update(dt) { atualizarCorrida(dt); },
     render() {
-      if (humanos.length > 1) {
+      if (dividida()) {
         renderVista(1, { x: 0, y: 0, w: W, h: H / 2 }, humanos[0], 0);
         renderVista(2, { x: 0, y: H / 2, w: W, h: H / 2 }, humanos[1], 1);
         ctx.fillStyle = '#000'; ctx.fillRect(0, H / 2 - 1, W, 2);
@@ -1396,6 +1481,7 @@ function checarConquistas(fantasmaBatido) {
     if (h.multas >= 3) desbloquear('cnh');
     if (h.abastecidas >= 2) desbloquear('frentista');
     if (h.buzinas >= 15) desbloquear('bibi');
+    if (PEDAGIOS.length >= 2 && (h.pagou || 0) >= PEDAGIOS.length) desbloquear('patrocinador');
     if (corredores.length > 1 && pos === corredores.length) desbloquear('roia');
   }
   if (fantasmaBatido) desbloquear('fantasma');
@@ -1613,40 +1699,251 @@ function alternarPausa() {
 // ============================================================ HTML / CONVITE P2
 const elControles = document.getElementById('controles'), btnPausa = document.getElementById('btn-pausa');
 const ehToque = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
-function atualizarHTML() { const corr = estado.nome === 'corrida'; elControles.classList.toggle('on', corr && ehToque && !pausado); btnPausa.classList.toggle('on', corr && !pausado); }
-btnPausa.addEventListener('click', alternarPausa);
+function atualizarHTML() { const corr = estado.nome === 'corrida'; elControles.classList.toggle('on', corr && ehToque && !pausado && !(CLIENTE && cliModo === 'controle')); btnPausa.classList.toggle('on', corr && !pausado); }
+btnPausa.addEventListener('click', () => CLIENTE ? enviarHost({ b: 'pausa' }) : alternarPausa());
 function avisar(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(avisar.t); avisar.t = setTimeout(() => t.style.display = 'none', 3000); }
-let p2Conectado = false, peerHost = null, conexaoP2 = null;
+// ============================================================ 2 JOGADORES EM REDE
+// O celular do P1 roda a corrida (é o "servidor"). O celular do P2 recebe o estado ~20x por segundo e desenha a SUA PRÓPRIA tela.
+// Opção "TELA DIVIDIDA": o P2 vira só um controle e os dois olham a tela do P1.
+let p2Conectado = false, peerHost = null, conexaoP2 = null, ultimoEnvio = 0;
+const LOCAL2P = params.get('local2p');          // teste no mesmo computador (duas abas), sem internet
+const CLIENTE = !!SALA;
+const telaP2 = () => guardar.ler('telaP2', 'propria');
+const p2Remoto = () => p2Conectado && telaP2() === 'propria';
+const dividida = () => humanos.length > 1 && !p2Remoto() && !CLIENTE;
+function canalLocal(nome, aoMsg) { const bc = new BroadcastChannel('brmc_' + nome); bc.onmessage = e => aoMsg(e.data); return { open: true, send: d => bc.postMessage(d), close: () => bc.close() }; }
+function enviarP2(m) { if (conexaoP2 && conexaoP2.open !== false) { try { conexaoP2.send(m); } catch (e) {} } }
+let selForcar = false;
+function receberDoP2(d) {
+  if (!d) return;
+  if (d.t === 'pronto') { enviarP2({ t: 'modo', tela: telaP2() === 'propria' ? 'propria' : 'controle' }); selForcar = true; enviarTela(estado); return; }
+  if (d.b === 'pausa') { if (estado.nome === 'corrida') alternarPausa(); return; }
+  if (d.b) { fontes.remoto[d.b] = d.s === 1; if (d.s === 1) pulso[1][d.b] = true; }
+}
+function p2Entrou(con) {
+  conexaoP2 = con; p2Conectado = true;
+  if (estado.nome === 'titulo' || estado.nome === 'selecao') { MODO = 'viagem'; usarViagem(VIAGENS[0]); }
+  document.getElementById('convite').classList.remove('on'); avisar('JOGADOR 2 CONECTADO!');
+  enviarP2({ t: 'modo', tela: telaP2() === 'propria' ? 'propria' : 'controle' });
+  if (estado.nome === 'titulo' || estado.nome === 'selecao') irPara(telaSelecao(2)); else enviarTela(estado);
+}
+function p2Saiu(con) {
+  if (conexaoP2 !== con) return; p2Conectado = false; conexaoP2 = null; fontes.remoto = {}; avisar('JOGADOR 2 DESCONECTOU');
+  for (const h of humanos) if (h.humano === 1) h.auto = true;
+  if (estado.nome === 'selecao') irPara(telaSelecao(1));
+}
 function abrirConvite() {
   const modal = document.getElementById('convite'), st = document.getElementById('convite-status');
+  if (LOCAL2P) { modal.classList.add('on'); st.textContent = 'TESTE LOCAL: ABRA ?sala=' + LOCAL2P + '&local2p=1'; return; }
   if (typeof Peer === 'undefined') { avisar('SEM INTERNET PARA CONVIDAR'); return; }
   modal.classList.add('on'); if (peerHost) return;
   try {
     peerHost = new Peer();
     peerHost.on('open', id => {
-      const link = location.origin + location.pathname + '?sala=' + id, qr = document.getElementById('qr'); qr.innerHTML = '';
+      const link = LINK_JOGO + '?sala=' + id, qr = document.getElementById('qr'); qr.innerHTML = '';
       if (typeof QRCode !== 'undefined') new QRCode(qr, { text: link, width: 172, height: 172 });
       st.textContent = 'AGUARDANDO O JOGADOR 2...';
     });
     peerHost.on('connection', con => {
-      con.on('open', () => { conexaoP2 = con; p2Conectado = true; if (estado.nome === 'titulo' || estado.nome === 'selecao') { MODO = 'viagem'; usarViagem(VIAGENS[0]); } modal.classList.remove('on'); avisar('JOGADOR 2 CONECTADO!'); if (estado.nome === 'titulo' || estado.nome === 'selecao') irPara(telaSelecao(2)); });
-      con.on('data', d => { if (d && d.b) { fontes.remoto[d.b] = d.s === 1; if (d.s === 1) pulso[1][d.b] = true; } });
-      const caiu = () => { if (conexaoP2 !== con) return; p2Conectado = false; conexaoP2 = null; fontes.remoto = {}; avisar('JOGADOR 2 DESCONECTOU'); for (const h of humanos) if (h.humano === 1) h.auto = true; if (estado.nome === 'selecao') irPara(telaSelecao(1)); };
-      con.on('close', caiu); con.on('error', caiu);
+      con.on('open', () => p2Entrou(con));
+      con.on('data', receberDoP2);
+      con.on('close', () => p2Saiu(con)); con.on('error', () => p2Saiu(con));
     });
+    peerHost.on('disconnected', () => { try { peerHost.reconnect(); } catch (e) {} });
     peerHost.on('error', () => { st.textContent = 'FALHA AO GERAR CONVITE. VERIFIQUE A INTERNET.'; peerHost = null; });
   } catch (e) { st.textContent = 'CONVITE INDISPONÍVEL'; }
 }
 document.getElementById('fechar-convite').addEventListener('click', () => document.getElementById('convite').classList.remove('on'));
-function modoControle() {
-  document.body.classList.add('controle');
-  const status = document.getElementById('p2-status'), estBt = {}; let con = null;
-  ligarBotoes(document.getElementById('p2'), estBt, (k, v) => { if (con && con.open) con.send({ b: k, s: v ? 1 : 0 }); });
-  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
-  if (typeof Peer === 'undefined') { status.textContent = 'SEM INTERNET'; return; }
+// teste local: o P1 escuta o canal ao abrir com ?local2p=nome
+if (LOCAL2P && !CLIENTE) { const con = canalLocal(LOCAL2P, d => { if (d && d.t === 'oi') { if (!p2Conectado) p2Entrou(con); } else receberDoP2(d); }); }
+
+// ---------- P1: o que mandar para o P2
+function pacoteInicio() {
+  return { c: corredores.map(c => [c.def.id, c.humano, c.ouro ? 1 : 0]), tr: trafego.map(v => [v.ti, v.ci, v.oposto ? 1 : 0, Math.round(v.z), Math.round(v.x * 1000), Math.round(v.vBase)]) };
+}
+function enviarTela(e) {
+  if (!p2Remoto() || !e) return;
+  const m = { t: 'tela', nome: e.nome, v: VIAGEM && VIAGEM.id, modo: MODO, clima: CLIMA, n: e.n || 1 };
+  if (e.nome === 'corrida') m.ini = pacoteInicio();
+  if (e.nome === 'resultado') m.res = corredores.map(c => [c.tempo == null ? -1 : c.tempo, c.multas, c.batidas || 0, c.fim ? 1 : 0, Math.round(c.z), c.penal]);
+  enviarP2(m);
+}
+function enviarEstado() {
+  const foco = humanos[1] || humanos[0]; if (!foco) return;
+  const c = corredores.map(c => [Math.round(c.z), Math.round(c.x * 1000), Math.round(c.v), Math.round(c.lean * 1000), Math.round(c.crash * 100), Math.round(c.giro * 100), c.abast ? 1 : 0,
+    Math.round(c.comb * 10), Math.round(c.rpm * 1000), c.marcha, c.gas, c.freando ? 1 : 0, c.fora ? 1 : 0, c.fim ? 1 : 0, c.tempo == null ? -1 : Math.round(c.tempo * 100),
+    c.penal, c.multas, c.batidas || 0, Math.round(c.susp * 10), Math.round(c.roll * 10000), c.vacuo ? 1 : 0, c.abast ? Math.round(c.abast.t * 100) : 0, c.abriu > 0 ? 1 : 0, c.multaInfo ? c.multaInfo[1] : 0]);
+  const tr = [];
+  trafego.forEach((v, i) => { if (v.z > foco.z - 5000 && v.z < foco.z + 48000) tr.push(i, Math.round(v.z), Math.round(v.x * 1000), Math.round(v.v), v.pisca > 0 ? (v.alvoX < v.x ? 1 : 2) : 0, v.freio ? 1 : 0); });
+  enviarP2({ t: 's', tc: Math.round(tempoCorrida * 100), ct: Math.round(contagem * 100), pz: pausado ? 1 : 0, rl: Math.round(relampago * 100), c, tr,
+    pd: PEDAGIOS.map(T => [T.pagador, EST_PED.indexOf(T.estado), Math.round(T.sorteio * 100), Math.round(T.pagT * 100), Math.round(T.anuncio * 100)]) });
+}
+
+// ---------- P2: tela própria
+let cliPronto = false, canalCli = null, cliStatus = 'CONECTANDO...', cliModo = 'propria', cliEnviado = {}, rec = { tc: 0, t: 0 }, cliPrimeiro = false;
+const enviarHost = m => { if (canalCli && canalCli.open !== false) { try { canalCli.send(m); } catch (e) {} } };
+const toqueHost = k => { enviarHost({ b: k, s: 1 }); setTimeout(() => enviarHost({ b: k, s: 0 }), 90); };
+const meuFoco = () => humanos[1] || humanos[0];
+function conectarCliente() {
+  if (LOCAL2P) { canalCli = canalLocal(LOCAL2P, receberDoHost); canalCli.send({ t: 'oi' }); cliStatus = 'CONECTADO'; return; }
+  if (typeof Peer === 'undefined') { cliStatus = 'SEM INTERNET'; return; }
   const p = new Peer();
-  p.on('open', () => { con = p.connect(SALA, { reliable: true }); con.on('open', () => { status.textContent = 'CONECTADO - OLHE A TELA DO P1'; status.style.color = '#4ef03a'; }); con.on('close', () => { status.textContent = 'DESCONECTADO'; status.style.color = '#e33'; }); });
-  p.on('error', () => { status.textContent = 'NÃO FOI POSSÍVEL CONECTAR'; status.style.color = '#e33'; });
+  p.on('open', () => {
+    const con = p.connect(SALA, { reliable: true, serialization: 'json' });
+    con.on('open', () => { canalCli = con; cliStatus = 'CONECTADO'; if (cliPronto) enviarHost({ t: 'pronto' }); });
+    con.on('data', receberDoHost);
+    con.on('close', () => { cliStatus = 'DESCONECTADO • RECARREGUE A PÁGINA'; canalCli = null; irPara(telaEspera()); });
+  });
+  p.on('error', () => { cliStatus = 'NÃO FOI POSSÍVEL CONECTAR'; });
+}
+function aplicarModoCliente(m) {
+  cliModo = m; document.body.classList.toggle('controle', m === 'controle');
+  if (m === 'controle') { elControles.classList.remove('on'); btnPausa.classList.remove('on'); }
+}
+function receberDoHost(m) {
+  if (!m || !m.t) return;
+  if (m.t === 'modo') return aplicarModoCliente(m.tela);
+  if (!cliPronto) return;   // ainda carregando: quando terminar, pede o estado de novo
+  if (m.t === 'sel') { if (estado.sync) estado.sync(m.i, m.ok); return; }
+  if (m.t === 'radio') { const d = PERSONAGENS.find(p => p.id === m.q); radio.atual = { quem: { def: d || PERSONAGENS[0], nome: m.n }, texto: m.x, t: 0, dur: Math.max(3.6, m.x.length / 34 + 2.6) }; SOM.radio(); return; }
+  if (m.t === 's') return aplicarEstado(m);
+  if (m.t !== 'tela') return;
+  if (m.v) usarViagem(VIAGENS.find(v => v.id === m.v) || VIAGENS[0]);
+  MODO = m.modo || MODO; CLIMA = m.clima || CLIMA;
+  if (m.nome === 'selecao') irPara(m.n > 1 ? telaSelecao(1, true) : telaEspera('O P1 VAI JOGAR SOZINHO'));
+  else if (m.nome === 'rota') irPara(telaRota([], true));
+  else if (m.nome === 'corrida') { aplicarInicio(m.ini); irPara(telaCorridaCliente()); }
+  else if (m.nome === 'resultado') irPara(telaResultadoCliente(m.res));
+  else irPara(telaEspera());
+}
+function aplicarInicio(ini) {
+  demo = false; FANT = null; GRAV = null;
+  corredores = ini.c.map(([id, h, o]) => { const d = PERSONAGENS.find(p => p.id === id) || PERSONAGENS[0], c = criarCorredor(d, h); c.ouro = !!o; c.img = spriteMoto(d, !!o); return c; });
+  humanos = corredores.filter(c => c.humano >= 0).sort((a, b) => a.humano - b.humano);
+  trafego = ini.tr.map(a => criarVeic(a[3], !!a[2], a));
+  particulas = [[], []]; radio.fila = []; radio.atual = null; resetPedagios();
+  tempoCorrida = 0; contagem = 4; pausado = false; relampago = 0; flashT = [0, 0]; tremor = [0, 0]; cliPrimeiro = true; rec = { tc: 0, t: tempoReal };
+}
+function aplicarEstado(m) {
+  if (!corredores.length || m.c.length !== corredores.length) return;
+  rec = { tc: m.tc / 100, t: tempoReal }; const ctAntes = contagem;
+  contagem = m.ct / 100; pausado = !!m.pz; relampago = m.rl / 100;
+  if (contagem > 0 && Math.ceil(ctAntes) !== Math.ceil(contagem) && Math.ceil(contagem) <= 3) SOM.bipLargada(false);
+  if (ctAntes > 0 && contagem <= 0) SOM.bipLargada(true);
+  const eu = meuFoco();
+  m.c.forEach((a, i) => {
+    const c = corredores[i], antes = { crash: c.crash, multas: c.multas, ab: !!c.abast, fim: c.fim, marcha: c.marcha, abriu: c.abriu > 0 };
+    c.zRec = a[0]; c.tRec = tempoReal; c.xRec = a[1] / 1000; c.v = a[2]; c.lean = a[3] / 1000; c.crash = a[4] / 100; c.giro = a[5] / 100;
+    c.comb = a[7] / 10; c.rpm = a[8] / 1000; c.marcha = a[9]; c.gas = a[10]; c.freando = !!a[11]; c.fora = !!a[12]; c.fim = !!a[13]; c.tempo = a[14] < 0 ? null : a[14] / 100;
+    c.penal = a[15]; c.multas = a[16]; c.batidas = a[17]; c.susp = a[18] / 10; c.roll = a[19] / 10000; c.vacuo = !!a[20]; c.abriu = a[22] ? 1 : 0;
+    if (a[6]) { if (!c.abast) c.abast = { t: 0, ini: c.comb }; c.abast.t = a[21] / 100; } else c.abast = null;
+    if (cliPrimeiro) { c.z = c.zRec; c.x = c.xRec; c.cx = c.x * ROAD; }
+    if (c !== eu) return;
+    if (c.crash > 0 && antes.crash <= 0) { SOM.batida(); tremor[c.humano] = 0.5; for (let k = 0; k < 26; k++) emitir(c.humano, 'faisca'); if (navigator.vibrate && guardar.ler('vibrar', true)) navigator.vibrate([60, 40, 120]); }
+    if (c.multas > antes.multas) { SOM.flash(); setTimeout(SOM.multa, 250); flashT[c.humano] = 0.4; c.multaT = 2.6; c.multaInfo = [Math.round(c.v / KMH), a[23]]; }
+    if (!!c.abast !== antes.ab) SOM.bomba(!!c.abast);
+    if (c.fim && !antes.fim) SOM.chegada();
+    if (c.marcha > antes.marcha && c.gas) SOM.troca();
+    if (c.abriu && !antes.abriu) SOM.cancela();
+  });
+  cliPrimeiro = false;
+  for (let i = 0; i < m.tr.length; i += 6) {
+    const v = trafego[m.tr[i]]; if (!v) continue;
+    v.zRec = m.tr[i + 1]; v.tRec = tempoReal; v.xRec = m.tr[i + 2] / 1000; v.v = m.tr[i + 3]; v.pisca = m.tr[i + 4] ? 0.3 : 0; v.alvoX = v.xRec + (m.tr[i + 4] === 1 ? -0.1 : m.tr[i + 4] === 2 ? 0.1 : 0); v.freio = m.tr[i + 5];
+  }
+  m.pd.forEach((a, k) => { const T = PEDAGIOS[k]; if (!T) return; T.pagador = a[0]; T.estado = EST_PED[a[1]] || 'livre'; T.sorteio = a[2] / 100; T.pagT = a[3] / 100; T.anuncio = a[4] / 100; if (T.estado === 'aberto') for (const c of corredores) c.pag[T.k] = true; });
+}
+// previsão entre um pacote e outro: o movimento fica liso mesmo com a internet oscilando
+function preverCliente(dt) {
+  const corre = !pausado && contagem <= 0;
+  if (corre) tempoCorrida = rec.tc + Math.min(0.5, tempoReal - rec.t);
+  for (const c of corredores) {
+    if (c.zRec == null) continue;
+    const alvo = c.zRec + (corre && !c.abast ? c.v * Math.min(0.35, tempoReal - c.tRec) : 0), z0 = c.z;
+    c.z = Math.abs(alvo - c.z) > 5000 ? alvo : c.z + (alvo - c.z) * Math.min(1, dt * 12);
+    c.x += (c.xRec - c.x) * Math.min(1, dt * 12); c.cx = lerp(c.cx, c.x * ROAD, Math.min(1, dt * 7));
+    c.bg = (c.bg + 0.0011 * segEm(c.z).curva * (c.z - z0) / SEG + 10) % 1; c.molhado = chuvaEm(c.z);
+    c.multaT = Math.max(0, (c.multaT || 0) - dt);
+  }
+  for (const v of trafego) {
+    if (v.tRec == null || tempoReal - v.tRec > 0.4) { v.z += v.v * dt; continue; }
+    const alvo = v.zRec + v.v * (tempoReal - v.tRec);
+    v.z = Math.abs(alvo - v.z) > 5000 ? alvo : v.z + (alvo - v.z) * Math.min(1, dt * 10); v.x += (v.xRec - v.x) * Math.min(1, dt * 8);
+  }
+  for (let j = 0; j < 2; j++) tremor[j] = Math.max(0, tremor[j] - dt);
+  flashT = flashT.map(f => Math.max(0, f - dt)); relampago = Math.max(0, relampago - dt);
+}
+function telaEspera(sub) {
+  return {
+    nome: 'espera', toqueGeral() { SOM.iniciar(); },
+    render() {
+      fundoEscuro('#0d1014', '#040506'); logo(W / 2, 96, 0.9);
+      txt('JOGADOR 2', W / 2, 164, '#5ab4ff', 24, 'c');
+      txt(cliStatus, W / 2, 204, cliStatus === 'CONECTADO' ? '#4ef03a' : '#ffd23a', 8, 'c');
+      txt(sub || 'AGUARDANDO O P1 ESCOLHER O MODO...', W / 2, 228, '#c8c8d2', 8, 'c');
+      if (!SOM.ac && Math.floor(tempoReal * 2) % 2) txt('TOQUE NA TELA PARA ATIVAR O SOM', W / 2, 290, '#ffd23a', 8, 'c');
+      txt('MANTENHA A TELA LIGADA', W / 2, 330, '#666', 8, 'c');
+    }
+  };
+}
+function telaCorridaCliente() {
+  return {
+    nome: 'corrida',
+    entrar() { SOM.tocarMusica('jogo'); },
+    update(dt) {
+      preverCliente(dt); atualizarRadio(dt); atualizarParticulas(dt);
+      const h = meuFoco(); if (!h) return;
+      if (apertou(0, 'buzina') && h.humano === 1) SOM.buzina(h.def.motor === 'boxer');
+      if (SOM.ac) {
+        if (pausado || h.humano !== 1) SOM.silenciar();
+        else { SOM.motor(0, h.abast ? 0.12 : h.rpm, h.gas, 1, h.def.motor); SOM.ambiente(h.v / h.max, h.fora); SOM.chuva(chuvaEm(h.z));
+          const sz = segEm(h.z + 40 * SEG); SOM.estiloMusica(sz.zona === 'serra' ? 'serra' : sz.tipo === 'D' ? 'pista' : 'simples'); }
+      }
+    },
+    render() {
+      const h = meuFoco(); if (!h) return;
+      renderVista(0, { x: 0, y: 0, w: W, h: H }, h, h.humano);
+      hudRadio(); alvosToque = [];
+      if (h.humano !== 1) msg('ASSISTINDO O P1', W / 2, H - 40, '#5ab4ff', 8);
+      if (pausado) { ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, W, H); txt('PAUSA', W / 2, 110, '#fff', 32, 'c'); botao(W / 2 - 110, 180, 220, 32, 'CONTINUAR', () => enviarHost({ b: 'pausa' }), true); }
+    }
+  };
+}
+function telaResultadoCliente(res) {
+  (res || []).forEach((a, i) => { const c = corredores[i]; if (!c) return; c.tempo = a[0] < 0 ? null : a[0]; c.multas = a[1]; c.batidas = a[2]; c.fim = !!a[3]; c.z = a[4]; c.penal = a[5]; });
+  const est = c => c.tempo != null ? c.tempo : 9999 - c.z / 1e6, ordem = corredores.slice().sort((a, b) => est(a) - est(b)), eu = meuFoco();
+  let blob = null; if (eu) gerarCartao(eu, ordem.indexOf(eu) + 1, '2 JOGADORES').then(b => blob = b);
+  return {
+    nome: 'resultado', entrar() { SOM.silenciar(); SOM.bomba(false); },
+    render() {
+      const gr = ctx.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#2c2a6a'); gr.addColorStop(0.6, '#ff8a4a'); gr.addColorStop(1, '#3a2030'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+      if (VIAGEM.basilica) ctx.drawImage(tingir(ART.basilica, [40, 24, 48]), W / 2 - 210, 70, 420, 220);
+      ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(0, 0, W, H);
+      txt(VIAGEM.fim, W / 2, 12, '#ffd23a', 16, 'c');
+      ordem.slice(0, 3).forEach((c, i) => {
+        const x = [W / 2 - 60, W / 2 - 180, W / 2 + 60][i], by = 290 - [120, 100, 80][i];
+        ctx.fillStyle = ['#ffd23a', '#c0c0c8', '#c8804a'][i]; ctx.fillRect(x, by, 120, 300 - by);
+        txt((i + 1) + 'º', x + 60, by + 8, '#111', 16, 'c', false); const r = IMG[c.def.retrato]; if (r) ctx.drawImage(r, x + 28, by - 68, 64, 64);
+        txt(c.nome + (c === eu ? ' (P2)' : c.humano === 0 ? ' (P1)' : ''), x + 60, by + 30, '#111', 8, 'c', false); txt(fmtTempo(c.tempo), x + 60, by + 44, '#222', 8, 'c', false);
+      });
+      if (eu) txt('VOCÊ: ' + (ordem.indexOf(eu) + 1) + 'º • ' + plural(eu.multas, 'MULTA') + ' • ' + plural(eu.batidas, 'TOMBO'), 14, 42, '#fff', 8);
+      alvosToque = [];
+      botao(20, H - 46, 260, 32, 'COMPARTILHAR', () => compartilhar(blob), false, '#1e6a3a');
+      txt('AGUARDANDO O P1...', W - 20, H - 36, '#fff', 8, 'd');
+    }
+  };
+}
+// manda os botões do P2 para o P1 (teclado, toque e os botões da tela)
+function encaminharEntrada() {
+  if (!CLIENTE || cliModo !== 'propria') return;
+  for (const k of ['esq', 'dir', 'acel', 'freio', 'buzina']) { const v = !!entrada[0][k]; if (v !== !!cliEnviado[k]) { cliEnviado[k] = v; enviarHost({ b: k, s: v ? 1 : 0 }); } }
+}
+function iniciarCliente() {
+  // modo controle (tela dividida): botões grandes que mandam direto para o P1
+  ligarBotoes(document.getElementById('p2'), {}, (k, v) => { enviarHost({ b: k, s: v ? 1 : 0 }); });
+  document.getElementById('p2-status').textContent = 'OLHE A TELA DO P1';
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
+  conectarCliente();
 }
 
 // ============================================================ LAÇO
@@ -1654,7 +1951,9 @@ let ultimo = 0, acum = 0;
 function quadro(t) {
   const dt = Math.min(0.1, (t - ultimo) / 1000 || 0); ultimo = t; acum += dt; tempoReal += dt;
   juntarEntrada();
+  encaminharEntrada();
   while (acum >= STEP) { estado.update && estado.update(STEP); guardarAnterior(); acum -= STEP; }
+  if (!CLIENTE && p2Remoto() && estado.nome === 'corrida' && tempoReal - ultimoEnvio > 0.05) { ultimoEnvio = tempoReal; enviarEstado(); }
   ctx.imageSmoothingEnabled = false;
   hiLimpar();
   estado.render && estado.render();
@@ -1664,17 +1963,17 @@ function quadro(t) {
   requestAnimationFrame(quadro);
 }
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { if (estado.nome === 'corrida' && !pausado) alternarPausa(); if (SOM.ac) SOM.ac.suspend(); }
+  if (document.hidden) { if (!CLIENTE && estado.nome === 'corrida' && !pausado) alternarPausa(); if (SOM.ac) SOM.ac.suspend(); }
   else if (SOM.ac) SOM.ac.resume();
 });
 function iniciar() {
-  if (SALA) { modoControle(); return; }
   ajustarTela();
+  if (CLIENTE) iniciarCliente();
   const car = telaCarregando(); estado = car;
   ligarBotoes(elControles, fontes.toque, (k, v) => { if (v) pulso[0][k] = true; });
   requestAnimationFrame(quadro);
   const fonte = document.fonts && document.fonts.load ? Promise.race([document.fonts.load('16px "Press Start 2P"'), new Promise(r => setTimeout(r, 2500))]) : Promise.resolve();
-  Promise.all([carregar(p => car.setProg(p)), fonte]).then(() => { gerarArte(); montarViagem(VIAGENS[0]); irPara(SOM.ac ? telaTitulo() : telaAbertura()); });
+  Promise.all([carregar(p => car.setProg(p)), fonte]).then(() => { gerarArte(); montarViagem(VIAGENS[0]); irPara(CLIENTE ? telaEspera() : SOM.ac ? telaTitulo() : telaAbertura()); if (CLIENTE) { cliPronto = true; enviarHost({ t: 'pronto' }); } });
 }
 // modo offline: guarda o jogo no aparelho (funciona sem internet depois da 1ª visita)
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
