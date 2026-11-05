@@ -38,7 +38,10 @@ window.DADOS = (function () {
       vel: 226, acel: 0.97, economia: 0.52, curva: 0.60, capacete: '#1c1c20', curto: 'MAZINHO' },
     { id: 'samuca', nome: 'SAMUCA', moto: 'BRMC GS 1200 ADV RALLYE', cc: 1170, tanque: 30, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
       sprite: 'piloto_samuca', foto: 'foto_gs1200', tampa: [0.45, 0.29], retrato: 'retrato_samuca', voz: 115,
-      vel: 200, acel: 0.80, economia: 0.78, curva: 0.86, capacete: '#ee70a8', curto: 'SAMUCA' }
+      vel: 200, acel: 0.80, economia: 0.78, curva: 0.86, capacete: '#ee70a8', curto: 'SAMUCA' },
+    { id: 'alan', nome: 'ALAN', moto: 'BRMC F 750 TRIPLE BLACK', cc: 853, tanque: 15, motor: 'twin', perfil: 'ROIA', ritmo: 0.95,
+      sprite: 'piloto_alan', foto: 'foto_f750', tampa: [0.45, 0.33], retrato: 'retrato_alan', voz: 145,
+      vel: 196, acel: 0.95, economia: 0.90, curva: 0.84, capacete: '#e6e8ec', curto: 'ALAN' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -357,6 +360,23 @@ window.DADOS = (function () {
       pagador_espera: ['Samuca chegou primeiro no pedágio, pontual igual entrega de pizza!'],
       esperando_pagador: ['Esperando o Samuca... deve tá fazendo uma entrega no caminho!']
     },
+    alan: {
+      geral: ['Alan com essa cara de galã de novela, até parece que tá gravando comercial de moto!', 'Alan, a F 750 é pequena mas é econômica: dá pra ir até Aparecida com meio tanque!',
+        'Alan olha pro horizonte igual capa de revista!', 'Alan, capacete branco, moto preta: combinação de filme!', 'Alan anda devagar pra não desarrumar o cabelo grisalho!'],
+      lider: ['Alan na frente! Roia que acelera na saída é perigoso!', 'Olha o Alan liderando com a menor moto do grupo!'],
+      lanterna: ['Alan lá atrás? Parou pra fazer pose pra foto!', 'Cadê o Alan? Tá admirando a paisagem com aquela cara séria!'],
+      ultrapassou: ['Alan arrancou e passou! Essa F 750 sai rápido!', 'Lá vai o Alan, discreto e eficiente!'],
+      batida: ['Alan caiu! Mas caiu com classe, de jaqueta de couro!', 'Levanta, Alan! O cabelo nem saiu do lugar!'],
+      reserva: ['Alan na reserva? Impossível, essa moto bebe que nem passarinho!'],
+      abastecendo: ['Alan abastecendo... quinze litros e pronto, mais rápido que todo mundo!'],
+      pedagio: ['Alan no pedágio fazendo cara de modelo pra câmera!'],
+      multa: ['Alan multado! Pelo menos o radar pegou o lado bom!', 'Até o Alan, Roia, levou multa? Essa F 750 é traiçoeira!'],
+      buzina: ['Alan buzinou! Primeira vez que alguém ouviu ele fazer barulho!'],
+      chuva: ['Alan na chuva, molhado e sério: cena de filme de ação!'],
+      pagador: ['Alan paga o pedágio! Ele economizou na gasolina, pode pagar!', 'Sorteio: Alan é o pagador! A F 750 economiza pra isso!'],
+      pagador_espera: ['Alan chegou primeiro no pedágio, sério, de braço cruzado, esperando a turma!'],
+      esperando_pagador: ['Esperando o Alan... deve tá olhando a paisagem!']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -388,13 +408,25 @@ window.DADOS = (function () {
     pagador: ['Deixa que eu pago o do Fabinho! ...brincadeira, paga aí, Fabinho!'],
     chegada: ['Fabinho chegou! Palmas pro mestre!']
   };
-  // SAMUCA zoando os parceiros preferidos: JELLISON e JEFÃO
+  // ZOA[quem][alvo]: implicâncias preferidas de cada membro (peso = chance relativa)
   const ZOA = {
-    jellison: ['Jellison, quer que eu leve um recado pra patroa? Faço entrega expressa!', 'Jellison, se a patroa ligar, eu digo que você tá na minha garupa!',
-      'Ô Jellison, se precisar voltar cedo eu te levo de mototáxi!', 'Jellison, a patroa já te deu a senha do Pix pro pedágio?'],
-    jefao: ['Jefão, nesse ritmo eu faço três entregas e volto pra te buscar!', 'Jefão, quer que eu reboque essa 1300? Cobro por quilômetro!',
-      'Ô Jefão, até minha entrega de marmita chega antes de você!', 'Jefão, 1300 cilindradas e meu capacete rosa ainda te passa!']
+    samuca: {
+      jellison: ['Jellison, quer que eu leve um recado pra patroa? Faço entrega expressa!', 'Jellison, se a patroa ligar, eu digo que você tá na minha garupa!',
+        'Ô Jellison, se precisar voltar cedo eu te levo de mototáxi!', 'Jellison, a patroa já te deu a senha do Pix pro pedágio?'],
+      jefao: ['Jefão, nesse ritmo eu faço três entregas e volto pra te buscar!', 'Jefão, quer que eu reboque essa 1300? Cobro por quilômetro!',
+        'Ô Jefão, até minha entrega de marmita chega antes de você!', 'Jefão, 1300 cilindradas e meu capacete rosa ainda te passa!']
+    },
+    alan: {
+      cleimar: ['Cleimar, abaixa esse joinha e segura o guidão com as duas mãos!', 'Cleimar, se joinha desse gasolina, você tava com tanque cheio até o Natal!',
+        'Ô Cleimar, sua moto tem 1250 e mesmo assim eu te vejo no retrovisor!', 'Cleimar, tira a mão do joinha e põe no freio, irmão!'],
+      samuca: ['Samuca, capacete rosa combina com o meu branco: a gente é a dupla da moda!', 'Ô Samuca, liga o aplicativo que eu pago a corrida até o posto!',
+        'Samuca, cadê a maquininha? Vou pagar o café com cartão!', 'Samuca, se perder a entrega a culpa é minha, eu te distraí!'],
+      jefao: ['Jefão, minha F 750 tem metade da sua cilindrada e o dobro da sua coragem!', 'Jefão, quer trocar de moto? Pelo menos aí a sua 1300 ia ter uso!'],
+      fabinho: ['Fabinho Mecânico, enquanto você para no posto eu já tô no café!', 'Fabinho, eu sei que você é mecânico, mas conserta esse consumo aí!'],
+      pescoco: ['Pescoço, vira o pescoço pra trás: tô colado em você com a menor moto!', 'Fabinho Pescoço, esse cabelo tá mais bagunçado que meu baú!']
+    }
   };
+  const ZOA_PESO = { alan: { cleimar: 3, samuca: 3, jefao: 1, fabinho: 1, pescoco: 1 } };
   const DE = {
     leosao: {
       largada: ['Combinado era 8h! Já são 8h01, tá todo mundo atrasado!', 'Oremos... e acelera!'],
@@ -472,6 +504,13 @@ window.DADOS = (function () {
       reserva: ['Alguém aí paga uma corrida adiantada? Preciso abastecer!'],
       geral: ['Gente, mototáxi não tira férias, isso aqui é treino!', 'Meu capacete é rosa, mas a moto é de macho, viu?', 'Se alguém quebrar, eu faço o resgate. Cobro barato!']
     },
+    alan: {
+      largada: ['Bora, rapaziada. Com calma, que a viagem é longa.', 'Tanque cheio até Aparecida. Quem mais pode dizer isso?'],
+      passou_voce: ['Com licença, {alvo}. Arranque de F 750!'],
+      ultrapassou: ['Vai, {alvo}. Te encontro no posto... ah não, eu nem preciso parar!'],
+      batida: ['{alvo}, tá inteiro? Levanta que a gente espera.'],
+      geral: ['Quem gasta menos gasolina? Eu. De nada.', 'Moto pequena, coração grande.']
+    },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],
       passou_voce: ['Passei, {alvo}! Preciso voltar cedo!'],
@@ -480,5 +519,5 @@ window.DADOS = (function () {
     }
   };
 
-  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE, PUXA, ZOA };
+  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE, PUXA, ZOA, ZOA_PESO };
 })();
