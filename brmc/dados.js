@@ -47,7 +47,10 @@ window.DADOS = (function () {
       vel: 185, acel: 0.78, economia: 0.84, curva: 0.76, capacete: '#e8eaee', curto: 'RAMON' },
     { id: 'adriano', nome: 'ADRIANO RANDANDAN', moto: 'BRMC MT 09', cc: 890, tanque: 14, motor: 'cp3', perfil: 'McNAMARA', ritmo: 0.99,
       sprite: 'piloto_adriano', foto: 'foto_mt09', tampa: [0.46, 0.27], retrato: 'retrato_adriano', voz: 160,
-      vel: 215, acel: 1.0, economia: 0.66, curva: 0.88, capacete: '#22242a', curto: 'ADRIANO' }
+      vel: 215, acel: 1.0, economia: 0.66, curva: 0.88, capacete: '#22242a', curto: 'ADRIANO' },
+    { id: 'samuel', nome: 'SAMUEL DO HENRIQUE', moto: 'BRMC GS 1300 ADV TRIPLE BLACK', cc: 1300, tanque: 30, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.0,
+      sprite: 'piloto_samuel', foto: 'foto_gs1300adv', tampa: [0.50, 0.30], retrato: 'retrato_samuel', voz: 125,
+      vel: 221, acel: 0.91, economia: 0.57, curva: 0.87, capacete: '#2a2c32', curto: 'SAMUEL' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -417,6 +420,23 @@ window.DADOS = (function () {
       pagador_espera: ['Adriano chegou primeiro no pedágio, acelerando parado pra apressar a turma!'],
       esperando_pagador: ['Esperando o Adriano... é só ficar quieto que dá pra ouvir ele chegando!']
     },
+    samuel: {
+      geral: ['Samuel do Henrique e Henrique do Samuel: o casal mais lindo do Black Rock!', 'Samuel, cadê seu amor? O Henrique tá te procurando no rádio!',
+        'Samuel é o único que lê o manual da moto inteiro... duas vezes!', 'Samuel, explica de novo esse negócio de suspensão semiativa que ninguém entendeu!', 'Samuel sério desse jeito? É só o Henrique chegar que ele fica vermelho!'],
+      lider: ['Samuel na frente! Tá fugindo do Henrique?', 'O Samuel disparou! Henrique, vai atrás do seu amor!'],
+      lanterna: ['Samuel lá atrás? Tá esperando o Henrique, que fofo!', 'Cadê o Samuel? Configurando o modo de pilotagem pela décima vez!'],
+      ultrapassou: ['Samuel passou! Controle de tração trabalhando bonito!', 'Lá vai o Samuel com a Triple Black, sério igual engenheiro!'],
+      batida: ['Samuel caiu! Henrique, corre lá socorrer seu amor!', 'Samuel, o sensor de inclinação não te avisou não?'],
+      reserva: ['Samuel na reserva? O computador de bordo tava avisando há 50 km!'],
+      abastecendo: ['Samuel abastecendo e conferindo o consumo médio no painel!', 'Samuel no posto, calibrando pneu com manômetro digital!'],
+      pedagio: ['Samuel no pedágio explicando como funciona a tag pro cobrador!'],
+      multa: ['Samuel multado! O piloto automático adaptativo não viu o radar?', 'O casal foi multado? Não, só o Samuel! Henrique, paga pra ele!'],
+      buzina: ['Samuel buzinou! Deve ser o Henrique na frente!'],
+      chuva: ['Samuel na chuva: já colocou no modo Rain antes da primeira gota!'],
+      pagador: ['Samuel paga o pedágio! Henrique, seu amor tá bancando hoje!', 'Sorteio: Samuel é o pagador! Conta conjunta com o Henrique, né?'],
+      pagador_espera: ['Samuel chegou primeiro no pedágio e já tá lendo o manual da cancela!'],
+      esperando_pagador: ['Esperando o Samuel... o Henrique já tá com saudade!']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -478,6 +498,20 @@ window.DADOS = (function () {
     }
   };
   const ZOA_PESO = { alan: { cleimar: 3, samuca: 3, jefao: 1, fabinho: 1, pescoco: 1 } };
+  // HENRIQUE x SAMUEL: o "casal" do clube. Pares [provocação do Henrique, resposta do Samuel]
+  const CASAL = [
+    ['Samuel, meu amor, tá lindo nessa jaqueta hoje!', 'Henrique... o rádio tá aberto pra todo mundo, viu? Vai tomar naquele lugar!'],
+    ['Meu amor, encosta aqui do lado que eu quero ver essa 1300 de pertinho!', 'Ó o respeito, Henrique! Vai tomar naquele lugar, rapaz!'],
+    ['Samuel, essa sua moto tem marcha ré? Porque você sempre vem por trás de mim!', 'Kkkk vai tomar naquele lugar, Henrique!'],
+    ['Amor, me espera no posto que eu te pago um café... e o resto a gente vê!', 'Henrique, o grupo inteiro tá ouvindo... vai tomar naquele lugar!'],
+    ['Samuel, meu amor, sua suspensão é semiativa? A minha é totalmente ativa!', 'Ai, Henrique, para... vai tomar naquele lugar!'],
+    ['Meu amor, quando chegar em Aparecida vamos acender uma vela juntos?', 'Henrique, eu vou acender é uma vela pra você parar de falar besteira! Kkkk'],
+    ['Samuel, você no retrovisor fica ainda mais bonito!', 'Olha pra frente e vai tomar naquele lugar, Henrique!'],
+    ['Amor, empresta seu capacete? Quero sentir seu cheiro na estrada!', 'Não empresto nada! Vai tomar naquele lugar, Henrique! Kkkk'],
+    ['Samuel, vamos fazer a curva juntinhos, de mãos dadas?', 'Mão no guidão, Henrique! E vai tomar naquele lugar!']
+  ];
+  const ZOA_CASAL = ['Lá vai o casal Henrique e Samuel! Quando sai o casamento?', 'Henrique do Samuel e Samuel do Henrique: até o nome é aliança!',
+    'Olha os pombinhos andando juntinhos na estrada!', 'Arranjem um quarto, vocês dois! Kkkk', 'O casal tá brigando no rádio de novo, que amor!'];
   const DE = {
     leosao: {
       largada: ['Combinado era 8h! Já são 8h01, tá todo mundo atrasado!', 'Oremos... e acelera!'],
@@ -521,7 +555,7 @@ window.DADOS = (function () {
       passou_voce: ['Passei, {alvo}! Três cilindros, irmão!'],
       ultrapassou: ['Vai, {alvo}, aproveita que o tigre tá de boa!'],
       batida: ['{alvo}, quer que eu chame o Samuel pra te buscar?'],
-      geral: ['Essa moto faz curva que é uma beleza, viu?', 'Ai, gente, olha essa paisagem! Que coisa mais linda!', 'Gente, alguém tem um paninho? Minha viseira tá um horror!']
+      geral: ['Essa moto faz curva que é uma beleza, viu?', 'Ai, gente, olha essa paisagem! Que coisa mais linda!', 'Alguém viu meu amor? Samuel, cadê você?', 'Gente, alguém tem um paninho? Minha viseira tá um horror!']
     },
     cezar: {
       largada: ['Bora. Sem conversa. Acelera.'],
@@ -577,6 +611,15 @@ window.DADOS = (function () {
       batida: ['{alvo}, caiu de susto com meu escape? Kkkk'],
       geral: ['Quer ouvir o ronco? Escuta: RANDANDANDAN!', 'Escape original? Isso é coisa de Roia!']
     },
+    samuel: {
+      largada: ['Modo Dynamic Pro ativado. Bora.', 'Pneus na pressão certa, software atualizado. Podemos ir.'],
+      passou_voce: ['Com licença, {alvo}. O quickshifter faz toda a diferença.', 'Passei, {alvo}. Controle de tração, meu amigo.'],
+      ultrapassou: ['Pode ir, {alvo}. Tô monitorando a temperatura do motor.'],
+      batida: ['{alvo}, liga o ABS de curva, pelo amor de Deus.'],
+      reserva: ['O computador de bordo calculou errado. Isso não acontece com a 1300.'],
+      geral: ['A suspensão semiativa da 1300 lê o asfalto mil vezes por segundo, sabia?', 'Esse motor boxer novo tem comando variável. Muito mais torque embaixo.',
+        'O radar adaptativo da 1300 mantém distância sozinho. Tecnologia, rapaziada.', 'Alguém aí já atualizou o software da moto? Saiu versão nova.', 'O farol adaptativo acompanha a curva. Na serra é outra coisa.']
+    },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],
       passou_voce: ['Passei, {alvo}! Preciso voltar cedo!'],
@@ -585,5 +628,5 @@ window.DADOS = (function () {
     }
   };
 
-  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE, PUXA, ZOA, ZOA_PESO };
+  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE, PUXA, ZOA, ZOA_PESO, CASAL, ZOA_CASAL };
 })();
