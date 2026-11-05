@@ -119,6 +119,7 @@ window.DADOS = (function () {
     { id: 'cnh', nome: 'CNH EM RISCO', desc: 'LEVE 3 MULTAS NUMA CORRIDA' },
     { id: 'frentista', nome: 'AMIGO DO FRENTISTA', desc: 'ABASTEÇA 2 VEZES' },
     { id: 'bibi', nome: 'BI-BI!', desc: 'BUZINE 15 VEZES NUMA CORRIDA' },
+    { id: 'patrocinador', nome: 'PATROCINADOR OFICIAL', desc: 'SEJA O PAGADOR NOS 2 PEDÁGIOS' },
     { id: 'trinca', nome: 'TRINCA DE OURO', desc: 'VENÇA A VIAGEM COM OS 3 PILOTOS' }
   ];
 
@@ -151,6 +152,10 @@ window.DADOS = (function () {
     buzina: ['Bi-bi! Abre caminho que o Black Rock vem aí!', 'Que buzina é essa, {alvo}? Parece pato!'],
     chuva: ['Começou a chover na serra! Devagar nas curvas!', 'Chuva! Quem esqueceu a capa levanta a mão!', 'Asfalto molhado, freia com carinho, rapaziada!'],
     neblina: ['Neblina na Mantiqueira! Liga o farol e reza!', 'Não tô vendo nem o para-lama, que neblina!'],
+    pagador: ['Sorteio do pedágio: hoje quem paga é o {alvo}!', 'O pedágio é por conta do {alvo}! Ninguém passa sem ele!', 'Sorteado! {alvo} paga o pedágio da turma!'],
+    pagador_espera: ['{alvo} chegou primeiro, mas é o pagador: vai esperar a turma toda!', 'Senta aí, {alvo}! Pagador só passa com todo mundo junto!', 'Pagador adiantado, {alvo}? Agora espera os Roias!'],
+    esperando_pagador: ['Todo mundo na cancela esperando o pagador {alvo}!', 'Cadê o {alvo}? A carteira dele que paga o pedágio!', 'Anda, {alvo}! O moto clube inteiro tá parado te esperando!'],
+    pedagio_pago: ['Pedágio pago! Valeu, {alvo}! Bora, Black Rock!', 'Cancela aberta! Obrigado pelo patrocínio, {alvo}!', 'Todos juntos! Passa a turma, {alvo} pagou!'],
     fantasma: ['Seu fantasma tá na frente, {alvo}! Até ele é mais rápido!', 'Olha o fantasma do {alvo}! Que medo!']
   };
   // falas SOBRE cada membro (quando ele é o alvo)
@@ -167,7 +172,10 @@ window.DADOS = (function () {
       lanterna: ['Leosão em último?! Chama a ambulância que o Pastor tá passando mal!'],
       multa: ['O Pastor foi multado! Vai ter que dizimar pro DETRAN!', 'Leosão multado! Isso não tava na planilha!', 'McNamara multado! Bem feito, Pastor!'],
       buzina: ['Leosão buzinando: é o sino chamando pra missa!', 'Calma, Pastor, buzina não faz a estrada andar!'],
-      chuva: ['Leosão, chuva não tava no cronograma, né?']
+      chuva: ['Leosão, chuva não tava no cronograma, né?'],
+      pagador: ['O Pastor paga! É o dízimo da estrada!', 'Leosão é o pagador: já tava com o dinheiro trocado desde Itaúna!'],
+      pagador_espera: ['Leosão chegou 7h59 no pedágio e agora vai esperar todo mundo!', 'Pastor, respira! Pagador tem que esperar a turma!'],
+      esperando_pagador: ['Leosão atrasado pro pedágio? O cronograma explodiu!']
     },
     jefao: {
       geral: ['Jefão, 1300 cilindradas pra andar a 80 por hora? Roia demais!', 'A GS 1300 do Jefão tá pedindo socorro no modo passeio!',
@@ -181,7 +189,10 @@ window.DADOS = (function () {
       pedagio: ['Jefão, nesse pedágio dava pra ter passado andando!'],
       multa: ['Jefão multado?! Como? A 81 por hora?', 'Até o Jefão tomou multa! O radar ficou surpreso!'],
       buzina: ['Jefão buzinou! Acordou, finalmente!', 'Buzina da 1300 é mais rápida que o Jefão!'],
-      chuva: ['Jefão na chuva: agora ele tem desculpa pra andar devagar!']
+      chuva: ['Jefão na chuva: agora ele tem desculpa pra andar devagar!'],
+      pagador: ['Jefão é o pagador... a gente vai esperar até amanhã!', 'Pagador Jefão! Galera, pode pedir um lanche que vai demorar!'],
+      pagador_espera: ['Milagre! O Jefão chegou primeiro no pedágio! Agora espera, né?'],
+      esperando_pagador: ['Esperando o Jefão no pedágio... alguém trouxe barraca?', 'Jefão vem aí com a carteira... na velocidade dele, chega semana que vem!']
     },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
@@ -195,7 +206,10 @@ window.DADOS = (function () {
       pedagio: ['Jellison, pede o reembolso do pedágio pra patroa!'],
       multa: ['Jellison multado! A patroa vai saber!', 'Jellison, a multa chega no endereço de casa... boa sorte!', 'Multa pro Jellison! Acabou a liberação do ano!'],
       buzina: ['Buzina baixo, Jellison, senão a patroa escuta lá de Itaúna!', 'Jellison buzinando de alegria: hoje tá liberado!'],
-      chuva: ['Jellison, se molhar a roupa a patroa vai perguntar onde você tava!']
+      chuva: ['Jellison, se molhar a roupa a patroa vai perguntar onde você tava!'],
+      pagador: ['Jellison é o pagador! Vai ter que pedir o cartão da patroa!', 'Jellison pagando? A patroa vai ver no extrato!'],
+      pagador_espera: ['Jellison chegou primeiro e tá ligando pra patroa liberar o Pix!'],
+      esperando_pagador: ['Jellison, a patroa liberou o dinheiro do pedágio ou não?', 'Esperando o Jellison: deve tá pedindo autorização pra pagar!']
     }
   };
   // falas DITAS por cada membro
