@@ -16,8 +16,8 @@ const GUARD_X = -1.16, ACOST = 1.38;
 const params = new URLSearchParams(location.search);
 const SALA = params.get('sala'), DEV2P = params.get('dev2p') === '1';
 window.FONTE_TESTE = params.get('fonteteste') === '1';
-// RANKING ONLINE (Supabase, grátis): cole aqui a URL do projeto e a chave "anon public". Veja ranking_supabase.sql
-const RANKING_ONLINE = { url: '', chave: '' };
+// RANKING GLOBAL: endereço do Cloudflare Worker (veja servidor/worker.js). Vazio = só lê o ranking.json do site
+const RANKING_GLOBAL = params.get('rank') || '';
 const LINK_JOGO = location.origin + location.pathname;
 let MODO = 'viagem';                       // viagem | cafe | relogio
 let CLIMA = { tipo: 'sol' };               // sol | chuva | neblina (na serra)
@@ -1384,7 +1384,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v4.9', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v5.0', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
@@ -1544,8 +1544,7 @@ function selecaoPremium(st, cli, mudar, conf, escolher) {
   const nome = p.nome, tam = nome.length * 16 <= cx0 + cw - 10 - tx ? 16 : 8;
   if (tam === 16) txt(nome, tx, ry + 26, '#ffffff', 16, 'e');
   else { const partes = quebrar(nome, Math.floor((cx0 + cw - 10 - tx) / 8)); partes.slice(0, 2).forEach((l, i) => txt(l, tx, ry + 26 + i * 12, '#ffffff', 8, 'e')); }
-  txt(p.perfil === 'ROIA' ? 'NÃO ESTICA: GASTA MENOS' : 'VAI NO TALO: GASTA MAIS', tx, ry + 56, mc ? '#ff9a6a' : '#9ad0ff', 8, 'e', false);
-  txt('VEL. ' + p.vel + (p.perfil === 'ROIA' ? ' DE ' + p.velMoto : '') + ' KM/H', tx, ry + 70, '#8a92a0', 8, 'e', false);
+  txt('VEL. ' + p.vel + (p.perfil === 'ROIA' ? ' DE ' + p.velMoto : '') + ' KM/H', tx, ry + 60, '#8a92a0', 8, 'e', false);
   // estatísticas com barras segmentadas
   let sy = cy0 + 108;
   for (const s of STATS) {
@@ -1704,19 +1703,20 @@ function trofeu(x, y, capacete) {
 
 // ============================================================ RANKING (local + online opcional)
 const RANK = {
-  online: !!(RANKING_ONLINE.url && RANKING_ONLINE.chave),
+  online: true,
   local(modo) { return guardar.ler('rank_' + modo, []); },
   entra(modo, t) { const l = RANK.local(modo); return l.length < 10 || t < l[l.length - 1].t; },
-  add(modo, e) { const l = RANK.local(modo); l.push(e); l.sort((a, b) => a.t - b.t); guardar.gravar('rank_' + modo, l.slice(0, 10)); RANK.enviar(modo, e); },
-  cab() { return { apikey: RANKING_ONLINE.chave, Authorization: 'Bearer ' + RANKING_ONLINE.chave, 'Content-Type': 'application/json' }; },
+  add(modo, e) { const l = RANK.local(modo); l.push(e); l.sort((a, b) => a.t - b.t); guardar.gravar('rank_' + modo, l.slice(0, 10)); return RANK.enviar(modo, e); },
+  // manda o tempo para o ranking global (o Worker grava no brmc/ranking.json do repositório)
   enviar(modo, e) {
-    if (!RANK.online) return;
-    fetch(RANKING_ONLINE.url + '/rest/v1/ranking', { method: 'POST', headers: Object.assign({ Prefer: 'return=minimal' }, RANK.cab()),
-      body: JSON.stringify({ modo, nome: e.n, piloto: e.p, tempo: Math.round(e.t * 10) / 10, multas: e.m || 0 }) }).catch(() => {});
+    if (!RANKING_GLOBAL || !navigator.onLine) return Promise.resolve(null);
+    return fetch(RANKING_GLOBAL + '/enviar', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ modo, nome: e.n, piloto: e.p, tempo: Math.round(e.t * 10) / 10, multas: e.m || 0 }) }).then(r => r.json()).catch(() => null);
   },
   buscar(modo) {
-    return fetch(RANKING_ONLINE.url + '/rest/v1/ranking?select=nome,piloto,tempo,multas&modo=eq.' + modo + '&order=tempo.asc&limit=10', { headers: RANK.cab() })
-      .then(r => r.json()).then(a => a.map(x => ({ n: x.nome, p: x.piloto, t: x.tempo, m: x.multas })));
+    const ler = u => fetch(u, { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+    const arq = () => ler('ranking.json?t=' + Date.now());
+    return (RANKING_GLOBAL ? ler(RANKING_GLOBAL + '/ranking').catch(arq) : arq()).then(d => (d[modo] || []).slice().sort((a, b) => a.t - b.t));
   }
 };
 const elNome = document.getElementById('nome-modal'), inNome = document.getElementById('nome-input');
@@ -1798,9 +1798,12 @@ function telaResultado() {
     entrar() { SOM.silenciar(); SOM.bomba(false); },
     update(dt) {
       t += dt;
-      if (!nomePedido && t > 1.4 && humanos.length === 1 && h.tempo != null && RANK.entra(MODO, h.tempo)) {
+      if (!nomePedido && t > 1.4 && humanos.length === 1 && h.tempo != null && !demo) {
         nomePedido = true;
-        pedirNome('TEMPO ' + fmtTempo(h.tempo) + ' ENTROU NO TOP 10' + (RANK.online ? ' (ONLINE)' : '') + '. DIGITE SEU NOME:', n => { RANK.add(MODO, { n, p: h.def.id, t: h.tempo, m: h.multas, d: Date.now() }); salvo = true; avisar('TEMPO SALVO NO RANKING!'); });
+        const reg = n => ({ n, p: h.def.id, t: h.tempo, m: h.multas, d: Date.now() }), apel = guardar.ler('apelido', '');
+        const resp = r => { if (!r || !r.ok) return; setTimeout(() => avisar(r.recorde ? 'RANKING GLOBAL: VOCÊ ESTÁ EM ' + r.pos + 'º!' : r.pos ? 'RANKING GLOBAL: SEU RECORDE SEGUE EM ' + r.pos + 'º' : 'TEMPO ENVIADO AO RANKING GLOBAL'), 1200); };
+        if (RANK.entra(MODO, h.tempo)) pedirNome('TEMPO ' + fmtTempo(h.tempo) + ' ENTROU NO TOP 10' + (RANKING_GLOBAL ? ' E VAI PRO RANKING GLOBAL' : '') + '. DIGITE SEU NOME:', n => { RANK.add(MODO, reg(n)).then(resp); salvo = true; avisar('TEMPO SALVO NO RANKING!'); });
+        else if (RANKING_GLOBAL) { if (apel) RANK.enviar(MODO, reg(apel)).then(resp); else pedirNome('TEMPO ' + fmtTempo(h.tempo) + '. DIGITE SEU NOME PARA O RANKING GLOBAL:', n => RANK.enviar(MODO, reg(n)).then(resp)); }
       }
       if (t > 1.5 && !elNome.classList.contains('on') && (apertou(0, 'acel') || apertou(1, 'acel'))) continuar();
     },
@@ -1850,11 +1853,12 @@ function telaResultado() {
 // ============================================================ RECORDES / RANKING / CONQUISTAS
 function telaRecordes(modoIni) {
   const ABAS = [['viagem', 'VIAGEM'], ['cafe', 'CAFEZINHO'], ['relogio', 'RELÓGIO'], ['conq', 'CONQUISTAS']];
-  let aba = Math.max(0, ABAS.findIndex(a => a[0] === modoIni)), online = false, lista = null, carregando = false, erro = false;
+  let aba = Math.max(0, ABAS.findIndex(a => a[0] === modoIni)), online = true, lista = null, carregando = false, erro = false;
   const carregar = () => { lista = null; erro = false; if (!online || ABAS[aba][0] === 'conq') return; carregando = true; const a = aba;
     RANK.buscar(ABAS[aba][0]).then(l => { if (a === aba) lista = l; }).catch(() => { erro = true; }).then(() => carregando = false); };
   const mudar = d => { aba = (aba + d + ABAS.length) % ABAS.length; SOM.clique(); carregar(); };
   const nomeP = id => (PERSONAGENS.find(p => p.id === id) || { nome: id || '' }).nome;
+  carregar();
   return {
     nome: 'recordes',
     update() { if (apertou(0, 'esq')) mudar(-1); if (apertou(0, 'dir')) mudar(1); if (apertou(0, 'freio') || apertou(0, 'acel')) irPara(telaTitulo()); },
@@ -1876,9 +1880,9 @@ function telaRecordes(modoIni) {
         const n = Object.keys(feitas).length; txt(n + '/' + CONQUISTAS.length + ' • ★ = CAPACETE DOURADO DO PILOTO', W / 2, H - 14, '#9a9aa4', 8, 'c');
         return;
       }
-      if (RANK.online) botao(W - 130, 8, 122, 22, online ? 'ONLINE' : 'NESTE CELULAR', () => { online = !online; SOM.clique(); carregar(); }, online, '#1e3a6a');
+      botao(W - 130, 8, 122, 22, online ? 'GLOBAL' : 'NESTE CELULAR', () => { online = !online; SOM.clique(); carregar(); }, online, '#1e3a6a');
       const l = online ? lista : RANK.local(id);
-      txt(online ? 'RANKING ONLINE • TOP 10' : 'TOP 10 NESTE CELULAR', W / 2, 72, '#9ad0ff', 8, 'c');
+      txt(online ? 'RANKING GLOBAL • MELHOR TEMPO DE CADA UM' : 'TOP 10 NESTE CELULAR', W / 2, 72, '#9ad0ff', 8, 'c');
       if (online && carregando) { txt('CARREGANDO...', W / 2, 180, '#fff', 8, 'c'); return; }
       if (online && erro) { txt('SEM CONEXÃO COM O RANKING', W / 2, 180, '#ff5a4a', 8, 'c'); return; }
       if (!l || !l.length) { txt('NENHUM TEMPO AINDA. BORA ACELERAR!', W / 2, 180, '#c8c8d2', 8, 'c'); return; }
