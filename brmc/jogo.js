@@ -337,7 +337,7 @@ function criarVeic(z, oposto, spec) {   // spec (P2): [tipo, cor, oposto, z, x*1
   const v = spec ? spec[5] : rnd(t.vmin, t.vmax) * KMH, D = tipoEm(z) === 'D';
   const faixaD = oposto ? (Math.random() < 0.5 ? -2.55 : -3.45) : (t.pesado ? 0.5 : (Math.random() < 0.6 ? 0.5 : -0.5));
   const x = spec ? spec[4] / 1000 : D ? faixaD : (oposto ? -0.5 : 0.5);
-  return { ti, ci, z, x, alvoX: x, faixaD, v: oposto ? -v : v, vBase: v, img: spriteVeic(oposto ? t.frente : t.tras, usa ? cor : null), hw: t.w * PX2N * 0.5, len: t.len, oposto, pesado: !!t.pesado, pisca: 0, freio: 0 };
+  return { ti, ci, z, x, alvoX: x, faixaD, v: oposto ? -v : v, vBase: v, img: spriteVeic(oposto ? t.frente : t.tras, usa ? cor : null), hw: t.w * PX2N * 0.94, len: t.len, oposto, pesado: !!t.pesado, pisca: 0, freio: 0 };
 }
 function gerarTrafego() {
   trafego = [];
@@ -350,11 +350,18 @@ function atualizarTrafego(dt) {
     const D = tipoEm(v.z) === 'D';
     if (v.xinga > 0) v.xinga -= dt;
     if (v.oposto) v.alvoX = D ? v.faixaD : -0.5;
+    else if (v.fecha > 0) { v.fecha -= dt; v.alvoX = v.fechaX; v.pisca = 0; }
     else if (v.cede > 0) { v.cede -= dt; v.alvoX = v.cedeX; v.v = Math.max(v.vBase * 0.7, v.v - 20 * KMH * dt); v.freio = 1; v.pisca = 0.2; }
     else {
       let frente = null, dmin = 1e9;
       for (const o of trafego) { if (o === v || o.oposto) continue; const dz = o.z - v.z; if (dz > 0 && dz < 2600 && Math.abs(o.x - v.x) < 0.4 && dz < dmin) { dmin = dz; frente = o; } }
       v.freio = 0;
+      for (const c of corredores) {
+        if (c.abast) continue; const dz = c.z - v.z;
+        if (dz > 0 && dz < v.len * 0.5 + 1600 && Math.abs(c.x - v.x) < v.hw + MOTO_HW && c.v < v.v) {
+          if (dz < v.len * 0.5 + 700) { v.v = Math.max(c.v, v.v - 70 * KMH * dt); v.freio = 1; }
+        }
+      }
       if (!D) { if (v.alvoX !== 0.5) { v.alvoX = 0.5; } }
       if (frente && frente.v < v.vBase - 5 * KMH) {
         const outra = v.x > 0 ? -0.5 : 0.5;
@@ -496,13 +503,15 @@ function pilotoIA(c, seg) {
   const p = proximoPosto(c.z);
   if (p && !c.fim) {
     if (!ia.encher && c.z < p.z0 && c.z > p.z0 - 70 * SEG) ia.encher = precisaAbastecer(c, p);
-    if (ia.encher && c.z > p.z0 - 45 * SEG) { alvoX = 1.7; if (c.z > p.z0 + 4 * SEG) alvoV = c.x > 1.3 ? 0 : c.max * 0.14; }
+    if (ia.encher && c.z > p.z0 - 45 * SEG) { alvoX = seg.posto || segEm(c.z + 2 * SEG).posto ? 1.7 : 1.25;   // só sai da pista quando a faixa do posto começa
+      if (c.z > p.z0 + 4 * SEG) alvoV = c.x > 1.3 ? 0 : c.max * 0.14; }
     if (c.z > p.z1) ia.encher = 0;
   }
   if (c.comb <= 0) alvoV = 0;
   // pedágio: freia até parar na cancela
   const T = PEDAGIOS.find(p => p.z > c.z - 30 && !c.pag[p.k]);
   if (T) { const d = T.z - 60 - c.z; if (d < 70 * SEG) { alvoV = Math.min(alvoV, Math.sqrt(Math.max(0, 2 * c.max * 0.75 * (d - 120)))); if (d < 260) { alvoV = 0; inp.freio = true; } } }
+  if (ia.cedeAte > tempoCorrida && alvoX < 1.3) alvoX = ia.cedeX;   // abrindo passagem para quem buzinou (o trânsito abaixo tem prioridade)
   // trânsito: troca de faixa, corredor e contramão (na via simples)
   if (alvoX < 1.3) {
     let obst = null, melhor = 1e9;
@@ -510,10 +519,19 @@ function pilotoIA(c, seg) {
       const dz = v.z - c.z, hor = Math.max(1800, (c.v - v.v) * 1.5);
       if (dz > -(v.len / 2 + 150) && dz < hor && Math.abs(v.x - c.x) < v.hw + MOTO_HW + 0.1 && dz < melhor) { melhor = dz; obst = v; }
     }
+    if (obst && !obst.oposto && melhor < 4500 && !(c.buzT > 0) && tempoCorrida > (ia.buzCd || 0) && !c.fim) {
+      ia.buzCd = tempoCorrida + rnd(4, 9);
+      if (Math.random() < (c.def.perfil === 'ROIA' ? 0.7 : 0.35)) buzinar(c);
+    }
     if (obst) {
+      // tempo para ultrapassar o obstáculo: quem vem na contramão precisa estar longe o bastante para dar tempo
+      const tPass = obst.oposto ? 1.2 : clamp((obst.z - c.z + obst.len / 2 + 600) / Math.max(250, c.v - obst.v), 1.2, 7);
       const livre = x => {
         if (x < -0.98 || x > 1.3) return false;
-        for (const v of trafego) { const dz = v.z - c.z; if (dz > -(v.len / 2 + 220) && dz < Math.max(1500, (c.v - v.v) * 2.4) && Math.abs(v.x - x) < v.hw + MOTO_HW + 0.06) return false; }
+        for (const v of trafego) {
+          const dz = v.z - c.z, alc = v.oposto ? (c.v - v.v) * tPass + 1200 : Math.max(1500, (c.v - v.v) * 2.4);
+          if (dz > -(v.len / 2 + 220) && dz < alc && Math.abs(v.x - x) < v.hw + MOTO_HW + 0.08) return false;
+        }
         return true;
       };
       const a = obst.x + obst.hw + MOTO_HW + 0.12, b = obst.x - obst.hw - MOTO_HW - 0.12;
@@ -523,16 +541,35 @@ function pilotoIA(c, seg) {
       else { alvoV = Math.min(alvoV, obst.v * 0.95); if (melhor < obst.len / 2 + 2800) inp.freio = c.v > alvoV + 3 * KMH; }
     }
   }
-  if (ia.cedeAte > tempoReal && alvoX < 1.3) { alvoX = ia.cedeX; alvoV = Math.min(alvoV, c.v * 0.995); }
+  if (alvoX < 1.3) {
+    const perigo = trafego.find(v => v.oposto && v.z - c.z > -200 && v.z - c.z < (c.v - v.v) * 1.3 + 700 && Math.min(Math.abs(v.x - alvoX), Math.abs(v.x - c.x)) < v.hw + MOTO_HW + 0.1);
+    if (perigo) {
+      const ok = x => !trafego.some(v => !v.oposto && Math.abs(v.z - c.z) < v.len / 2 + 260 && Math.abs(v.x - x) < v.hw + MOTO_HW + 0.04);
+      const fuga = [0.5, 0.85, 1.15].filter(ok).sort((m, n) => Math.abs(m - c.x) - Math.abs(n - c.x))[0];
+      if (fuga != null) alvoX = fuga; else { alvoX = 1.15; alvoV = Math.min(alvoV, c.max * 0.3); inp.freio = true; }
+    }
+  }
+  if (!c.fim && !(c.buzT > 0) && tempoCorrida > (ia.buzCd || 0) && c.v > c.max * 0.6) {
+    const lento = corredores.find(o => o !== c && !o.abast && o.z - c.z > 150 && o.z - c.z < 1800 && Math.abs(o.x - c.x) < 0.3 && o.v < c.v - 15 * KMH && o.v > 0);
+    if (lento) { ia.buzCd = tempoCorrida + rnd(4, 9); if (Math.random() < (c.def.perfil === 'ROIA' ? 0.6 : 0.3)) buzinar(c); }
+    else {   // "bi-bi" de cumprimento ao passar um irmão do clube (coisa de Rôia)
+      const lado = corredores.find(o => o !== c && !o.abast && Math.abs(o.z - c.z) < 250 && Math.abs(o.x - c.x) < 0.7 && c.v > o.v + 10 * KMH);
+      if (lado) { ia.buzCd = tempoCorrida + rnd(6, 12); if (Math.random() < (c.def.perfil === 'ROIA' ? 0.45 : 0.12)) buzinar(c); }
+    }
+  }
   inp.esq = c.x > alvoX + 0.05; inp.dir = c.x < alvoX - 0.05;
   if (c.v > alvoV) { inp.acel = false; if (c.v > alvoV + 12 * KMH) inp.freio = true; }
   if (alvoV === 0 && c.v > 2 * KMH) inp.freio = true;
   return inp;
 }
 
+// penalidades: tombo +3 s | multa pela gravidade (como no CTB): até 20% acima +5 s, até 50% +10 s, acima de 50% +20 s
+const PENA_TOMBO = 3;
+function multaPena(vel, lim) { const ex = (vel - lim) / lim; return ex > 0.5 ? [20, 'GRAVÍSSIMA'] : ex > 0.2 ? [10, 'GRAVE'] : [5, 'MÉDIA']; }
 function bater(c, novaV) {
   if (c.crash > 0 || c.abast) return;
   c.crash = 1.7; c.giro = 0; c.v = Math.max(0, novaV); c.batidas = (c.batidas || 0) + 1;
+  if (!demo && contagem <= 0 && !c.fim) { c.penal += PENA_TOMBO; c.tomboT = 2.4; }
   if (c.humano >= 0 && !demo) {
     SOM.batida(); tremor[c.humano] = 0.5; if (navigator.vibrate && guardar.ler('vibrar', true)) navigator.vibrate([60, 40, 120]);
     for (let i = 0; i < 26; i++) emitir(c.humano, 'faisca'); falarSobre('batida', c);
@@ -630,7 +667,7 @@ function atualizarCorredor(c, dt) {
   c.suspV += (ladeira - lad2) * c.v * 0.012;
   c.suspV += (-c.susp * 120 - c.suspV * 9) * dt; c.susp = clamp(c.susp + c.suspV * dt, -6, 6);
   // ---- radar
-  c.multaT = Math.max(0, c.multaT - dt); c.buzT = Math.max(0, c.buzT - dt);
+  c.multaT = Math.max(0, c.multaT - dt); c.tomboT = Math.max(0, (c.tomboT || 0) - dt); c.buzT = Math.max(0, c.buzT - dt);
   for (const R of RADARES) if (!c.radarOk[R.k] && c.z < R.z && c.z + dist >= R.z) { c.radarOk[R.k] = true; if (c.v / KMH > R.lim + 7 && c.crash <= 0 && !c.fim) multar(c, R); }
   c.z += dist;
   c.bg = (c.bg + 0.0011 * seg.curva * dist / SEG + 10) % 1;
@@ -644,24 +681,35 @@ function atualizarCorredor(c, dt) {
 }
 
 function multar(c, R) {
-  c.multas++; c.penal += 5; c.multaT = 2.6; c.multaInfo = [Math.round(c.v / KMH), R.lim];
+  const vel = Math.round(c.v / KMH); c.multas++; c.penal += multaPena(vel, R.lim)[0]; c.multaT = 2.6; c.multaInfo = [vel, R.lim];
   if (demo) return;
   if (c.humano >= 0) { SOM.flash(); setTimeout(SOM.multa, 250); flashT[c.humano] = 0.4; if (navigator.vibrate && guardar.ler('vibrar', true)) navigator.vibrate([30, 30, 30]); }
   if (c.humano >= 0 || Math.random() < 0.6) { radio.cd = 0; falarSobre('multa', c); }
 }
+// volume de um som do mundo conforme a distância até o jogador local mais próximo (0 = longe)
+function volPerto(z) { let d = 1e9; for (const h of humanos) if (!h.auto || demo) d = Math.min(d, Math.abs(h.z - z)); if (demo) return 0; return clamp(1 - d / 4500, 0, 1); }
 // buzina: os carros da frente abrem passagem (pista dupla: trocam de faixa; via simples: encostam)
 function buzinar(c) {
-  c.buzT = 0.45; c.buzinas++; if (c.auto) SOM.buzinaToque(c.def.motor === 'boxer', 0.3); else SOM.buzinaOn(c.def.motor === 'boxer');
-  let xingou = null;
+  c.buzT = 0.45; c.buzinas++; const gr = c.def.motor === 'boxer';
+  if (c.humano >= 0 && !c.auto) SOM.buzinaOn(gr); else { const vol = volPerto(c.z); if (vol > 0.05) SOM.buzinaToque(gr, rnd(0.18, 0.4), vol); }
+  let xingou = null, fechou = null;
   for (const v of trafego) {
     if (v.oposto) continue; const dz = v.z - c.z;
     if (dz > 0 && dz < 5200 && Math.abs(v.x - c.x) < 0.8) {
       const D = tipoEm(v.z) === 'D';
       const livre = x => !trafego.some(o => !o.oposto && o !== v && Math.abs(o.x - x) < 0.4 && Math.abs(o.z - v.z) < 2200);
       if (v.pesado) {   // caminhão e carreta não saem da frente: o motorista xinga
-        if (!(v.xinga > 0)) { v.xingaI = Math.floor(Math.random() * XINGOS.length); xingou = xingou || v; }
+        if (!(v.xinga > 0)) {
+          v.xingaI = Math.floor(Math.random() * XINGOS.length); xingou = xingou || v;
+          if (Math.random() < 0.5 && !(v.fecha > 0)) {   // 50%: ainda fecha a ultrapassagem, jogando o caminhão para o lado da moto
+            const lado = c.x < v.x - 0.05 ? -1 : c.x > v.x + 0.05 ? 1 : (D ? -1 : (Math.random() < 0.5 ? -1 : 1));
+            const alvo = clamp(v.x + lado * 0.45, D ? -0.62 : -0.25, D ? 0.78 : 0.85);
+            const ocupado = trafego.some(o => o !== v && Math.abs(o.x - alvo) < o.hw + v.hw - 0.1 && Math.abs(o.z - v.z) < (o.len + v.len) * 0.5 + 300);
+            if (!ocupado) { v.fecha = 2.6; v.fechaX = alvo; fechou = fechou || v; }
+          }
+        }
         v.xinga = 2.4;
-      } else { v.cedeX = D && v.x < 0 && livre(0.5) ? 0.5 : 1.16; v.cede = 3.2; }
+      } else { const vai = D && v.x < 0 && livre(0.5) ? 0.5 : 1.16; v.cedeX = c.x > v.x + 0.15 && vai > v.x ? v.x : vai; v.cede = 3.2; }
     }
   }
   // membros do moto clube na frente também abrem passagem
@@ -670,24 +718,31 @@ function buzinar(c) {
     if (o === c || !o.ia || (o.humano >= 0 && !o.auto) || o.crash > 0 || o.abast || o.fim) continue;
     const dz = o.z - c.z;
     if (dz > 0 && dz < 3600 && Math.abs(o.x - c.x) < 0.45) {
-      const lado = o.x >= c.x ? 1 : -1; let x = o.x + lado * 0.6; if (x > 1.15 || x < -0.9) x = o.x - lado * 0.6;
-      o.ia.cedeX = clamp(x, -0.9, 1.15); o.ia.cedeAte = tempoReal + 2.6; abriu = abriu || o;
+      const Dd = segEm(o.z).tipo === 'D';   // via simples: encosta sempre à direita | pista dupla: vai para o lado oposto de quem buzinou
+      let x = !Dd || o.x >= c.x ? o.x + 0.55 : o.x - 0.55; if (x > 1.15) x = Dd ? o.x - 0.55 : 1.15;
+      o.ia.cedeX = clamp(x, Dd ? GUARD_X + 0.2 : 0.2, 1.15); o.ia.cedeAte = tempoCorrida + 2.6; abriu = abriu || o;
     }
   }
-  const local = c.humano >= 0 && !c.auto && (!p2Remoto() || c.humano === 0);
-  if (xingou) { if (local) setTimeout(() => SOM.buzinaCaminhao(), 380); if (Math.random() < 0.5) { radio.cd = 0; falarSobre('xingado', c); } }
-  else if (abriu && Math.random() < 0.45) { radio.cd = 0; falarSobre('abre_passagem', c, abriu); }
-  else if (Math.random() < 0.22) falarSobre('buzina', c);
+  const local = c.humano >= 0 && !c.auto && (!p2Remoto() || c.humano === 0), perto = volPerto(c.z);
+  if (xingou) { if (local || perto > 0.25) setTimeout(() => SOM.buzinaCaminhao(local ? 1 : perto), 380); if (fechou && Math.random() < (c.humano >= 0 ? 0.7 : 0.15)) { radio.cd = 0; falarSobre('fechado', c); } else if (Math.random() < (c.humano >= 0 ? 0.5 : 0.15)) { radio.cd = 0; falarSobre('xingado', c); } }
+  else if (abriu && Math.random() < (c.humano >= 0 ? 0.45 : 0.12)) { radio.cd = 0; falarSobre('abre_passagem', c, abriu); }
+  else if (Math.random() < (c.humano >= 0 ? 0.22 : 0.04)) falarSobre('buzina', c);
 }
 function colisoes() {
   for (const c of corredores) {
-    if (c.crash > 0 || c.abast) continue;
+    if (c.abast) continue;
     for (const v of trafego) {
       const dz = v.z - c.z;
       if (Math.abs(dz) < v.len * 0.5 + 70 && Math.abs(v.x - c.x) < v.hw + MOTO_HW * 0.8) {
-        if (v.oposto) { bater(c, 0); c.z = v.z - v.len * 0.5 - 100; c.x = Math.max(c.x, 0.3); }
-        else if (c.v - v.v > 40 * KMH) { bater(c, v.v * 0.4); c.z = v.z - v.len * 0.5 - 90; }
-        else { c.v = Math.min(c.v, v.v * 0.9); c.z = Math.min(c.z, v.z - v.len * 0.5 - 75); c.x += (c.x > v.x ? 1 : -1) * 0.02; }
+        const caido = c.crash > 0;
+        if (v.oposto) { if (!caido) bater(c, 0); c.z = Math.min(c.z, v.z - v.len * 0.5 - 100); c.x = Math.max(c.x, 0.3); }
+        else if (dz < -v.len * 0.25) { v.z = c.z - v.len * 0.5 - 80; v.v = Math.min(v.v, c.v); v.freio = 1; }      // veículo vindo atrás: para atrás da moto
+        else if (!caido && c.v - v.v > 40 * KMH) { bater(c, v.v * 0.4); c.z = v.z - v.len * 0.5 - 90; }
+        else {   // encostou: empurra para fora da carroceria (lateral se estiver do lado, senão fica atrás)
+          const lado = c.x > v.x ? 1 : -1, pen = v.hw + MOTO_HW * 0.8 - Math.abs(v.x - c.x);
+          if (dz < v.len * 0.5 - 40 && pen < 0.12) c.x += lado * (pen + 0.01);
+          else { c.v = Math.min(c.v, v.v * 0.9); c.z = Math.min(c.z, v.z - v.len * 0.5 - 75); }
+        }
       }
     }
   }
@@ -1238,7 +1293,7 @@ function hud(v, c, idx) {
   const rw = 150, rx = v.x + v.w - rw - m, ry = v.y + m;
   ctx.fillStyle = 'rgba(6,8,12,0.72)'; ctx.fillRect(rx - 4, ry - 4, rw + 8, dois ? 34 : 44);
   txt(fmtTempo(tempoCorrida), rx + rw, ry, '#fff', dois ? 8 : 16, 'd');
-  if (c.penal > 0 && !dois) txt('+' + c.penal + 'S MULTA', rx + rw, ry + 44, '#ff5a4a', 8, 'd');
+  if (c.penal > 0 && !dois) txt('+' + c.penal + 'S PENALIDADE', rx + rw, ry + 44, '#ff5a4a', 8, 'd');
   txt('KM ' + Math.round(progresso(c.z) * VIAGEM.km), rx, ry + (dois ? 0 : 4), '#ffe04a', 8);
   const by = ry + (dois ? 16 : 24), bw = rw;
   ctx.fillStyle = '#2a2c32'; ctx.fillRect(rx, by + 3, bw, 3);
@@ -1263,7 +1318,8 @@ function hud(v, c, idx) {
     txt('RADAR ' + (dm >= 1000 ? (dm / 1000).toFixed(1) + ' KM' : dm + ' M'), cx, ry2 + rr + 3, acima ? '#ff5a4a' : '#ffd23a', 8, 'c');
     if (acima && Math.floor(tempoReal * 4) % 2) txt('REDUZA!', cx, ry2 + rr + 15, '#ff5a4a', 8, 'c');
   }
-  if (c.multaT > 0 && c.multaInfo) msg('MULTADO! ' + c.multaInfo[0] + ' KM/H NUMA ' + c.multaInfo[1] + ' • +5 S', cx, v.y + v.h * 0.42, '#ff5a4a', 8);
+  if (c.multaT > 0 && c.multaInfo) { const mp = multaPena(c.multaInfo[0], c.multaInfo[1]); msg('MULTA ' + mp[1] + '! ' + c.multaInfo[0] + ' KM/H NUMA ' + c.multaInfo[1] + ' • +' + mp[0] + ' S', cx, v.y + v.h * 0.42, '#ff5a4a', 8); }
+  else if (c.tomboT > 0) msg('TOMBO! +' + PENA_TOMBO + ' S NO TEMPO', cx, v.y + v.h * 0.42, '#ff9a3a', 8);
   if (contagem > 0) {
     const n = Math.ceil(contagem);
     if (n <= 3) { const esc = 1 + (contagem % 1) * 0.6; ctx.save(); ctx.translate(cx, cy); ctx.scale(esc, esc); txt(String(n), 0, -T, '#ffd23a', T * 2, 'c'); ctx.restore(); }
@@ -1833,7 +1889,7 @@ function telaResultado() {
         const ret = IMG[h.def.retrato]; ctx.fillStyle = h.ouro ? '#ffd23a' : '#ff6a00'; ctx.fillRect(W / 2 - 51, 51, 102, 102); if (ret) ctx.drawImage(ret, W / 2 - 48, 54, 96, 96);
         txt(fmtTempo(h.tempo), W / 2, 168, '#fff', 32, 'c');
         txt(novo ? (rec == null ? 'PRIMEIRO RECORDE! FANTASMA GRAVADO' : 'NOVO RECORDE! -' + (rec - h.tempo).toFixed(1) + ' S') : 'RECORDE: ' + fmtTempo(rec) + '  (+' + (h.tempo - rec).toFixed(1) + ' S)', W / 2, 210, novo ? '#4ef03a' : '#ffb0a0', 8, 'c');
-        txt(plural(h.multas, 'MULTA') + ' (+' + h.penal + ' S) • ' + plural(h.batidas, 'TOMBO') + ' • ' + plural(h.buzinas, 'BUZINADA'), W / 2, 228, '#fff', 8, 'c');
+        txt(plural(h.multas, 'MULTA') + ' • ' + plural(h.batidas, 'TOMBO') + ' (+' + h.penal + ' S) • ' + plural(h.buzinas, 'BUZINADA'), W / 2, 228, '#fff', 8, 'c');
       } else {
         const pod = [[1, W / 2 - 60, 120], [0, W / 2 - 180, 100], [2, W / 2 + 60, 80]];
         pod.forEach(([i, x, hgt], kk) => {
@@ -2174,6 +2230,7 @@ function aplicarEstado(m) {
     if (cliPrimeiro) { c.z = c.zRec; c.x = c.xRec; c.cx = c.x * ROAD; }
     if (c !== eu) return;
     if (c.crash > 0 && antes.crash <= 0) { SOM.batida(); tremor[c.humano] = 0.5; for (let k = 0; k < 26; k++) emitir(c.humano, 'faisca'); if (navigator.vibrate && guardar.ler('vibrar', true)) navigator.vibrate([60, 40, 120]); }
+    if (c.batidas > antes.batidas) c.tomboT = 2.4;
     if (c.multas > antes.multas) { SOM.flash(); setTimeout(SOM.multa, 250); flashT[c.humano] = 0.4; c.multaT = 2.6; c.multaInfo = [Math.round(c.v / KMH), a[23]]; }
     if (!!c.abast !== antes.ab) SOM.bomba(!!c.abast);
     if (c.fim && !antes.fim) SOM.chegada();

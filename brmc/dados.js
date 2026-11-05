@@ -58,7 +58,7 @@ window.DADOS = (function () {
   // McNAMARA usa 100% da velocidade da moto; ROIA usa 92% -> gasta menos e faz curva melhor.
   // Curva e consumo saem da velocidade que o piloto usa: quanto mais rápido, pior de curva e mais gastão.
   const MOTO = { jellison: [195, 4.4], leosao: [202, 4.1], jefao: [230, 3.4], lucas: [230, 3.4], fabinho: [232, 3.4], pescoco: [230, 3.4], henrique: [205, 4.0],
-    cezar: [225, 3.6], cleimar: [225, 3.6], mazinho: [225, 3.6], samuca: [215, 3.9], alan: [190, 4.2], ramon: [185, 5.2], adriano: [224, 3.3], samuel: [230, 3.4] };
+    cezar: [225, 3.6], cleimar: [225, 3.6], mazinho: [225, 3.6], samuca: [215, 3.9], alan: [190, 4.2], ramon: [185, 5.2], adriano: [215, 3.3], samuel: [230, 3.4] };
   const ROIA_FRAC = 0.92, V0 = 170, V1 = 232;
   const lim = (v, a, b) => Math.max(a, Math.min(b, v));
   const economiaDe = vel => { const alc = 0.82 - (vel - V0) / (V1 - V0) * 0.37; return (1.4 - 0.5 / alc) / 0.85; };   // alcance: 82% (lento) a 45% (mais rápido)
@@ -72,6 +72,7 @@ window.DADOS = (function () {
     p.ritmo = p.perfil === 'ROIA' ? 0.99 : 1.0;
   }
   { const j = PERSONAGENS.find(p => p.id === 'jellison'), a = PERSONAGENS.find(p => p.id === 'alan'); if (j && a) j.economia = a.economia; }   // Versys = mesma economia da F 750
+  { const ad = PERSONAGENS.find(p => p.id === 'adriano'); if (ad) ad.economia = lim(Math.min.apply(null, PERSONAGENS.filter(p => p !== ad).map(p => p.economia)) - 0.06, 0.2, 0.97); }   // MT-09: tanque pequeno e bem gastadeira = pior economia
 
   // ------------------------------------------------------------------ VIAGEM 1
   // Cada trecho: { n: segmentos, c: curva (- esq / + dir), m: subida/descida, z: zona, t: 'S' via simples | 'D' pista dupla }
@@ -206,6 +207,7 @@ window.DADOS = (function () {
     radar: ['Radar à frente! Segura o McNamara aí!', 'Olha o radar, turma! Respeita a placa!'],
     radar_oculto: ['Radar escondido atrás da árvore! Isso é covardia!', 'Tinha radar escondido! Quem passou voando já era!'],
     buzina: ['Bi-bi! Abre caminho que o Black Rock vem aí!', 'Que buzina é essa, {alvo}? Parece pato!'],
+    fechado: ['O caminhoneiro FECHOU o {alvo}! Buzinou, levou!', 'Eita! A carreta jogou pra cima do {alvo}! Segura, peão!', '{alvo} buzinou e o caminhão fechou a ultrapassagem! Paciência, irmão!'],
     xingado: ['O caminhoneiro xingou o {alvo}! Carreta não sai da frente, não!', '{alvo}, buzinar pra carreta é pedir pra ser xingado!', 'Kkkk o caminhoneiro mandou o {alvo} buzinar pra mãe dele!', 'Paciência, {alvo}! Caminhão não abre, ultrapassa com cuidado!'],
     abre_passagem: ['Calma, {alvo}! Já tô saindo da frente!', 'Tá bom, tá bom, {alvo}! Passa aí, apressado!', 'Abri o corredor pro {alvo}! Vai com Deus!', 'Opa, {alvo}! Pode passar, a estrada é sua!'],
     chuva: ['Começou a chover na serra! Devagar nas curvas!', 'Chuva! Quem esqueceu a capa levanta a mão!', 'Asfalto molhado, freia com carinho, rapaziada!'],
