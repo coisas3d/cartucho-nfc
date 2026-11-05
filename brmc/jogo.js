@@ -3,7 +3,7 @@
  */
 'use strict';
 (function () {
-const { PERSONAGENS, VIAGENS, CONQUISTAS, FALAS, SOBRE, DE } = window.DADOS;
+const { PERSONAGENS, VIAGENS, CONQUISTAS, FALAS, SOBRE, DE, PUXA } = window.DADOS;
 const SOM = window.SOM, A = window.ARTE;
 
 // ============================================================ CONSTANTES
@@ -85,7 +85,7 @@ addEventListener('resize', ajustarTela); addEventListener('orientationchange', (
 
 // ============================================================ IMAGENS
 const NOMES = ['piloto', 'piloto_leosao', 'piloto_gs1300', 'foto_versys', 'foto_gs850', 'foto_gs1300', 'retrato_jellison', 'retrato_leosao',
-  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a', 'piloto_cezar', 'piloto_cleimar', 'foto_adv_prata', 'foto_adv_preto', 'retrato_cezar', 'retrato_cleimar'];
+  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a', 'piloto_cezar', 'piloto_cleimar', 'foto_adv_prata', 'foto_adv_preto', 'retrato_cezar', 'retrato_cleimar', 'piloto_mazinho', 'foto_adv40', 'retrato_mazinho'];
 const IMG = {};
 function carregar(prog) {
   let n = 0;
@@ -463,11 +463,11 @@ function pilotoIA(c, seg) {
   }
   let curvaMax = 0;
   for (let j = 0; j < 36; j += 3) curvaMax = Math.max(curvaMax, Math.abs(segs[Math.min(seg.i + j, segs.length - 1)].curva));
-  if (curvaMax > 0.5) alvoV = Math.min(alvoV, c.max * clamp(0.95 / (curvaMax * 0.4 * (1.15 - 0.35 * c.curva)), 0.55, 1) * (1 - 0.12 * chuvaEm(c.z)));
+  if (curvaMax > 0.5) alvoV = Math.min(alvoV, c.max * clamp((c.def.imprudente ? 1.12 : 0.95) / (curvaMax * 0.4 * (1.15 - 0.35 * c.curva)), 0.55, 1) * (1 - 0.12 * chuvaEm(c.z)));
   // radar: os McNamaras às vezes ignoram a placa...
   const RD = RADARES.find(r => r.z > c.z && r.z - c.z < 75 * SEG);
   if (RD && !c.fim) {
-    if (ia.radarK !== RD.k) { ia.radarK = RD.k; ia.ignora = Math.random() < (c.def.perfil === 'McNAMARA' ? 0.4 : 0.12); }
+    if (ia.radarK !== RD.k) { ia.radarK = RD.k; ia.ignora = Math.random() < (c.def.imprudente ? 0.8 : c.def.perfil === 'McNAMARA' ? 0.4 : 0.12); }
     if (!ia.ignora && !RD.oculto) alvoV = Math.min(alvoV, (RD.lim - 3) * KMH);
   }
   // combustível
@@ -788,6 +788,11 @@ function falante(excluir) {
 }
 function falar(tipo, alvo, quem) {
   if (demo || radio.fila.length > 2) return;
+  // o Mazinho pega o rádio pra puxar o saco do Fabinho Mecânico
+  if (!quem && alvo && alvo.def.id === 'fabinho' && PUXA && PUXA[tipo] && Math.random() < 0.55) {
+    const maz = corredores.find(c => c.def.id === 'mazinho' && c !== alvo);
+    if (maz) { radio.fila.push({ quem: maz, texto: pick(PUXA[tipo]), t: 0 }); return; }
+  }
   quem = quem || falante(alvo); if (!quem) return;
   tipo = (VIAGEM.falas && VIAGEM.falas[tipo]) || tipo;
   const op = [];
@@ -831,6 +836,8 @@ function eventosRadio(dt) {
   geralT -= dt;
   if (geralT <= 0) {
     geralT = rnd(20, 32);
+    const maz = corredores.find(c => c.def.id === 'mazinho'), fab = corredores.find(c => c.def.id === 'fabinho');
+    if (maz && fab && Math.random() < 0.35 && !radio.atual && !radio.fila.length) { radio.fila.push({ quem: maz, texto: pick(PUXA.geral), t: 0 }); return; }
     const alvo = pick(corredores), quem = falante(alvo), so = alvo.def.id && SOBRE[alvo.def.id], de = quem && quem.def.id && DE[quem.def.id];
     const op = [].concat(so && so.geral || [], de && de.geral || []);
     if (op.length && !radio.atual && !radio.fila.length) radio.fila.push({ quem, texto: pick(op).replace(/\{alvo\}/g, alvo.nome), t: 0 });
@@ -1289,7 +1296,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v3.7', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v3.8', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }

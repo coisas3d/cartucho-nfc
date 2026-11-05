@@ -32,7 +32,10 @@ window.DADOS = (function () {
       vel: 220, acel: 0.89, economia: 0.58, curva: 0.86, capacete: '#9ca0a8', curto: 'CEZAR' },
     { id: 'cleimar', nome: 'CLEIMAR', moto: 'BRMC GS 1250 ADV TRIPLE BLACK', cc: 1254, tanque: 30, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.0,
       sprite: 'piloto_cleimar', foto: 'foto_adv_preto', tampa: [0.44, 0.27], retrato: 'retrato_cleimar', voz: 150,
-      vel: 220, acel: 0.91, economia: 0.58, curva: 0.84, capacete: '#222226', curto: 'CLEIMAR' }
+      vel: 220, acel: 0.91, economia: 0.58, curva: 0.84, capacete: '#222226', curto: 'CLEIMAR' },
+    { id: 'mazinho', nome: 'MAZINHO', moto: 'BRMC GS 1250 ADV 40 ANOS', cc: 1254, tanque: 30, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.05, imprudente: true,
+      sprite: 'piloto_mazinho', foto: 'foto_adv40', tampa: [0.44, 0.28], retrato: 'retrato_mazinho', voz: 175,
+      vel: 226, acel: 0.97, economia: 0.52, curva: 0.60, capacete: '#1c1c20', curto: 'MAZINHO' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -317,6 +320,23 @@ window.DADOS = (function () {
       pagador_espera: ['Cleimar chegou primeiro no pedágio e tá fazendo joinha pra cada um que chega!'],
       esperando_pagador: ['Esperando o Cleimar... alguém viu um joinha vindo lá atrás?']
     },
+    mazinho: {
+      geral: ['Mazinho pilota igual dirige carrinho de bate-bate!', 'Mazinho, curva não é reta, irmão! Freia!', 'Mazinho de óculos escuro: não enxerga a curva, mas fica bonito na foto!',
+        'O Mazinho acelera em tudo, menos na hora de pagar a conta!', 'Mazinho é o único que faz a curva por fora... do asfalto!', 'Mazinho, para de puxar o saco do Fabinho e olha a estrada!'],
+      lider: ['Mazinho na frente! Alguém reza por ele!', 'O Mazinho disparou... olha a curva, Mazinho!'],
+      lanterna: ['Mazinho lá atrás? Errou a curva de novo!', 'Cadê o Mazinho? Foi parar no pasto!'],
+      ultrapassou: ['Mazinho passou raspando! Que susto!', 'Lá vai o Mazinho sem freio nenhum!'],
+      batida: ['Mazinho caiu! Novidade nenhuma!', 'De novo, Mazinho?! Essa moto já conhece o asfalto de perto!', 'Mazinho caiu e já tá chamando o Fabinho Mecânico!'],
+      reserva: ['Mazinho na reserva! Acelerando desse jeito, o tanque nem sabe o que é cheio!'],
+      abastecendo: ['Mazinho abastecendo... de novo! A Adventure 40 anos bebe que nem ele!', 'Mazinho no posto, contando piada pro frentista!'],
+      pedagio: ['Mazinho, freia que a cancela é de ferro!'],
+      multa: ['Mazinho multado! Já é o cliente VIP do radar!', 'Mazinho tomou mais uma! Essa CNH tá por um fio!', 'Flash no Mazinho! Ele fez pose de óculos escuro!'],
+      buzina: ['Mazinho buzinando sem parar! Parece criança com brinquedo novo!'],
+      chuva: ['Chuva e Mazinho no mesmo lugar? Socorro!'],
+      pagador: ['Mazinho paga o pedágio! Milagre, ele nunca paga nada!', 'Sorteio: Mazinho é o pagador! Já tá pedindo pro Fabinho Mecânico pagar pra ele!'],
+      pagador_espera: ['Mazinho chegou voando no pedágio, quase levou a cancela, e agora espera a turma!'],
+      esperando_pagador: ['Esperando o Mazinho... deve ter errado a curva!']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -336,6 +356,18 @@ window.DADOS = (function () {
     }
   };
   // falas DITAS por cada membro
+  // MAZINHO puxando o saco do FABINHO MECÂNICO (aparece quando o Fabinho é o assunto)
+  const PUXA = {
+    geral: ['Fabinho Mecânico é o maior piloto de Minas Gerais! Do Brasil! Do mundo!', 'Fabinho, quando eu crescer quero ser igual a você!'],
+    ultrapassou: ['Isso, Fabinho! Mostra pra esses Roias quem manda!', 'Que pilotagem, Fabinho! Parece MotoGP!', 'Passa por cima, Fabinho! Kkkk'],
+    passou_voce: ['Pode passar, Fabinho, você merece! Abre espaço pro mestre!'],
+    lider: ['Fabinho na frente, como sempre! Ninguém chega aos pés do mestre!', 'Esse é o meu ídolo! Vai, Fabinho!'],
+    batida: ['O Fabinho não caiu, ele fez uma parada técnica!', 'Ninguém viu nada! O Fabinho só deitou a moto pra testar o pneu!'],
+    abastecendo: ['Fabinho abastecendo com estilo! Até a bomba fica mais bonita!'],
+    multa: ['O radar tá errado! O Fabinho nunca passa do limite... muito!'],
+    pagador: ['Deixa que eu pago o do Fabinho! ...brincadeira, paga aí, Fabinho!'],
+    chegada: ['Fabinho chegou! Palmas pro mestre!']
+  };
   const DE = {
     leosao: {
       largada: ['Combinado era 8h! Já são 8h01, tá todo mundo atrasado!', 'Oremos... e acelera!'],
@@ -395,6 +427,16 @@ window.DADOS = (function () {
       batida: ['{alvo}, tá tudo bem? Faz um joinha aí!'],
       geral: ['Tá tudo joinha por aí, galera?']
     },
+    mazinho: {
+      largada: ['Sai da frente que o Mazinho chegou! Bora, Fabinho, mostra pra eles!', 'Freio é pra quem tem medo! Bora!'],
+      passou_voce: ['Tchau, {alvo}! Vai de bicicleta da próxima vez!', 'Passei por dentro, {alvo}! Ou por fora, sei lá!', 'Roia! Roia! Roia! Kkkkk'],
+      ultrapassou: ['Passou porque eu deixei, {alvo}! Só o Fabinho pode me passar!', 'Aproveita, {alvo}, que eu tô brincando!'],
+      batida: ['Kkkkk {alvo} beijou o chão! Isso nem eu faço... tá, eu faço sempre!', 'Filmei, {alvo}! Já mandei no grupo!'],
+      lanterna: ['{alvo}, quer que eu volte pra te rebocar?'],
+      reserva: ['Alguém tem gasolina pra emprestar? Prometo que pago... um dia!'],
+      geral: ['Fabinho Mecânico é o melhor piloto desse clube, o resto é Roia!', 'Fabinho, depois dá uma olhada na minha moto? Tá fazendo um barulho... é o motor gritando!',
+        'Galera, viram o grupo? Mandei meme de todo mundo!']
+    },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],
       passou_voce: ['Passei, {alvo}! Preciso voltar cedo!'],
@@ -403,5 +445,5 @@ window.DADOS = (function () {
     }
   };
 
-  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE };
+  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE, PUXA };
 })();
