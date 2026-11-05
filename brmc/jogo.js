@@ -18,7 +18,7 @@ const SALA = params.get('sala'), DEV2P = params.get('dev2p') === '1';
 window.FONTE_TESTE = params.get('fonteteste') === '1';
 // RANKING GLOBAL: endereço do Cloudflare Worker (veja servidor/worker.js). Vazio = só lê o ranking.json do site
 const RANKING_GLOBAL = params.get('rank') || 'https://brmc-ranking.coisas3d-contato.workers.dev';
-const VERSAO_JOGO = '5.2';                 // mostrada nas telas de abertura e inicial (mude junto com o sw.js)
+const VERSAO_JOGO = (window.INFO && INFO.versao) || '?';   // vem do histórico em info.js (mude junto com o sw.js)
 const LINK_JOGO = location.origin + location.pathname;
 let MODO = 'viagem';                       // viagem | cafe | relogio
 let CLIMA = { tipo: 'sol' };               // sol | chuva | neblina (na serra)
@@ -390,6 +390,7 @@ const TECLAS = { ArrowLeft: [0, 'esq'], ArrowRight: [0, 'dir'], ArrowUp: [0, 'ac
   KeyH: [0, 'buzina'], KeyB: [0, 'buzina'], KeyA: [1, 'esq'], KeyD: [1, 'dir'], KeyW: [1, 'acel'], KeyS: [1, 'freio'], KeyE: [1, 'buzina'] };
 addEventListener('keydown', e => {
   if (e.target && e.target.tagName === 'INPUT') return;
+  if (window.INFO && INFO.aberto()) { if (e.code === 'Escape') INFO.fechar(); return; }
   SOM.iniciar();
   const t = TECLAS[e.code]; if (!t) { if (e.code === 'Escape' || e.code === 'KeyP') alternarPausa(); return; }
   if (t[0] === 1 && !DEV2P && !p2Conectado) return;
@@ -1338,6 +1339,7 @@ function seloVersao() {
   const r = 'VERSÃO ' + VERSAO_JOGO, w = r.length * 8 + 16, x = W - w - 8, y = 8;
   ctx.save(); caminhoArred(ctx, x, y, w, 18, 9); ctx.fillStyle = 'rgba(8,10,14,0.85)'; ctx.fill(); ctx.strokeStyle = '#ff6a00'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
   txt(r, x + w / 2, y + 5, '#ffffff', 8, 'c', false);
+  txt('DESENVOLVIDO POR COISAS 3D', W - 10, H - 14, '#9a9aa4', 8, 'd', false);
 }
 function telaAbertura() {
   return {
@@ -1365,7 +1367,10 @@ const MENU = [
   ['CONTRA O RELÓGIO', 'SOZINHO CONTRA O SEU FANTASMA', () => iniciarModo('relogio')],
   ['2 JOGADORES', 'TELA DIVIDIDA • O CELULAR DO AMIGO VIRA CONTROLE', () => { MODO = 'viagem'; usarViagem(VIAGENS[0]); doisJogadores(); }],
   ['RECORDES', 'RANKING E CONQUISTAS', () => irPara(telaRecordes())],
-  ['OPÇÕES', 'MÚSICA, EFEITOS E VIBRAÇÃO', () => irPara(telaOpcoes())]
+  ['OPÇÕES', 'MÚSICA, EFEITOS E VIBRAÇÃO', () => irPara(telaOpcoes())],
+  ['COMO JOGAR', 'CONTROLES, PEDÁGIOS, RADARES, 2 JOGADORES E RANKING', () => INFO.abrir('jogar')],
+  ['NOVIDADES', 'O QUE MUDOU EM CADA VERSÃO DO JOGO', () => INFO.abrir('novidades')],
+  ['SOBRE', 'DESENVOLVIDO PELA COISAS 3D • INSTAGRAM E WHATSAPP', () => INFO.abrir('sobre')]
 ];
 let menuSel = params.get('cafe') === '1' ? 1 : 0;
 function iniciarModo(m) { MODO = m; usarViagem(m === 'cafe' ? VIAGENS[1] : VIAGENS[0]); irPara(telaSelecao(1)); }
@@ -1383,15 +1388,15 @@ function telaTitulo() {
       renderVista(0, { x: 0, y: 0, w: W, h: H }, corredores[0], 0);
       const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(0,0,0,0.78)'); g.addColorStop(0.5, 'rgba(0,0,0,0.3)'); g.addColorStop(1, 'rgba(0,0,0,0.88)');
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-      logo(W / 2, 76, 0.9 + Math.sin(tempoReal * 1.5) * 0.02);
-      txt('BLACK ROCK MC', W / 2, 140, '#ffffff', 32, 'c', '#7a2a00');
-      txt('THE GAME', W / 2, 180, '#ff6a00', 16, 'c');
+      logo(W / 2, 64, 0.78 + Math.sin(tempoReal * 1.5) * 0.02);
+      txt('BLACK ROCK MC', W / 2, 122, '#ffffff', 32, 'c', '#7a2a00');
+      txt('THE GAME', W / 2, 162, '#ff6a00', 16, 'c');
       alvosToque = [];
-      MENU.forEach(([r, , fn], i) => botao(27 + (i % 3) * 198, 216 + Math.floor(i / 3) * 38, 190, 30, r, () => { menuSel = i; SOM.confirma(); fn(); }, i === menuSel, i === 1 ? '#4a2c16' : null));
-      txt(p2Conectado ? 'JOGADOR 2 CONECTADO' : MENU[menuSel][1], W / 2, 304, p2Conectado ? '#4ef03a' : '#c8c8d2', 8, 'c');
+      MENU.forEach(([r, , fn], i) => botao(27 + (i % 3) * 198, 202 + Math.floor(i / 3) * 33, 190, 27, r, () => { menuSel = i; SOM.confirma(); fn(); }, i === menuSel, i === 1 ? '#4a2c16' : null));
+      txt(p2Conectado ? 'JOGADOR 2 CONECTADO' : MENU[menuSel][1], W / 2, 306, p2Conectado ? '#4ef03a' : '#c8c8d2', 8, 'c');
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
-      if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
+      if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 324, '#ffd23a', 8, 'c');
       seloVersao();
     }
   };
