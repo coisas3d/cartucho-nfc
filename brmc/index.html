@@ -87,6 +87,7 @@
   #qr { display: flex; justify-content: center; align-items: center; width: 196px; height: 196px; margin: 14px auto;
     background: #fff; border-radius: 14px; }
   #qr img, #qr canvas { width: 172px; height: 172px; }
+  #convite-codigo { margin-top: 10px; font: 16px 'Press Start 2P', monospace; letter-spacing: 0.15em; color: #fff; }
   #convite-status { margin-top: 4px; color: var(--verde); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; }
   .caixa button { margin-top: 12px; border: 0; border-radius: 999px; padding: 10px 26px; font-weight: 900; letter-spacing: 0.12em;
     background: var(--verde); color: #000; }
@@ -148,7 +149,8 @@
   <div class="caixa">
     <div id="qr"></div>
     <h2>Convide o Jogador 2</h2>
-    <p>Peça para o seu parceiro escanear o QR code com a câmera do celular. O celular dele vira o controle do P2.</p>
+    <p>Peça para o seu parceiro escanear o QR code com a câmera do celular. Mantenha esta tela aberta até ele conectar.</p>
+    <div id="convite-codigo"></div>
     <div id="convite-status">GERANDO CONVITE...</div>
     <button type="button" id="fechar-convite">FECHAR</button>
   </div>
