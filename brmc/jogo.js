@@ -85,7 +85,7 @@ addEventListener('resize', ajustarTela); addEventListener('orientationchange', (
 
 // ============================================================ IMAGENS
 const NOMES = ['piloto', 'piloto_leosao', 'piloto_gs1300', 'foto_versys', 'foto_gs850', 'foto_gs1300', 'retrato_jellison', 'retrato_leosao',
-  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique'];
+  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a'];
 const IMG = {};
 function carregar(prog) {
   let n = 0;
@@ -408,7 +408,7 @@ const tempoTanque = def => 2 + Math.pow((def.cc || 800) / 250, 1.4);   // segund
 
 function criarCorredor(def, humano) {
   const max = def.vel * KMH, ouro = humano >= 0 && !demo && usaOuro(def);
-  return { nome: def.nome, def, img: spriteMoto(def, ouro), ouro, max, acelB: max / (7.2 - def.acel * 3.4), consumo: 1.4 - def.economia * 0.85, curva: def.curva,
+  return { nome: def.nome, def, img: spriteMoto(def, ouro), ouro, max, acelB: 205 * KMH / (7.2 - def.acel * 3.4), consumo: 1.4 - def.economia * 0.85, curva: def.curva,
     z: 0, x: 0, v: 0, lean: 0, susp: 0, suspV: 0, crash: 0, giro: 0, comb: 100, fim: false, tempo: null, humano, auto: humano < 0,
     marcha: 1, troca: 0, rpm: 0, vacuoT: 0, vacuo: false, gas: 0, freando: false, abast: null, postoLivre: true, bg: 0, cx: 0, roll: 0,
     fora: false, rasp: 0, reservaDita: false, pag: {}, pagT: 0, abriu: 0, penal: 0, multas: 0, multaT: 0, radarOk: {}, buzinas: 0, buzT: 0, abastecidas: 0, molhado: 0, ia: { skill: (def.ritmo || 0.9) + rnd(-0.02, 0.02), faixa: pick([0.5, 0.35, 0.65]), encher: 0 } };
@@ -1289,7 +1289,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v3.5', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v3.6', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
