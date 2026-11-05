@@ -24,21 +24,47 @@
   #hi { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 2; }
   body.controle #hi { display: none; }
 
-  /* controles de toque (P1) */
+  /* ================= CONTROLES DE TOQUE PREMIUM (P1 e celular do P2) ================= */
   #controles { display: none; position: fixed; inset: 0; z-index: 10; pointer-events: none; }
   #controles.on { display: block; }
   .bt, .pilula, .caixa, #toast, #girar b { font-family: 'Press Start 2P', system-ui, sans-serif; }
-  .bt { font-size: 10px; }
-  .bt { position: absolute; pointer-events: auto; display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; border: 2px solid rgba(255,255,255,0.55); background: rgba(0,0,0,0.28); color: #fff;
-    font-weight: 900; letter-spacing: 0.06em; font-size: 13px; box-sizing: border-box; touch-action: none;
-    -webkit-tap-highlight-color: transparent; text-shadow: 0 1px 2px #000; }
-  .bt.press { background: var(--verde); border-color: var(--verde); color: #000; text-shadow: none; }
-  .bt svg { width: 46%; height: 46%; fill: currentColor; }
-  #b-esq { left: calc(14px + env(safe-area-inset-left)); bottom: 16px; width: 84px; height: 84px; }
-  #b-dir { left: calc(110px + env(safe-area-inset-left)); bottom: 16px; width: 84px; height: 84px; }
-  #b-acel { right: calc(14px + env(safe-area-inset-right)); bottom: 16px; width: 100px; height: 100px; border-color: var(--verde); }
-  #b-freio { right: calc(124px + env(safe-area-inset-right)); bottom: 12px; width: 72px; height: 72px; border-color: #e33; }
+  .pad { --u: clamp(62px, 19vmin, 94px); --sa-l: env(safe-area-inset-left); --sa-r: env(safe-area-inset-right); --sa-b: env(safe-area-inset-bottom); }
+  .vidro { background: radial-gradient(120% 120% at 30% 18%, rgba(255,255,255,0.20), rgba(255,255,255,0) 44%), linear-gradient(160deg, rgba(44,47,56,0.80), rgba(9,10,13,0.90));
+    border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 10px 26px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.26), inset 0 -10px 18px rgba(0,0,0,0.45);
+    -webkit-backdrop-filter: blur(8px) saturate(1.2); backdrop-filter: blur(8px) saturate(1.2); }
+  .bt { position: absolute; pointer-events: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    box-sizing: border-box; touch-action: none; -webkit-tap-highlight-color: transparent; color: #f4f4f4; font-size: 7px; letter-spacing: 0.08em;
+    transition: transform 0.07s ease, box-shadow 0.12s ease, background 0.12s ease; --cor: 255,255,255; }
+  .bt svg { width: 42%; height: 42%; overflow: visible; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.7)); }
+  .bt span { text-shadow: 0 1px 2px #000; opacity: 0.9; }
+  .redondo { border-radius: 50%; }
+  .redondo::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; border: 2px solid rgba(var(--cor), 0.55);
+    box-shadow: 0 0 10px rgba(var(--cor), 0.35), inset 0 0 10px rgba(var(--cor), 0.18); pointer-events: none; transition: all 0.12s ease; }
+  .bt.press { transform: scale(0.93); color: #fff; }
+  .redondo.press { background: radial-gradient(100% 100% at 50% 40%, rgba(var(--cor), 0.95), rgba(var(--cor), 0.45) 60%, rgba(20,10,5,0.9));
+    box-shadow: 0 0 28px rgba(var(--cor), 0.75), inset 0 2px 0 rgba(255,255,255,0.35); }
+  .redondo.press::after { border-color: rgba(255,255,255,0.9); box-shadow: 0 0 16px rgba(var(--cor), 0.9); }
+  .acel { --cor: 255,106,0; width: calc(var(--u) * 1.3); height: calc(var(--u) * 1.3); right: calc(16px + var(--sa-r)); bottom: calc(14px + var(--sa-b)); font-size: 8px; }
+  .freio { --cor: 232,50,42; width: calc(var(--u) * 0.92); height: calc(var(--u) * 0.92); right: calc(16px + var(--u) * 1.3 + 14px + var(--sa-r)); bottom: calc(10px + var(--sa-b)); }
+  /* buzina: acima do volante, no lado esquerdo (como no guidão de verdade) */
+  .buzina { --cor: 255,210,58; width: calc(var(--u) * 0.68); height: calc(var(--u) * 0.68); left: calc(16px + var(--u) * 0.84 + var(--sa-l)); bottom: calc(14px + var(--u) + 12px + var(--sa-b)); font-size: 5px; gap: 2px; }
+  .buzina svg { width: 46%; height: 46%; }
+  /* volante: cápsula com esquerda/direita */
+  .volante { position: absolute; pointer-events: auto; border-radius: 999px; height: var(--u); width: calc(var(--u) * 2.35);
+    left: calc(16px + var(--sa-l)); bottom: calc(14px + var(--sa-b)); display: flex; overflow: hidden; }
+  .volante::before { content: ''; position: absolute; left: 50%; top: 18%; bottom: 18%; width: 1px; background: linear-gradient(transparent, rgba(255,255,255,0.35), transparent); }
+  .volante::after { content: ''; position: absolute; inset: 4px; border-radius: 999px; border: 2px solid rgba(120,190,255,0.35); pointer-events: none; }
+  .meia { position: relative; flex: 1; height: 100%; --cor: 120,190,255; }
+  .meia.press { background: radial-gradient(80% 90% at 50% 50%, rgba(var(--cor), 0.75), rgba(var(--cor), 0.12) 70%, transparent); transform: none; }
+  .meia.press svg { transform: scale(0.9); }
+  /* celular em pé: jogo em cima, controles grandes embaixo */
+  body.vertical .pad, body.controle .pad { --u: clamp(70px, 23vw, 112px); }
+  body.vertical .acel { right: calc(6vw + var(--sa-r)); bottom: calc(7vh + var(--sa-b)); }
+  body.vertical .freio { right: calc(6vw + var(--u) * 0.19 + var(--sa-r)); bottom: calc(7vh + var(--u) * 1.3 + 16px + var(--sa-b)); }
+  body.vertical .volante { left: calc(5vw + var(--sa-l)); bottom: calc(7vh + var(--u) * 0.15 + var(--sa-b)); width: calc(var(--u) * 2.2); }
+  body.vertical .buzina { left: calc(5vw + var(--u) * 0.76 + var(--sa-l)); bottom: calc(7vh + var(--u) * 1.15 + 14px + var(--sa-b)); }
+  body.vertical #btn-pausa { top: calc(10px + env(safe-area-inset-top)); left: auto; right: 12px; transform: none; }
+  body.vertical { background: radial-gradient(ellipse at 50% 100%, rgba(255,106,0,0.16), rgba(0,0,0,0) 60%), #000; }
 
   .pilula { position: fixed; z-index: 20; display: none; border: 1px solid rgba(255,255,255,0.6); border-radius: 999px;
     background: rgba(0,0,0,0.55); color: #fff; font: 800 11px/1 system-ui, sans-serif; letter-spacing: 0.14em;
@@ -47,7 +73,8 @@
   #btn-convidar { top: 10px; left: 50%; transform: translateX(-50%); border-color: var(--verde); }
   #btn-convidar::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%;
     background: var(--verde); box-shadow: 0 0 8px var(--verde); vertical-align: 1px; }
-  #btn-pausa { top: 6px; left: 50%; transform: translateX(-50%); padding: 7px 14px; }
+  #btn-pausa { top: 6px; left: 50%; transform: translateX(-50%); width: 40px; height: 32px; padding: 0; border-radius: 999px; font-size: 10px;
+    background: linear-gradient(160deg, rgba(44,47,56,0.85), rgba(9,10,13,0.92)); border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25); }
   #btn-som { top: 10px; right: calc(10px + env(safe-area-inset-right)); }
 
   /* convite P2 */
@@ -71,20 +98,22 @@
   #toast { display: none; position: fixed; top: 48px; left: 50%; transform: translateX(-50%); z-index: 60; padding: 10px 18px;
     border-radius: 999px; background: var(--verde); color: #000; font-weight: 900; font-size: 12px; letter-spacing: 0.12em; }
 
+  /* nome para o ranking */
+  #nome-modal { display: none; position: fixed; inset: 0; z-index: 55; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+  #nome-modal.on { display: flex; }
+  #nome-modal .caixa { border-color: #ff6a00; box-shadow: 0 0 40px rgba(255,106,0,0.35); display: block; text-align: center; max-width: 420px; }
+  #nome-modal h2 { color: #ffd23a; font-size: 14px; line-height: 1.5; }
+  #nome-modal p { font-size: 9px; line-height: 1.8; margin-bottom: 12px; color: #c8c8d2; }
+  #nome-input { font: 16px 'Press Start 2P', monospace; width: 100%; box-sizing: border-box; padding: 12px; text-align: center; text-transform: uppercase;
+    background: #000; color: #fff; border: 2px solid #ff6a00; border-radius: 10px; outline: none; user-select: text; -webkit-user-select: text; }
+  #nome-modal button { font-family: 'Press Start 2P', monospace; font-size: 10px; background: #ff6a00; margin: 14px 6px 0; }
+  #nome-modal button.sec { background: #333; color: #ddd; }
   /* aviso de orientação */
   #girar { display: none; position: fixed; inset: 0; z-index: 100; background: #000; flex-direction: column; align-items: center;
     justify-content: center; text-align: center; gap: 14px; padding: 24px; box-sizing: border-box; }
   #girar img { width: 110px; height: 110px; image-rendering: pixelated; }
   #girar b { font-size: 20px; letter-spacing: 0.08em; }
   #girar span { color: var(--cinza); font-size: 14px; max-width: 320px; }
-  /* celular em pé: jogo em cima, botões grandes embaixo */
-  body.vertical #b-esq { width: 112px; height: 112px; left: 5vw; bottom: calc(8vh + env(safe-area-inset-bottom)); }
-  body.vertical #b-dir { width: 112px; height: 112px; left: calc(5vw + 124px); bottom: calc(8vh + env(safe-area-inset-bottom)); }
-  body.vertical #b-acel { width: 128px; height: 128px; right: 5vw; bottom: calc(8vh + 70px + env(safe-area-inset-bottom)); }
-  body.vertical #b-freio { width: 96px; height: 96px; right: calc(5vw + 16px); bottom: calc(4vh + env(safe-area-inset-bottom)); }
-  body.vertical #btn-pausa { top: auto; bottom: calc(2vh + env(safe-area-inset-bottom)); }
-  body.vertical { background: radial-gradient(ellipse at 50% 100%, rgba(255,106,0,0.16), rgba(0,0,0,0) 60%), #000; }
-
   /* celular do jogador 2 (controle) */
   #p2 { display: none; position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 100%, rgba(78,196,30,0.22), rgba(0,0,0,0) 62%), #050505; }
   body.controle #p2 { display: block; }
@@ -93,13 +122,12 @@
   #p2-topo img { width: 44px; height: 44px; image-rendering: pixelated; }
   #p2-topo b { font-size: 11px; letter-spacing: 0.22em; }
   #p2-status { font-size: 11px; color: var(--cinza); letter-spacing: 0.1em; }
-  #p2 .bt { width: 108px; height: 108px; font-size: 15px; }
-  #p2-esq { left: 6%; bottom: 14%; } #p2-dir { left: calc(6% + 124px); bottom: 14%; }
-  #p2-acel { right: 6%; bottom: 14%; width: 124px !important; height: 124px !important; border-color: var(--verde); }
-  #p2-freio { right: calc(6% + 138px); bottom: 10%; width: 88px !important; height: 88px !important; border-color: #e33; }
+  body.controle .pad { --u: clamp(80px, 25vmin, 124px); }
   @media (orientation: portrait) {
-    #p2-esq { left: 8%; bottom: 40%; } #p2-dir { left: auto; right: 8%; bottom: 40%; }
-    #p2-acel { right: 8%; bottom: 8%; } #p2-freio { right: auto; left: 8%; bottom: 10%; }
+    body.controle .acel { right: 7vw; bottom: 12vh; }
+    body.controle .freio { right: calc(7vw + var(--u) * 0.19); bottom: calc(12vh + var(--u) * 1.3 + 18px); }
+    body.controle .volante { left: 6vw; bottom: calc(12vh + var(--u) * 0.15); width: calc(var(--u) * 2.1); }
+    body.controle .buzina { left: calc(6vw + var(--u) * 0.71); bottom: calc(12vh + var(--u) * 1.15 + 16px); }
   }
 </style>
 </head>
@@ -107,11 +135,11 @@
 <canvas id="tela"></canvas>
 <canvas id="hi"></canvas>
 
-<div id="controles">
-  <div class="bt" id="b-esq" data-k="esq"><svg viewBox="0 0 24 24"><path d="M16 3 6 12l10 9z"/></svg></div>
-  <div class="bt" id="b-dir" data-k="dir"><svg viewBox="0 0 24 24"><path d="M8 3l10 9-10 9z"/></svg></div>
-  <div class="bt" id="b-freio" data-k="freio">FREIO</div>
-  <div class="bt" id="b-acel" data-k="acel">ACELERA</div>
+<div id="controles" class="pad">
+  <div class="volante vidro"><div class="bt meia" id="b-esq" data-k="esq"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="bt meia" id="b-dir" data-k="dir"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  <div class="bt redondo vidro buzina" id="b-buzina" data-k="buzina"><svg viewBox="0 0 24 24"><path d="M3 9.5h3.2L12 5v14l-5.8-4.5H3z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.3 6a8.6 8.6 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>BUZINA</span></div>
+  <div class="bt redondo vidro freio" id="b-freio" data-k="freio"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><g fill="currentColor"><circle cx="12" cy="6.6" r="1"/><circle cx="17.4" cy="12" r="1"/><circle cx="12" cy="17.4" r="1"/><circle cx="6.6" cy="12" r="1"/></g><path d="M18.5 5.5l2.2-1.3 1 2.4-2.3.9z" fill="currentColor"/></svg><span>FREIO</span></div>
+  <div class="bt redondo vidro acel" id="b-acel" data-k="acel"><svg viewBox="0 0 24 24"><path d="M3.5 17a8.5 8.5 0 1 1 17 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12 17l5-6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17" r="2" fill="currentColor"/><path d="M6.5 12.5l1.2.8M12 7.5v1.4M17.5 12.5l-1.2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>ACELERA</span></div>
 </div>
 
 <button class="pilula" id="btn-pausa" type="button">II</button>
@@ -127,18 +155,27 @@
 </div>
 <div id="toast"></div>
 
+<div id="nome-modal">
+  <div class="caixa">
+    <h2>ENTROU NO RANKING!</h2>
+    <p id="nome-info"></p>
+    <input id="nome-input" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" placeholder="SEU NOME">
+    <div><button type="button" id="nome-salvar">SALVAR</button><button type="button" class="sec" id="nome-pular">PULAR</button></div>
+  </div>
+</div>
+
 <div id="girar">
   <img src="hd/emblema_128.png" alt="">
   <b>GIRE O CELULAR</b>
   <span>Black Rock MC - The Game é jogado com o celular deitado. Para tela cheia no iPhone, use Compartilhar → Adicionar à Tela de Início.</span>
 </div>
 
-<div id="p2">
+<div id="p2" class="pad">
   <div id="p2-topo"><img src="hd/emblema_64.png" alt=""><b>JOGADOR 2</b><span id="p2-status">CONECTANDO...</span></div>
-  <div class="bt" id="p2-esq" data-k="esq"><svg viewBox="0 0 24 24"><path d="M16 3 6 12l10 9z"/></svg></div>
-  <div class="bt" id="p2-dir" data-k="dir"><svg viewBox="0 0 24 24"><path d="M8 3l10 9-10 9z"/></svg></div>
-  <div class="bt" id="p2-freio" data-k="freio">FREIO</div>
-  <div class="bt" id="p2-acel" data-k="acel">ACELERA</div>
+  <div class="volante vidro"><div class="bt meia" id="p2-esq" data-k="esq"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="bt meia" id="p2-dir" data-k="dir"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  <div class="bt redondo vidro buzina" id="p2-buzina" data-k="buzina"><svg viewBox="0 0 24 24"><path d="M3 9.5h3.2L12 5v14l-5.8-4.5H3z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.3 6a8.6 8.6 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>BUZINA</span></div>
+  <div class="bt redondo vidro freio" id="p2-freio" data-k="freio"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><g fill="currentColor"><circle cx="12" cy="6.6" r="1"/><circle cx="17.4" cy="12" r="1"/><circle cx="12" cy="17.4" r="1"/><circle cx="6.6" cy="12" r="1"/></g><path d="M18.5 5.5l2.2-1.3 1 2.4-2.3.9z" fill="currentColor"/></svg><span>FREIO</span></div>
+  <div class="bt redondo vidro acel" id="p2-acel" data-k="acel"><svg viewBox="0 0 24 24"><path d="M3.5 17a8.5 8.5 0 1 1 17 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M12 17l5-6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17" r="2" fill="currentColor"/><path d="M6.5 12.5l1.2.8M12 7.5v1.4M17.5 12.5l-1.2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>ACELERA</span></div>
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js" defer></script>
