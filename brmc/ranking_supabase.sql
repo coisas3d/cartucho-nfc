@@ -9,7 +9,7 @@ create table if not exists public.ranking (
   criado timestamptz not null default now(),
   modo text not null check (modo in ('viagem', 'cafe', 'relogio')),
   nome text not null check (char_length(nome) between 1 and 10),
-  piloto text not null check (piloto in ('jellison', 'leosao', 'jefao', 'lucas', 'fabinho', 'pescoco', 'henrique', 'cezar', 'cleimar', 'mazinho')),
+  piloto text not null check (piloto in ('jellison', 'leosao', 'jefao', 'lucas', 'fabinho', 'pescoco', 'henrique', 'cezar', 'cleimar', 'mazinho', 'samuca')),
   tempo real not null check (tempo > 25 and tempo < 1200),
   multas int not null default 0 check (multas between 0 and 50)
 );

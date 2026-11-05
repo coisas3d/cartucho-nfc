@@ -35,7 +35,10 @@ window.DADOS = (function () {
       vel: 220, acel: 0.91, economia: 0.58, curva: 0.84, capacete: '#222226', curto: 'CLEIMAR' },
     { id: 'mazinho', nome: 'MAZINHO', moto: 'BRMC GS 1250 ADV 40 ANOS', cc: 1254, tanque: 30, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.05, imprudente: true,
       sprite: 'piloto_mazinho', foto: 'foto_adv40', tampa: [0.44, 0.28], retrato: 'retrato_mazinho', voz: 175,
-      vel: 226, acel: 0.97, economia: 0.52, curva: 0.60, capacete: '#1c1c20', curto: 'MAZINHO' }
+      vel: 226, acel: 0.97, economia: 0.52, curva: 0.60, capacete: '#1c1c20', curto: 'MAZINHO' },
+    { id: 'samuca', nome: 'SAMUCA', moto: 'BRMC GS 1200 ADV RALLYE', cc: 1170, tanque: 30, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
+      sprite: 'piloto_samuca', foto: 'foto_gs1200', tampa: [0.45, 0.29], retrato: 'retrato_samuca', voz: 115,
+      vel: 200, acel: 0.80, economia: 0.78, curva: 0.86, capacete: '#ee70a8', curto: 'SAMUCA' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -337,6 +340,23 @@ window.DADOS = (function () {
       pagador_espera: ['Mazinho chegou voando no pedágio, quase levou a cancela, e agora espera a turma!'],
       esperando_pagador: ['Esperando o Mazinho... deve ter errado a curva!']
     },
+    samuca: {
+      geral: ['Samuca, quanto é a corrida até Aparecida? Aceita cartão?', 'Olha o capacete rosa do Samuca! Dá pra ver lá de Itaúna!', 'Samuca tá devagar porque tá esperando o passageiro descer!',
+        'Samuca, cuidado que o aplicativo vai te dar nota baixa por demora!', 'Samuca trabalha a semana inteira de moto e no fim de semana... anda de moto!', 'Capacete rosa, GS de mototáxi: o Samuca tem estilo!'],
+      lider: ['Samuca na frente! Tem entrega com hora marcada!', 'Samuca liderando? Deve ter pegado uma corrida de última hora!'],
+      lanterna: ['Samuca lá atrás? Parou pra fazer uma entrega!', 'Cadê o Samuca? Deve ter aceitado uma corrida no caminho!', 'Samuca tá na última posição esperando a gorjeta!'],
+      ultrapassou: ['Samuca passou costurando igual no horário de pico!', 'Lá vai o capacete rosa ultrapassando!'],
+      batida: ['Samuca caiu! Alguém confere se a encomenda tá inteira!', 'Levanta, Samuca! Cliente esperando!'],
+      reserva: ['Samuca na reserva! Esqueceu de cobrar a última corrida?'],
+      abastecendo: ['Samuca abastecendo: vai pedir nota pra descontar no imposto!', 'Samuca no posto, aproveitando pra ver se tem entrega no app!'],
+      pedagio: ['Samuca, mototáxi paga pedágio ou é isento?'],
+      multa: ['Samuca multado! Vai descontar das corridas da semana!', 'Radar pegou o capacete rosa! Impossível não ver!'],
+      buzina: ['Samuca buzina igual no trânsito do centro: bi-bi, sai da frente!'],
+      chuva: ['Samuca na chuva? Pra ele é só mais um dia de entrega!'],
+      pagador: ['Samuca paga o pedágio! Depois ele cobra a corrida de cada um!', 'Sorteio: o Samuca é o pagador! Vai passar a maquininha?'],
+      pagador_espera: ['Samuca chegou primeiro no pedágio, pontual igual entrega de pizza!'],
+      esperando_pagador: ['Esperando o Samuca... deve tá fazendo uma entrega no caminho!']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -367,6 +387,13 @@ window.DADOS = (function () {
     multa: ['O radar tá errado! O Fabinho nunca passa do limite... muito!'],
     pagador: ['Deixa que eu pago o do Fabinho! ...brincadeira, paga aí, Fabinho!'],
     chegada: ['Fabinho chegou! Palmas pro mestre!']
+  };
+  // SAMUCA zoando os parceiros preferidos: JELLISON e JEFÃO
+  const ZOA = {
+    jellison: ['Jellison, quer que eu leve um recado pra patroa? Faço entrega expressa!', 'Jellison, se a patroa ligar, eu digo que você tá na minha garupa!',
+      'Ô Jellison, se precisar voltar cedo eu te levo de mototáxi!', 'Jellison, a patroa já te deu a senha do Pix pro pedágio?'],
+    jefao: ['Jefão, nesse ritmo eu faço três entregas e volto pra te buscar!', 'Jefão, quer que eu reboque essa 1300? Cobro por quilômetro!',
+      'Ô Jefão, até minha entrega de marmita chega antes de você!', 'Jefão, 1300 cilindradas e meu capacete rosa ainda te passa!']
   };
   const DE = {
     leosao: {
@@ -437,6 +464,14 @@ window.DADOS = (function () {
       geral: ['Fabinho Mecânico é o melhor piloto desse clube, o resto é Roia!', 'Fabinho, depois dá uma olhada na minha moto? Tá fazendo um barulho... é o motor gritando!',
         'Galera, viram o grupo? Mandei meme de todo mundo!']
     },
+    samuca: {
+      largada: ['Bora, rapaziada! Hoje eu desliguei o aplicativo!', 'Corrida liberada! Quem vai na garupa?'],
+      passou_voce: ['Com licença, {alvo}! Entrega urgente!', 'Passei, {alvo}! Isso aqui eu faço todo dia no centro!'],
+      ultrapassou: ['Vai, {alvo}, eu tô no modo passeio, sem passageiro!'],
+      batida: ['{alvo}, quer uma corrida até o hospital? Faço preço de amigo!'],
+      reserva: ['Alguém aí paga uma corrida adiantada? Preciso abastecer!'],
+      geral: ['Gente, mototáxi não tira férias, isso aqui é treino!', 'Meu capacete é rosa, mas a moto é de macho, viu?', 'Se alguém quebrar, eu faço o resgate. Cobro barato!']
+    },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],
       passou_voce: ['Passei, {alvo}! Preciso voltar cedo!'],
@@ -445,5 +480,5 @@ window.DADOS = (function () {
     }
   };
 
-  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE, PUXA };
+  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE, PUXA, ZOA };
 })();
