@@ -130,6 +130,46 @@
     body.controle .volante { left: 6vw; bottom: calc(12vh + var(--u) * 0.15); width: calc(var(--u) * 2.1); }
     body.controle .buzina { left: calc(6vw + var(--u) * 0.71); bottom: calc(12vh + var(--u) * 1.15 + 16px); }
   }
+  /* ===== painéis: COMO JOGAR / NOVIDADES / SOBRE ===== */
+  #painel { display: none; position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; }
+  #painel.on { display: flex; }
+  #painel .janela { width: min(760px, 100%); max-height: 100%; display: flex; flex-direction: column; background: linear-gradient(180deg, #16181e, #0a0b0e);
+    border: 2px solid #ff6a00; border-radius: 16px; box-shadow: 0 0 50px rgba(255,106,0,0.3); overflow: hidden; }
+  #painel header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid #2a2d36; background: rgba(255,106,0,0.08); }
+  #painel header img { width: 32px; height: 32px; image-rendering: pixelated; }
+  #painel-titulo { flex: 1; margin: 0; font: 13px 'Press Start 2P', monospace; color: #ffd23a; letter-spacing: 0.08em; }
+  #painel-fechar { font: 10px 'Press Start 2P', monospace; background: #ff6a00; color: #fff; border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; }
+  #painel-corpo { overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; padding: 6px 16px 18px; user-select: text; -webkit-user-select: text;
+    font-size: 14px; line-height: 1.55; color: #d8dae0; }
+  #painel-corpo section { margin-top: 14px; padding: 12px 14px; background: rgba(255,255,255,0.035); border: 1px solid #23262e; border-radius: 12px; }
+  #painel-corpo h3 { margin: 0 0 8px; font: 10px 'Press Start 2P', monospace; color: #ff8a2a; line-height: 1.6; letter-spacing: 0.05em; }
+  #painel-corpo p { margin: 0 0 6px; } #painel-corpo ul { margin: 0; padding-left: 20px; } #painel-corpo li { margin: 4px 0; }
+  #painel-corpo b { color: #fff; }
+  #painel-corpo .versao.atual { border-color: #ff6a00; background: rgba(255,106,0,0.08); }
+  #painel-corpo .versao em { font-style: normal; background: #4ec41e; color: #000; padding: 3px 6px; border-radius: 6px; margin-left: 6px; font-size: 8px; }
+  .sobre-topo { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+  .sobre-topo img { width: 72px; height: 72px; image-rendering: pixelated; }
+  .sobre-topo b { display: block; font: 14px 'Press Start 2P', monospace; color: #fff; } .sobre-topo span { font: 8px 'Press Start 2P', monospace; color: #ff8a2a; line-height: 2.4; }
+  #painel-corpo .empresa { font: 18px 'Press Start 2P', monospace; color: #ffd23a; margin: 4px 0 10px; letter-spacing: 0.08em; }
+  .links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .link { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-radius: 12px; text-decoration: none; color: #fff;
+    font: 10px 'Press Start 2P', monospace; text-align: center; }
+  .link small { font: 12px system-ui, sans-serif; opacity: 0.9; }
+  .link.insta { background: linear-gradient(135deg, #8a3ab9, #e95950 55%, #fccc63); }
+  .link.zap { background: linear-gradient(135deg, #128c4a, #25d366); }
+  /* ===== aviso de abertura ===== */
+  #aviso { display: none; position: fixed; inset: 0; z-index: 95; background: radial-gradient(ellipse at 50% 30%, rgba(255,106,0,0.22), rgba(0,0,0,0) 60%), #050505;
+    align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; overflow-y: auto; }
+  #aviso.on { display: flex; }
+  #aviso .cx { max-width: 560px; text-align: center; }
+  #aviso img { width: 84px; height: 84px; image-rendering: pixelated; }
+  #aviso h2 { font: 11px 'Press Start 2P', monospace; color: #ff8a2a; margin: 10px 0 12px; letter-spacing: 0.1em; line-height: 1.8; }
+  #aviso p { font-size: 15px; line-height: 1.6; color: #d8dae0; margin: 0 0 10px; }
+  #aviso p b { color: #fff; }
+  #aviso small { display: block; color: #8a8f9a; font-size: 12px; margin-top: 6px; }
+  #aviso-ok { font: 11px 'Press Start 2P', monospace; background: #ff6a00; color: #fff; border: 0; border-radius: 12px; padding: 14px 20px; margin-top: 12px; cursor: pointer;
+    box-shadow: 0 0 24px rgba(255,106,0,0.45); }
+  @media (max-height: 420px) { #aviso img { width: 56px; height: 56px; } #aviso p { font-size: 13px; margin-bottom: 6px; } #aviso h2 { margin: 6px 0 8px; } }
 </style>
 </head>
 <body>
@@ -166,6 +206,24 @@
   </div>
 </div>
 
+<div id="painel">
+  <div class="janela">
+    <header><img src="hd/emblema_64.png" alt=""><h2 id="painel-titulo"></h2><button type="button" id="painel-fechar">FECHAR</button></header>
+    <div id="painel-corpo"></div>
+  </div>
+</div>
+
+<div id="aviso" class="on">
+  <div class="cx">
+    <img src="hd/emblema_128.png" alt="">
+    <h2>COISAS 3D APRESENTA</h2>
+    <p>Este jogo é um projeto <b>sem fins lucrativos</b>.</p>
+    <p>É uma <b>homenagem divertida e diferente</b> que a <b>Coisas 3D</b> está presenteando aos membros do <b>Black Rock Moto Clube – Itaúna – MG</b>.</p>
+    <small>Boa viagem, irmãos! Respeitem as placas… pelo menos aqui no jogo. 🤘</small>
+    <button type="button" id="aviso-ok">ENTENDI • ABRIR O JOGO</button>
+  </div>
+</div>
+
 <div id="girar">
   <img src="hd/emblema_128.png" alt="">
   <b>GIRE O CELULAR</b>
@@ -185,6 +243,7 @@
 <script src="dados.js" defer></script>
 <script src="som.js" defer></script>
 <script src="arte.js" defer></script>
+<script src="info.js" defer></script>
 <script src="jogo.js" defer></script>
 </body>
 </html>
