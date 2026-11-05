@@ -26,7 +26,13 @@ window.DADOS = (function () {
       vel: 222, acel: 0.92, economia: 0.54, curva: 0.84, capacete: '#1e1e22', curto: 'PESCOÇO' },
     { id: 'henrique', nome: 'HENRIQUE DO SAMUEL', moto: 'BRMC T900 RALLY PRO', cc: 888, tanque: 20, motor: 'triple', perfil: 'McNAMARA', ritmo: 1.0,
       sprite: 'piloto_henrique', foto: 'foto_tiger', tampa: [0.40, 0.30], retrato: 'retrato_henrique', voz: 165,
-      vel: 210, acel: 0.86, economia: 0.68, curva: 0.92, capacete: '#b0aa98', curto: 'HENRIQUE' }
+      vel: 210, acel: 0.86, economia: 0.68, curva: 0.92, capacete: '#b0aa98', curto: 'HENRIQUE' },
+    { id: 'cezar', nome: 'CEZAR', moto: 'BRMC GS 1250 ADV TRIPLE BLACK', cc: 1254, tanque: 30, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.0,
+      sprite: 'piloto_cezar', foto: 'foto_adv_prata', tampa: [0.44, 0.27], retrato: 'retrato_cezar', voz: 130,
+      vel: 220, acel: 0.89, economia: 0.58, curva: 0.86, capacete: '#9ca0a8', curto: 'CEZAR' },
+    { id: 'cleimar', nome: 'CLEIMAR', moto: 'BRMC GS 1250 ADV TRIPLE BLACK', cc: 1254, tanque: 30, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.0,
+      sprite: 'piloto_cleimar', foto: 'foto_adv_preto', tampa: [0.44, 0.27], retrato: 'retrato_cleimar', voz: 150,
+      vel: 220, acel: 0.91, economia: 0.58, curva: 0.84, capacete: '#222226', curto: 'CLEIMAR' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -277,6 +283,40 @@ window.DADOS = (function () {
       pagador_espera: ['Henrique chegou rugindo no pedágio e agora vai esperar a turma toda!'],
       esperando_pagador: ['Esperando o Henrique... deve tá explicando pro Samuel onde tá!']
     },
+    cezar: {
+      geral: ['Cezar com essa cara de bravo, até o radar fica com medo de multar!', 'Os baús prata do Cezar brilham tanto que dá pra usar de espelho!',
+        'Cezar não sorri nem na foto: é concentração de McNamara!', 'Cezar, essa barba grisalha é de experiência ou de susto na estrada?', 'Cezar carrega três baús de alumínio e ainda passa todo mundo!'],
+      lider: ['Cezar na frente, sério como sempre!', 'O Cezar disparou e nem mudou a expressão!'],
+      lanterna: ['Cezar lá atrás? Parou pra polir os baús prata!', 'Cadê o Cezar? Tá olhando a moto de cara fechada!'],
+      ultrapassou: ['Cezar passou com cara de quem não quer conversa!', 'Lá vai o Cezar, os baús prata refletindo o sol na cara da gente!'],
+      batida: ['Cezar caiu! E levantou com a mesma cara séria!', 'Cezar, confere se os baús não amassaram!'],
+      reserva: ['Cezar na reserva! Os baús pesaram, hein?'],
+      abastecendo: ['Cezar abastecendo: trinta litros e nenhum sorriso!', 'Cezar no posto, aproveitando pra lustrar os baús!'],
+      pedagio: ['Cezar no pedágio: o cobrador nem teve coragem de cobrar!'],
+      multa: ['Cezar multado! O radar teve coragem!', 'Cezar levou multa e fez a mesma cara de sempre!'],
+      buzina: ['Cezar buzinou! Todo mundo saiu da frente por medo!'],
+      chuva: ['Cezar na chuva: baú prata molhado brilha mais ainda!'],
+      pagador: ['Cezar é o pagador! Ninguém reclama, ele tá de cara fechada!', 'Sorteio: o Cezar paga! Sorri, Cezar, é só um pedágio!'],
+      pagador_espera: ['Cezar chegou primeiro no pedágio e tá esperando de braço cruzado!'],
+      esperando_pagador: ['Esperando o Cezar... ninguém tem coragem de ligar pra cobrar!']
+    },
+    cleimar: {
+      geral: ['Cleimar, o rei do joinha! Até no rádio dá pra ouvir o polegar pra cima!', 'Cleimar tá sempre de boa: joinha pra tudo!',
+        'Os baús pretos do Cleimar combinam com a moto e com a camiseta!', 'Cleimar acelera com uma mão e faz joinha com a outra!', 'Cleimar e Cezar com a mesma moto: só muda a cor dos baús e o humor!'],
+      lider: ['Cleimar na frente! Joinha pra quem ficou pra trás!', 'O Cleimar disparou rindo!'],
+      lanterna: ['Cleimar em último? Parou pra fazer joinha pros caminhoneiros!', 'Cadê o Cleimar? Tirando foto com a moto!'],
+      ultrapassou: ['Cleimar passou e ainda mandou um joinha!', 'Lá vai o Cleimar, Triple Black voando!'],
+      batida: ['Cleimar caiu! Mas já levantou fazendo joinha!', 'Levanta, Cleimar! Tá tudo bem? ...ele fez joinha, tá tudo bem!'],
+      reserva: ['Cleimar na reserva! Joinha não enche tanque, irmão!'],
+      abastecendo: ['Cleimar abastecendo e fazendo joinha pro frentista!', 'Cleimar no posto: trinta litros de joinha!'],
+      pedagio: ['Cleimar passou no pedágio fazendo joinha pra cancela!'],
+      multa: ['Cleimar multado! E fez joinha pro radar!', 'O radar fotografou o Cleimar... fazendo joinha!'],
+      buzina: ['Cleimar buzinou e fez joinha ao mesmo tempo!'],
+      chuva: ['Cleimar na chuva: de boa, joinha molhado!'],
+      pagador: ['Cleimar paga o pedágio! Joinha pra ele!', 'Sorteio: o Cleimar é o pagador! Ele fez joinha, tá aceito!'],
+      pagador_espera: ['Cleimar chegou primeiro no pedágio e tá fazendo joinha pra cada um que chega!'],
+      esperando_pagador: ['Esperando o Cleimar... alguém viu um joinha vindo lá atrás?']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -340,6 +380,20 @@ window.DADOS = (function () {
       ultrapassou: ['Vai, {alvo}, aproveita que o tigre tá de boa!'],
       batida: ['{alvo}, quer que eu chame o Samuel pra te buscar?'],
       geral: ['Essa moto faz curva que é uma beleza, viu?', 'Ai, gente, olha essa paisagem! Que coisa mais linda!', 'Gente, alguém tem um paninho? Minha viseira tá um horror!']
+    },
+    cezar: {
+      largada: ['Bora. Sem conversa. Acelera.'],
+      passou_voce: ['Licença, {alvo}.'],
+      ultrapassou: ['Aproveita, {alvo}. Por pouco tempo.'],
+      batida: ['{alvo}, presta atenção na estrada!'],
+      geral: ['Baú prata é outra coisa, né?']
+    },
+    cleimar: {
+      largada: ['Joinha, rapaziada! Bora pra Aparecida!'],
+      passou_voce: ['Passei, {alvo}! Joinha!'],
+      ultrapassou: ['Vai lá, {alvo}! Joinha pra você!'],
+      batida: ['{alvo}, tá tudo bem? Faz um joinha aí!'],
+      geral: ['Tá tudo joinha por aí, galera?']
     },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],
