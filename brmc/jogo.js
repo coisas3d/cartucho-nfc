@@ -69,6 +69,14 @@ function hiMangueira(x1, y1, x2, y2, clip) {
   hiCtx.fillStyle = '#9aa0a8'; hiCtx.fillRect(-14 * s, -2 * s, 14 * s, 4 * s); hiCtx.fillStyle = '#ff6a00'; hiCtx.fillRect(10 * s, -6 * s, 10 * s, 4 * s);
   hiCtx.restore(); hiUsado = true;
 }
+// QUALIDADE: auto (começa alta e cai para leve se o celular não aguentar), alta ou leve
+let QUAL = guardar.ler('qualidade', 'auto'), leve = QUAL === 'leve' || (QUAL === 'auto' && guardar.ler('autoLeve', false));
+const medFps = { s: 0, n: 0 };
+function medirDesempenho(dt) {
+  if (QUAL !== 'auto' || leve || estado.nome !== 'corrida' || pausado || dt <= 0) { medFps.s = medFps.n = 0; return; }
+  medFps.s += dt; medFps.n++;
+  if (medFps.n >= 150) { const media = medFps.s / medFps.n; medFps.s = medFps.n = 0; if (media > 0.026) { leve = true; guardar.gravar('autoLeve', true); avisar('MODO LEVE ATIVADO PARA ESTE CELULAR'); } }
+}
 let vertical = false;
 function ajustarTela() {
   const vw = innerWidth, vh = innerHeight, dpr = Math.min(devicePixelRatio || 1, 3);
@@ -78,8 +86,10 @@ function ajustarTela() {
   document.body.classList.toggle('vertical', vertical);
   const topo = vertical ? Math.max(0, Math.round((vh - ch) * 0.18)) + 'px' : '50%', tr = vertical ? 'translate(-50%, 0)' : 'translate(-50%, -50%)';
   for (const el of [tela, hi]) { el.style.top = topo; el.style.transform = tr; }
-  tela.style.width = cw + 'px'; tela.style.height = ch + 'px'; tela.width = Math.round(cw * dpr); tela.height = Math.round(ch * dpr);
-  hi.style.width = cw + 'px'; hi.style.height = ch + 'px'; hi.width = tela.width; hi.height = tela.height; hiUsado = true;
+  // tela do jogo na resolução interna (640x360) e ampliada pelo navegador com pixels nítidos: muito mais leve em celulares
+  tela.style.width = cw + 'px'; tela.style.height = ch + 'px'; tela.width = W; tela.height = H; tela.style.imageRendering = 'pixelated';
+  const dh = Math.min(dpr, 2);   // fotos realistas: até 2x
+  hi.style.width = cw + 'px'; hi.style.height = ch + 'px'; hi.width = Math.round(cw * dh); hi.height = Math.round(ch * dh); hiUsado = true;
 }
 addEventListener('resize', ajustarTela); addEventListener('orientationchange', () => setTimeout(ajustarTela, 250));
 
@@ -174,7 +184,7 @@ function gerarArte() {
   ART.arvores = [1, 2, 3, 4, 5].map(s => A.arvore(s)); ART.eucs = [1, 2, 3].map(s => A.eucalipto(s * 7)); ART.arbustos = [1, 2, 3].map(s => A.arbusto(s * 3));
   ART.cupim = A.cupim(); ART.poste = A.poste(); ART.cerca = A.cerca(); ART.vacas = [1, 2].map(s => A.vaca(s));
   ART.predios = [...Array(10)].map((_, i) => A.predio(i * 13 + 1, i % 3 === 0)); ART.outdoors = [A.outdoor(0, E), A.outdoor(1)];
-  ART.posto = A.posto(IMG.emblema_64); ART.pedagio = A.pedagio(); ART.passarela = A.passarela();
+  ART.posto = A.posto(IMG.emblema_64); ART.pedagio = A.pedagioPremium(IMG.emblema_64); ART.cabine = A.cabine(); ART.passarela = A.passarela();
   ART.radar = arteRadar();
   const tag = (c, id) => { c.__id = id; return c; };
   ART.mont = tag(A.silhueta(1024, 70, 3, 3, 1), 'mont'); ART.mont2 = tag(A.silhueta(1024, 46, 9, 5, 1.4), 'mont2');
@@ -194,12 +204,14 @@ function placaVel(n) {
   });
 }
 // poste do radar (câmera + caixa listrada)
-function arteRadar() {
-  const [c, g] = A.mk(44, 150); g.fillStyle = '#55595f'; g.fillRect(19, 40, 6, 110); g.fillStyle = '#80868e'; g.fillRect(19, 40, 2, 110);
-  g.fillStyle = '#d8d8d8'; g.fillRect(4, 4, 36, 44); g.fillStyle = '#222'; g.fillRect(8, 10, 28, 18);
-  g.fillStyle = '#111'; g.beginPath(); g.arc(22, 19, 7, 0, 7); g.fill(); g.fillStyle = '#5ab4ff'; g.beginPath(); g.arc(20, 17, 2.5, 0, 7); g.fill();
-  for (let i = 0; i < 6; i++) { g.fillStyle = i % 2 ? '#111' : '#f0c020'; g.fillRect(4 + i * 6, 34, 6, 10); }
-  g.fillStyle = '#c81e1e'; g.fillRect(30, 6, 6, 3);
+function arteRadar() {   // poste de fiscalização bem visível: zebrado amarelo/preto, caixa com câmera e placa "RADAR"
+  const [c, g] = A.mk(64, 180);
+  for (let y = 70; y < 180; y += 12) { g.fillStyle = '#f0c020'; g.fillRect(28, y, 9, 6); g.fillStyle = '#151515'; g.fillRect(28, y + 6, 9, 6); }
+  g.fillStyle = '#e4e6ea'; g.fillRect(6, 6, 52, 50); g.fillStyle = '#9aa0a8'; g.fillRect(6, 50, 52, 6);
+  g.fillStyle = '#1b1d22'; g.fillRect(12, 14, 40, 24); g.fillStyle = '#000'; g.beginPath(); g.arc(32, 26, 9, 0, 7); g.fill();
+  g.fillStyle = '#5ab4ff'; g.beginPath(); g.arc(29, 23, 3, 0, 7); g.fill();
+  for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#151515' : '#f0c020'; g.fillRect(6 + i * 6.5, 40, 6.5, 8); }
+  g.fillStyle = '#c81e1e'; g.fillRect(4, 58, 56, 16); g.fillStyle = '#fff'; g.font = '8px ' + A.FONTE; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('RADAR', 32, 67);
   return c;
 }
 function montarViagem(v) {
@@ -232,20 +244,26 @@ function montarViagem(v) {
       PEDAGIOS.push({ k, i: m.i, z: m.i * SEG, estado: 'livre', pagador: -1, sorteio: 0, pagT: 0, anuncio: 0 });
       for (let j = m.i - 30; j < m.i + 14; j++) segs[j].pedagio = true;
       segs[m.i].cancela = k;
-      addSpr(m.i + 3, ART.pedagio, 0, 1.25, false, { cruza: true });
-      addSpr(m.i - 120, A.placaVerde(['PEDÁGIO', '1 KM', 'PARE NA CANCELA']), 1.5, 0.9, true);
+      addSpr(m.i + 4, ART.pedagio, 0, 1, false, { cruza: true });
+      for (const x of [-1.12, 0, 1.12]) addSpr(m.i + 2, ART.cabine, x, 0.85, false, { cruza: true });
+      for (let j = m.i - 42; j <= m.i - 8; j += 4) segs[j].lomba = true;                 // faixas de redução no asfalto
+      addSpr(m.i - 230, A.placaVerde(['PEDÁGIO', '2 KM', '']), 1.5, 1, true);
+      addSpr(m.i - 150, A.placaVerde(['PEDÁGIO 1 KM', 'MOTO R$ 4,50', 'TAG']), 1.5, 1, true);
+      addSpr(m.i - 90, placaVel(40), 1.45, 1.2, false); addSpr(m.i - 90, placaVel(40), segs[m.i].tipo === 'D' ? -1.55 : -1.45, 1.2, false);
+      addSpr(m.i - 60, A.placaVerde(['PEDÁGIO 500 M', 'PARE NA', 'CANCELA']), 1.5, 1, true);
       MARCOS.push({ i: m.i - 70, z: (m.i - 70) * SEG, fala: 'pedagio', feito: false });
     } else if (m.radar) {
       const D = segs[m.i].tipo === 'D';
-      RADARES.push({ k: RADARES.length, i: m.i, z: m.i * SEG, lim: m.radar, oculto: m.oculto });
-      if (m.oculto) {   // radar escondido atrás da vegetação
+      RADARES.push({ k: RADARES.length, i: m.i, z: m.i * SEG, lim: m.radar, oculto: false });
+      if (false) {   // radar escondido atrás da vegetação
         addSpr(m.i, ART.radar, 1.62, 1, true); addSpr(m.i - 1, ART.arbustos[0], 1.48, 1.5, false); addSpr(m.i - 2, ART.arvores[2], 1.85, 1.2, true);
         MARCOS.push({ i: m.i + 25, z: (m.i + 25) * SEG, fala: 'radar_oculto', feito: false });
       } else {
-        addSpr(m.i, ART.radar, 1.45, 1, true); addSpr(m.i + 2, placaVel(m.radar), 1.5, 0.8, false);
-        addSpr(m.i - 95, placaVel(m.radar), D ? -1.55 : -1.5, 0.9, false);
-        addSpr(m.i - 60, A.placaVerde(['FISCALIZAÇÃO', 'ELETRÔNICA', m.radar + ' KM/H']), 1.5, 0.9, true);
-        MARCOS.push({ i: m.i - 110, z: (m.i - 110) * SEG, fala: 'radar', feito: false });
+        addSpr(m.i, ART.radar, 1.5, 1.7, true, { radar: true });
+        for (const d of [180, 120, 60]) { addSpr(m.i - d, placaVel(m.radar), 1.45, 1.3, false); addSpr(m.i - d, placaVel(m.radar), D ? -1.55 : -1.45, 1.3, false); }   // 3 placas antes, dos dois lados
+        addSpr(m.i - 150, A.placaVerde(['FISCALIZAÇÃO', 'ELETRÔNICA', m.radar + ' KM/H']), 1.6, 1, true);
+        addSpr(m.i - 100, A.placaVerde(['RADAR', 'A 500 M', m.radar + ' KM/H']), 1.6, 1, true);
+        MARCOS.push({ i: m.i - 170, z: (m.i - 170) * SEG, fala: 'radar', feito: false });
       }
     } else {
       if (m.placa) addSpr(m.i, A.placaVerde(m.placa), 1.5, 1, true);
@@ -893,7 +911,7 @@ function atualizarParticulas(dt) {
     const P = particulas[j]; for (const p of P) { p.t += dt; p.ox += p.vx * dt; p.oy += p.vy * dt; if (p.tipo === 'faisca') p.vy += 420 * dt; if (p.tipo === 'fumaca') p.r += 8 * dt; }
     particulas[j] = P.filter(p => p.t < p.vida);
     const h = humanos[j]; if (!h || demo) continue;
-    if (h.gas && h.v > 0 && Math.random() < 0.35) emitir(j, 'fumaca');
+    if (h.gas && h.v > 0 && Math.random() < (leve ? 0.12 : 0.35)) emitir(j, 'fumaca');
     if (h.fora && h.v > 20 * KMH) for (let i = 0; i < 2; i++) emitir(j, 'poeira');
     if (h.molhado > 0.4 && h.v > 40 * KMH && !h.fora) emitir(j, 'spray');
   }
@@ -915,22 +933,25 @@ function camada(g, img, v, desloc, base, k, alpha) {
 }
 function desenharSprite(g, img, s, k, sx, sy, offX, clipY, esc, ang) {
   const dw = img.width * s * CAMH * k * esc, dh = img.height * s * CAMH * k * esc;
-  if (dw < 1 || dh < 1 || dw > 4000) return;
+  if (dw < 1 || dh < (leve ? 3 : 1.2) || dw > 4000) return;
   const dx = sx + dw * offX, dy = sy - dh, corte = clipY != null ? Math.max(0, dy + dh - clipY) : 0;
   if (corte >= dh) return;
   if (ang) { g.save(); g.translate(sx, sy); g.rotate(ang); g.drawImage(img, -dw / 2, -dh, dw, dh); g.restore(); return; }
   const sh = img.height - img.height * corte / dh; if (sh < 1) return;
   g.drawImage(img, 0, 0, img.width, sh, Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh - corte));
 }
+// brilho/luz: o degradê radial é desenhado uma vez por cor e reaproveitado (antes era recriado a cada luz, a cada quadro)
+const brilhos = {};
 function brilho(g, x, y, r, cor, a) {
-  if (!(r > 0)) return;
-  const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, cor.replace('A', a)); gr.addColorStop(1, cor.replace('A', 0));
-  g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+  if (!(r > 0) || !(a > 0)) return;
+  let b = brilhos[cor];
+  if (!b) { const [c, gg] = A.mk(64, 64), gr = gg.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, cor.replace('A', 1)); gr.addColorStop(1, cor.replace('A', 0)); gg.fillStyle = gr; gg.fillRect(0, 0, 64, 64); b = brilhos[cor] = c; }
+  const ga = g.globalAlpha; g.globalAlpha = ga * Math.min(1, a); g.drawImage(b, x - r, y - r, r * 2, r * 2); g.globalAlpha = ga;
 }
 function luz(g, x, y, r, cor, a) { g.globalCompositeOperation = 'lighter'; brilho(g, x, y, r, cor, a); g.globalCompositeOperation = 'source-over'; }
 
 function renderVista(vi, v, foco, idx) {
-  const [cena, g] = cenas[vi];
+  const [cena, g] = cenas[vi], dd = leve ? 130 : DRAW;
   const k = v.h / H, kx = v.h * 0.8889, ky = v.h / 2;
   const camZ = foco.z - PZ, base = segEm(camZ), basePct = (camZ % SEG) / SEG;
   const pseg = segEm(foco.z), ppct = (foco.z % SEG) / SEG;
@@ -951,9 +972,9 @@ function renderVista(vi, v, foco, idx) {
   const solA = clamp(1 - Math.max(chv, neb) * 1.6, 0, 1);
   if (solA > 0) { g.globalAlpha = solA; luz(g, sx, sy, sr * 6, 'rgba(' + (sc[0] | 0) + ',' + (sc[1] | 0) + ',' + (sc[2] | 0) + ',A)', 0.35 * solA);
     g.fillStyle = css(sc); g.beginPath(); g.arc(sx, sy, sr, 0, 7); g.fill(); g.globalAlpha = 1; }
-  camada(g, ART.nuvens, v, foco.bg * 0.3 + tempoReal * 0.003, horiz * 0.75, k, 0.85 - PAL.tarde * 0.3);
+  if (!leve) camada(g, ART.nuvens, v, foco.bg * 0.3 + tempoReal * 0.003, horiz * 0.75, k, 0.85 - PAL.tarde * 0.3);
   if (chv > 0.02) { g.fillStyle = 'rgba(78,86,98,' + (chv * 0.5) + ')'; g.fillRect(0, 0, v.w, horiz + 10); }
-  camada(g, tingir(ART.mont, mixc(PAL.mont, PAL.nev, 0.35)), v, foco.bg * 0.5, horiz + 2, k);
+  if (!leve) camada(g, tingir(ART.mont, mixc(PAL.mont, PAL.nev, 0.35)), v, foco.bg * 0.5, horiz + 2, k);
   camada(g, tingir(ART.mont2, PAL.mont), v, foco.bg * 0.8, horiz + 2, k);
   const cid = pseg.zona === 'cidade' || segEm(foco.z + 60 * SEG).zona === 'cidade';
   foco.cidA = lerp(foco.cidA || 0, cid ? 1 : 0, 0.02);
@@ -965,10 +986,10 @@ function renderVista(vi, v, foco, idx) {
   }
   if (neb > 0.02) { g.globalAlpha = neb * 0.8; g.fillStyle = nevCss; g.fillRect(0, 0, v.w, horiz + 4); g.globalAlpha = 1; }
   g.fillStyle = css(PAL.g1); g.fillRect(0, horiz, v.w, v.h - horiz);
-  const nevN = n => { const f = n / DRAW; return Math.min(0.98, f * f * 0.8 + neb * Math.min(1, f * 6) * 0.97 + chv * f * 0.25); };
+  const nevN = n => { const f = n / dd; return Math.min(0.98, f * f * 0.8 + neb * Math.min(1, f * 6) * 0.97 + chv * f * 0.25); };
   // ---- estrada
   let maxy = v.h, x = 0, dx = -(base.curva * basePct);
-  const lim = Math.min(DRAW, segs.length - base.i);
+  const lim = Math.min(dd, segs.length - base.i);
   const gra = css(PAL.g1);
   for (let n = 0; n < lim; n++) {
     const s = segs[base.i + n], a = tmpA[n], b = tmpB[n];
@@ -992,6 +1013,7 @@ function renderVista(vi, v, foco, idx) {
     if (D) { if (s.faixa) poli(g, X(a, -lw), a.y, X(a, lw), a.y, X(b, lw), b.y, X(b, -lw), b.y, '#e8e8e8'); }
     else if (Math.abs(s.curva) > 2.5 || s.pedagio) { for (const o of [-0.03, 0.03]) poli(g, X(a, o - lw * 0.7), a.y, X(a, o + lw * 0.7), a.y, X(b, o + lw * 0.7), b.y, X(b, o - lw * 0.7), b.y, '#f0c020'); }
     else if (s.faixa) poli(g, X(a, -lw), a.y, X(a, lw), a.y, X(b, lw), b.y, X(b, -lw), b.y, '#f0c020');
+    if (s.lomba) for (const o of [-0.5, 0.5]) poli(g, X(a, o - 0.42), a.y, X(a, o + 0.42), a.y, X(b, o + 0.42), b.y, X(b, o - 0.42), b.y, '#f0c020');
     a.y -= 1;
     if (s.i === START_I || s.i === FIM_I) for (let j = 0; j < 10; j++) { g.fillStyle = j % 2 ? '#fff' : '#111'; g.fillRect(X(a, -1 + j * 0.2), b.y, a.w * 0.2 + 1, Math.max(1, a.y - b.y)); }
     const nev = nevN(n);
@@ -1019,10 +1041,10 @@ function renderVista(vi, v, foco, idx) {
     }
     if (s.cancela != null && a.y - 260 * a.s * ky < a.clip) {
       const pago = foco.pag && foco.pag[s.cancela], hy = 105 * a.s * ky, th = Math.max(2, 9 * a.s * ky);
-      for (const bxp of [-1.1, 0, 1.1]) { const x0 = a.x + a.w * bxp, cw = 0.16 * a.w; g.fillStyle = '#d8d4cc'; g.fillRect(x0 - cw / 2, a.y - 2.3 * hy, cw, 2.3 * hy); g.fillStyle = '#3a4a5c'; g.fillRect(x0 - cw * 0.38, a.y - 2.0 * hy, cw * 0.76, 0.8 * hy); g.fillStyle = '#1e7a3a'; g.fillRect(x0 - cw / 2, a.y - 2.45 * hy, cw, 0.18 * hy); }
       for (const ln of [-0.5, 0.5]) {
         const px = a.x + a.w * (ln - 0.42), len = a.w * 0.84;
-        g.fillStyle = '#222'; g.fillRect(px - th, a.y - hy - th, th * 2, hy + th);
+        g.fillStyle = '#f0c020'; g.fillRect(px - th * 1.6, a.y - hy - th * 1.5, th * 3.2, hy + th * 1.5); g.fillStyle = '#222'; g.fillRect(px - th * 1.6, a.y - hy * 0.5, th * 3.2, th);
+        luz(g, px, a.y - hy - th * 2.2, th * 3, pago ? 'rgba(40,255,90,A)' : 'rgba(255,40,30,A)', 0.9);
         if (pago) { for (let q = 0; q < 6; q++) { g.fillStyle = q % 2 ? '#fff' : '#d22'; g.fillRect(px - th / 2, a.y - hy - (q + 1) * len / 6, th, len / 6 + 1); } }
         else for (let q = 0; q < 8; q++) { g.fillStyle = q % 2 ? '#fff' : '#d22'; g.fillRect(px + q * len / 8, a.y - hy - th / 2, len / 8 + 1, th); }
       }
@@ -1031,6 +1053,7 @@ function renderVista(vi, v, foco, idx) {
     for (const sp of s.spr) {
       const off = sp.x === 0 || sp.cruza ? -0.5 : sp.x < 0 ? -1 : 0;
       desenharSprite(g, sp.img, a.s, k, a.x + a.s * sp.x * ROAD * kx, a.y, off, a.clip, sp.esc);
+      if (sp.radar && Math.floor(tempoReal * 3) % 2) { const rx = a.x + a.s * sp.x * ROAD * kx + sp.img.width * a.s * CAMH * k * sp.esc * 0.5, ry = a.y - sp.img.height * a.s * CAMH * k * sp.esc * 0.95; if (ry < a.clip) luz(g, rx, ry, Math.max(4, 70 * a.s * CAMH * k * 0.01), 'rgba(255,40,30,A)', 0.9); }
     }
     const lst = porSeg.get(n);
     if (lst) {
@@ -1083,7 +1106,7 @@ function renderVista(vi, v, foco, idx) {
   }
   g.globalAlpha = 1;
   // ---- linhas de velocidade e vácuo
-  if ((pc > 0.86 || foco.vacuo) && !foco.abast) {
+  if ((pc > 0.86 || foco.vacuo) && !foco.abast && !leve) {
     g.strokeStyle = foco.vacuo ? 'rgba(150,210,255,0.5)' : 'rgba(255,255,255,0.35)'; g.lineWidth = 1;
     for (let i = 0; i < (foco.vacuo ? 14 : 8); i++) {
       const ang = rnd(0, Math.PI * 2), r1 = rnd(0.55, 0.75) * v.w * 0.5, r2 = r1 + rnd(30, 70) * k;
@@ -1091,23 +1114,26 @@ function renderVista(vi, v, foco, idx) {
     }
   }
   // ---- composição com rolagem de câmera
-  ctx.save(); ctx.beginPath(); ctx.rect(v.x, v.y, v.w, v.h); ctx.clip();
-  const zoom = 1.08 + pc * 0.03, roll = foco.roll + (tremor[idx] > 0 ? rnd(-0.01, 0.01) : 0);
-  ctx.translate(v.x + v.w / 2, v.y + v.h * 0.92); ctx.rotate(roll); ctx.scale(zoom, zoom);
-  ctx.drawImage(cena, 0, 0, v.w, v.h, -v.w / 2, -v.h * 0.92, v.w, v.h);
-  ctx.restore();
+  if (leve) ctx.drawImage(cena, 0, 0, v.w, v.h, v.x, v.y, v.w, v.h);   // modo leve: sem inclinar a câmera (cópia simples)
+  else {
+    ctx.save(); ctx.beginPath(); ctx.rect(v.x, v.y, v.w, v.h); ctx.clip();
+    const zoom = 1.08 + pc * 0.03, roll = foco.roll + (tremor[idx] > 0 ? rnd(-0.01, 0.01) : 0);
+    ctx.translate(v.x + v.w / 2, v.y + v.h * 0.92); ctx.rotate(roll); ctx.scale(zoom, zoom);
+    ctx.drawImage(cena, 0, 0, v.w, v.h, -v.w / 2, -v.h * 0.92, v.w, v.h);
+    ctx.restore();
+  }
   // chuva caindo + relâmpago + flash do radar
   if (chv > 0.02 && !foco.abast) {
     ctx.save(); ctx.beginPath(); ctx.rect(v.x, v.y, v.w, v.h); ctx.clip();
     ctx.fillStyle = 'rgba(24,34,48,' + (0.24 * chv) + ')'; ctx.fillRect(v.x, v.y, v.w, v.h);
     ctx.strokeStyle = 'rgba(206,220,240,0.5)'; ctx.lineWidth = 1; ctx.beginPath();
-    const nG = (110 * chv) | 0, cx0 = v.x + v.w / 2;
+    const nG = ((leve ? 50 : 110) * chv) | 0, cx0 = v.x + v.w / 2;
     for (let i = 0; i < nG; i++) { const x = v.x + Math.random() * v.w, y = v.y + Math.random() * v.h, l = (6 + Math.random() * 10) * k * (1 + pc * 1.5); ctx.moveTo(x, y); ctx.lineTo(x + (x - cx0) * 0.04 * pc - l * 0.18, y + l); }
     ctx.stroke(); ctx.restore();
   }
   if (relampago > 0 && !demo) { ctx.fillStyle = 'rgba(235,240,255,' + (relampago > 0.38 || (relampago > 0.18 && relampago < 0.26) ? 0.55 : 0) + ')'; ctx.fillRect(v.x, v.y, v.w, v.h); }
   if (flashT[idx] > 0) { ctx.fillStyle = 'rgba(255,255,255,' + Math.min(0.85, flashT[idx] * 2.4) + ')'; ctx.fillRect(v.x, v.y, v.w, v.h); }
-  ctx.drawImage(ART.vinheta, 0, 0, W, H, v.x, v.y, v.w, v.h);
+  if (!leve) ctx.drawImage(ART.vinheta, 0, 0, W, H, v.x, v.y, v.w, v.h);
   if (foco.abast && !demo) cenaAbastecimento(v, foco);
   if (!demo) hud(v, foco, idx);
 }
@@ -1194,13 +1220,15 @@ function hud(v, c, idx) {
   }
   const cy = v.y + v.h * 0.3, cx = v.x + v.w / 2, T = dois ? 16 : 32;
   // radar à frente: placa de velocidade no alto (pisca vermelho se estiver acima)
-  const RD = RADARES.find(r => !r.oculto && !c.radarOk[r.k] && r.z > c.z && r.z - c.z < 110 * SEG);
+  const RD = RADARES.find(r => !r.oculto && !c.radarOk[r.k] && r.z > c.z && r.z - c.z < 200 * SEG);
   if (RD && !c.fim) {
-    const acima = c.v / KMH > RD.lim + 7, rr = dois ? 10 : 15, ry2 = v.y + (dois ? 96 : 150), cx = v.x + m + (dois ? 22 : 34);
+    const acima = c.v / KMH > RD.lim + 7, rr = dois ? 12 : 19, ry2 = v.y + (dois ? 96 : 150), cx = v.x + m + (dois ? 22 : 34);
     ctx.fillStyle = acima && Math.floor(tempoReal * 6) % 2 ? '#ff2a1a' : '#c81e1e'; ctx.beginPath(); ctx.arc(cx, ry2, rr, 0, 7); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, ry2, rr * 0.74, 0, 7); ctx.fill();
-    txt(String(RD.lim), cx + 1, ry2 - 4, '#111', 8, 'c', false);
-    txt('RADAR', cx, ry2 + rr + 3, acima ? '#ff5a4a' : '#ffd23a', 8, 'c');
+    const big = !dois && RD.lim < 100; txt(String(RD.lim), cx + 1, ry2 - (big ? 8 : 4), '#111', big ? 16 : 8, 'c', false);
+    const dm = Math.max(0, Math.round((RD.z - c.z) / SEG * 5 / 10) * 10);   // escala das placas: 1 segmento = 5 m
+    txt('RADAR ' + (dm >= 1000 ? (dm / 1000).toFixed(1) + ' KM' : dm + ' M'), cx, ry2 + rr + 3, acima ? '#ff5a4a' : '#ffd23a', 8, 'c');
+    if (acima && Math.floor(tempoReal * 4) % 2) txt('REDUZA!', cx, ry2 + rr + 15, '#ff5a4a', 8, 'c');
   }
   if (c.multaT > 0 && c.multaInfo) msg('MULTADO! ' + c.multaInfo[0] + ' KM/H NUMA ' + c.multaInfo[1] + ' • +5 S', cx, v.y + v.h * 0.42, '#ff5a4a', 8);
   if (contagem > 0) {
@@ -1323,7 +1351,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v4.4', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v4.5', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
@@ -1332,13 +1360,14 @@ function telaOpcoes() {
   let sel = 0;
   const ops = () => [['MÚSICA: ' + (SOM.musicaOn ? 'SIM' : 'NÃO'), () => SOM.alternarMusica()], ['EFEITOS: ' + (SOM.efeitosOn ? 'SIM' : 'NÃO'), () => SOM.alternarEfeitos()],
     ['VIBRAR: ' + (guardar.ler('vibrar', true) ? 'SIM' : 'NÃO'), () => guardar.gravar('vibrar', !guardar.ler('vibrar', true))],
+    ['GRÁFICOS: ' + (QUAL === 'auto' ? 'AUTOMÁTICO' + (leve ? ' (LEVE)' : '') : QUAL === 'leve' ? 'LEVE' : 'ALTA'), () => { QUAL = QUAL === 'auto' ? 'alta' : QUAL === 'alta' ? 'leve' : 'auto'; guardar.gravar('qualidade', QUAL); guardar.gravar('autoLeve', false); leve = QUAL === 'leve'; }],
     ['2 JOGADORES: ' + (telaP2() === 'propria' ? 'CADA UM NO SEU CELULAR' : 'TELA DIVIDIDA'), () => { guardar.gravar('telaP2', telaP2() === 'propria' ? 'dividida' : 'propria'); enviarP2({ t: 'modo', tela: telaP2() === 'propria' ? 'propria' : 'controle' }); }], ['VOLTAR', () => irPara(telaTitulo())]];
   return {
     nome: 'opcoes',
     update() { const o = ops(); if (apertou(0, 'esq')) sel = (sel + o.length - 1) % o.length; if (apertou(0, 'dir')) sel = (sel + 1) % o.length; if (apertou(0, 'acel')) { SOM.confirma(); o[sel][1](); } if (apertou(0, 'freio')) irPara(telaTitulo()); },
     render() {
       fundoEscuro(); logo(W / 2, 64, 0.6); txt('OPÇÕES', W / 2, 120, '#fff', 24, 'c'); alvosToque = [];
-      ops().forEach(([r, fn], i) => botao(W / 2 - 170, 150 + i * 38, 340, 30, r, () => { sel = i; SOM.confirma(); fn(); }, i === sel));
+      ops().forEach(([r, fn], i) => botao(W / 2 - 170, 138 + i * 34, 340, 28, r, () => { sel = i; SOM.confirma(); fn(); }, i === sel));
     }
   };
 }
@@ -2105,8 +2134,10 @@ let ultimo = 0, acum = 0;
 function quadro(t) {
   const dt = Math.min(0.1, (t - ultimo) / 1000 || 0); ultimo = t; acum += dt; tempoReal += dt;
   juntarEntrada();
-  encaminharEntrada();
-  while (acum >= STEP) { estado.update && estado.update(STEP); guardarAnterior(); acum -= STEP; }
+  encaminharEntrada(); medirDesempenho(dt);
+  let passos = 0;
+  while (acum >= STEP && passos < 4) { estado.update && estado.update(STEP); guardarAnterior(); acum -= STEP; passos++; }
+  if (acum > STEP) acum = 0;   // celular muito lento: não acumula atraso
   if (!CLIENTE && p2Remoto() && estado.nome === 'corrida' && tempoReal - ultimoEnvio > (conexaoP2 && conexaoP2.tipo === 'relay' ? 0.1 : 0.05)) { ultimoEnvio = tempoReal; enviarEstado(); }
   batimentoHost();
   if (CLIENTE && cliModo === 'controle') { const ps = document.getElementById('p2-status'); if (ps) ps.textContent = canalCli ? (tempoReal - ultimoDoHost > 8 ? 'SEM SINAL DO P1' : 'CONECTADO - OLHE A TELA DO P1') : cliStatus; }

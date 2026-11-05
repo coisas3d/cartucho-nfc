@@ -103,6 +103,63 @@ window.ARTE = (function () {
     if (emb) g.drawImage(emb, w / 2 - 40, -2, 80, 80);
     return c;
   }
+  // PRAÇA DE PEDÁGIO PREMIUM: cobertura de aço com faixa de LED, painel iluminado, sinaleiros por faixa e pilares com zebrado
+  function pedagioPremium(emb) {
+    const w = 1500, h = 520, [c, g] = mk(w, h), col = x => Math.round(750 + x / 2.8 * w);
+    // pilares (bordas e ilha central)
+    for (const x of [-1.15, 0, 1.15]) {
+      const px = col(x), pw = 36;
+      const gp = g.createLinearGradient(px - pw / 2, 0, px + pw / 2, 0); gp.addColorStop(0, '#5a616c'); gp.addColorStop(0.4, '#c9ced6'); gp.addColorStop(1, '#4a5058');
+      g.fillStyle = gp; g.fillRect(px - pw / 2, 120, pw, h - 120);
+      for (let y = h - 90; y < h; y += 18) { g.fillStyle = '#f0c020'; g.fillRect(px - pw / 2, y, pw, 9); g.fillStyle = '#141414'; g.fillRect(px - pw / 2, y + 9, pw, 9); }
+    }
+    // laje da cobertura
+    const gl = g.createLinearGradient(0, 0, 0, 120); gl.addColorStop(0, '#3a414c'); gl.addColorStop(0.55, '#262b33'); gl.addColorStop(1, '#16191e');
+    g.fillStyle = gl; g.fillRect(0, 8, w, 112);
+    g.fillStyle = '#4d5562'; g.fillRect(0, 0, w, 10);                                 // borda superior
+    g.fillStyle = '#ff7a1a'; g.fillRect(0, 104, w, 8);                                // faixa de LED laranja
+    g.fillStyle = 'rgba(255,200,120,0.9)'; g.fillRect(0, 106, w, 3);
+    // luzes sob a cobertura
+    g.fillStyle = '#0e1013'; g.fillRect(0, 112, w, 14);
+    for (let x = 40; x < w; x += 110) { g.fillStyle = '#fff6dc'; g.fillRect(x, 115, 60, 7); }
+    // painel central "PEDÁGIO"
+    const pw = 520, px = w / 2 - pw / 2;
+    g.fillStyle = '#0b2a5a'; g.fillRect(px, 18, pw, 78); g.strokeStyle = '#e8edf5'; g.lineWidth = 4; g.strokeRect(px + 4, 22, pw - 8, 70);
+    if (emb) g.drawImage(emb, px + 14, 26, 62, 62);
+    txt(g, 'PEDÁGIO', px + pw / 2 + 30, 30, '#ffffff', 40, 'c', false);
+    txt(g, 'RODOVIAS BRMC', px + pw / 2 + 30, 74, '#9ad0ff', 16, 'c', false);
+    // tarifas
+    g.fillStyle = '#f0c020'; g.fillRect(70, 28, 300, 60); g.fillStyle = '#141414'; g.fillRect(74, 32, 292, 52);
+    txt(g, 'MOTO', 90, 40, '#f0c020', 16, 'e', false); txt(g, 'R$ 4,50', 350, 40, '#ffffff', 16, 'd', false);
+    txt(g, 'CARRO', 90, 62, '#9a9aa4', 8, 'e', false); txt(g, 'R$ 9,00', 350, 62, '#9a9aa4', 8, 'd', false);
+    g.fillStyle = '#1e7a3a'; g.fillRect(w - 370, 28, 300, 60); g.strokeStyle = '#e8f5ea'; g.lineWidth = 3; g.strokeRect(w - 366, 32, 292, 52);
+    txt(g, 'TAG', w - 220, 38, '#ffffff', 24, 'c', false); txt(g, 'PASSAGEM AUTOMÁTICA', w - 220, 68, '#c8f0d0', 8, 'c', false);
+    // sinaleiros sobre cada faixa (seta verde)
+    for (const x of [-0.5, 0.5]) {
+      const cx = col(x);
+      g.fillStyle = '#0a0a0c'; g.fillRect(cx - 50, 126, 100, 70); g.fillStyle = '#2a2d33'; g.fillRect(cx - 50, 126, 100, 6);
+      g.fillStyle = '#1aff5a'; g.beginPath(); g.moveTo(cx - 22, 146); g.lineTo(cx + 22, 146); g.lineTo(cx + 22, 160); g.lineTo(cx + 34, 160); g.lineTo(cx, 190); g.lineTo(cx - 34, 160); g.lineTo(cx - 22, 160); g.closePath(); g.fill();
+      g.fillStyle = 'rgba(26,255,90,0.25)'; g.fillRect(cx - 46, 134, 92, 58);
+      g.fillStyle = '#2a2d33'; g.fillRect(cx - 4, 120, 8, 8);
+    }
+    return c;
+  }
+  // cabine de cobrança: ilha com zebrado, vidro azulado com reflexo, cobrador e luz de TAG
+  function cabine() {
+    const w = 150, h = 250, [c, g] = mk(w, h);
+    g.fillStyle = '#8a8f96'; g.fillRect(4, h - 42, w - 8, 42);
+    for (let x = 4; x < w - 4; x += 16) { g.fillStyle = '#f0c020'; g.fillRect(x, h - 38, 8, 34); g.fillStyle = '#151515'; g.fillRect(x + 8, h - 38, 8, 34); }
+    const gb = g.createLinearGradient(16, 0, w - 16, 0); gb.addColorStop(0, '#d9dde3'); gb.addColorStop(0.5, '#f4f6f8'); gb.addColorStop(1, '#b8bec6');
+    g.fillStyle = gb; g.fillRect(16, 60, w - 32, h - 102);
+    g.fillStyle = '#1b3c66'; g.fillRect(24, 76, w - 48, 80);                            // vidro
+    g.fillStyle = '#2a2f36'; g.beginPath(); g.arc(w / 2, 128, 16, 0, 7); g.fill(); g.fillRect(w / 2 - 22, 140, 44, 16);   // cobrador
+    g.fillStyle = '#f0c020'; g.fillRect(w / 2 - 22, 146, 44, 4);
+    g.fillStyle = 'rgba(255,255,255,0.28)'; g.beginPath(); g.moveTo(30, 76); g.lineTo(62, 76); g.lineTo(34, 156); g.lineTo(26, 156); g.closePath(); g.fill();
+    g.fillStyle = '#c42a2a'; g.fillRect(16, 168, w - 32, 6);
+    g.fillStyle = '#2b3038'; g.fillRect(8, 48, w - 16, 14); g.fillStyle = '#ff7a1a'; g.fillRect(8, 58, w - 16, 3);   // telhado
+    g.fillStyle = '#111'; g.fillRect(w / 2 - 20, 22, 40, 26); g.fillStyle = '#1aff5a'; g.beginPath(); g.arc(w / 2, 35, 9, 0, 7); g.fill();   // luz da TAG
+    return c;
+  }
   function pedagio(emb) {
     const w = 700, h = 260, [c, g] = mk(w, h);
     g.fillStyle = '#e8e8ea'; g.fillRect(0, 0, w, 60); g.fillStyle = '#c42a2a'; g.fillRect(0, 50, w, 10);
@@ -271,5 +328,5 @@ window.ARTE = (function () {
   }
 
   return { FONTE, mk, rng, txt, arvore, eucalipto, arbusto, cupim, poste, marcoKm, placaVerde, outdoor, predio, cerca, vaca,
-    arco, pedagio, passarela, posto, silhueta, skyline, basilica, nuvens, motoTopo, seg7, numero7, tacometro, marcadorComb };
+    arco, pedagio, passarela, posto, silhueta, skyline, basilica, nuvens, motoTopo, seg7, numero7, tacometro, marcadorComb, pedagioPremium, cabine };
 })();
