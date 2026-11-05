@@ -1323,7 +1323,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v4.3', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v4.4', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
@@ -1739,22 +1739,76 @@ function atualizarHTML() { const corr = estado.nome === 'corrida'; elControles.c
 btnPausa.addEventListener('click', () => CLIENTE ? enviarHost({ b: 'pausa' }) : alternarPausa());
 function avisar(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(avisar.t); avisar.t = setTimeout(() => t.style.display = 'none', 3000); }
 // ============================================================ 2 JOGADORES EM REDE
-// O celular do P1 roda a corrida (é o "servidor"). O celular do P2 recebe o estado ~20x por segundo e desenha a SUA PRÓPRIA tela.
+// O celular do P1 roda a corrida (é o "servidor"). O celular do P2 recebe o estado e desenha a SUA PRÓPRIA tela.
 // Opção "TELA DIVIDIDA": o P2 vira só um controle e os dois olham a tela do P1.
-let p2Conectado = false, peerHost = null, conexaoP2 = null, ultimoEnvio = 0;
+// CONEXÃO EM DUAS VIAS (a que conectar primeiro vale):
+//  1) DIRETA (WebRTC/PeerJS): mais rápida, mas falha em muitos roteadores/celulares;
+//  2) RETRANSMISSÃO PELA INTERNET (MQTT sobre WebSocket em servidores públicos): funciona em praticamente qualquer rede.
+let p2Conectado = false, peerHost = null, conexaoP2 = null, ultimoEnvio = 0, ultimoSinalP2 = 0, ultimoHbHost = 0;
 const LOCAL2P = params.get('local2p');          // teste no mesmo computador (duas abas), sem internet
 const CLIENTE = !!SALA;
 const telaP2 = () => guardar.ler('telaP2', 'propria');
 const p2Remoto = () => p2Conectado && telaP2() === 'propria';
 const dividida = () => humanos.length > 1 && !p2Remoto() && !CLIENTE;
-function canalLocal(nome, aoMsg) { const bc = new BroadcastChannel('brmc_' + nome); bc.onmessage = e => aoMsg(e.data); return { open: true, send: d => bc.postMessage(d), close: () => bc.close() }; }
-function enviarP2(m) { if (conexaoP2 && conexaoP2.open !== false) { try { conexaoP2.send(m); } catch (e) {} } }
+const ICE = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }, { urls: 'stun:stun.cloudflare.com:3478' }] };
+const BROKERS = params.get('mqtt') ? [params.get('mqtt')] : ['wss://broker.emqx.io:8084/mqtt', 'wss://broker.hivemq.com:8884/mqtt', 'wss://test.mosquitto.org:8081/mqtt'];
+const topico = (cod, lado) => 'brmc/v1/' + cod + '/' + lado;
+const idPeer = cod => 'brmc-' + cod.toLowerCase();
+function novoCodigo() { const a = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 6; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
+function canalLocal(nome, aoMsg) { const bc = new BroadcastChannel('brmc_' + nome); bc.onmessage = e => aoMsg(e.data); return { tipo: 'local', open: true, send: d => bc.postMessage(d), close: () => bc.close() }; }
+
+// ---------- cliente MQTT 3.1.1 mínimo sobre WebSocket (sem bibliotecas externas)
+function mqttConectar(url, aoMsg, aoAbrir, aoFechar) {
+  const te = new TextEncoder(), td = new TextDecoder();
+  const str = s => { const b = te.encode(s); return [b.length >> 8, b.length & 255, ...b]; };
+  const pkt = (tipo, corpo) => { const l = []; let n = corpo.length; do { let d = n % 128; n = Math.floor(n / 128); if (n > 0) d |= 128; l.push(d); } while (n > 0); const o = new Uint8Array(1 + l.length + corpo.length); o[0] = tipo; o.set(l, 1); o.set(corpo, 1 + l.length); return o; };
+  let ws; try { ws = new WebSocket(url, ['mqtt']); } catch (e) { setTimeout(() => aoFechar && aoFechar(), 0); return null; }
+  ws.binaryType = 'arraybuffer';
+  let buf = new Uint8Array(0), ping = null, pid = 1, fechado = false;
+  const c = { aberto: false, url,
+    pub(t, obj) { if (!c.aberto) return; try { const p = te.encode(JSON.stringify(obj)), h = str(t), corpo = new Uint8Array(h.length + p.length); corpo.set(h); corpo.set(p, h.length); ws.send(pkt(0x30, corpo)); } catch (e) {} },
+    sub(t) { const id = pid++; try { ws.send(pkt(0x82, [id >> 8, id & 255, ...str(t), 0])); } catch (e) {} },
+    fechar() { fechado = true; clearInterval(ping); try { ws.close(); } catch (e) {} } };
+  const fim = () => { if (c.aberto === null) return; const era = c.aberto; c.aberto = null; clearInterval(ping); if (!fechado) aoFechar && aoFechar(c, era); };
+  const prazo = setTimeout(() => { if (!c.aberto) { try { ws.close(); } catch (e) {} fim(); } }, 7000);
+  ws.onopen = () => { try { ws.send(pkt(0x10, [...str('MQTT'), 4, 2, 0, 30, ...str('brmc' + Math.random().toString(36).slice(2, 12))])); } catch (e) {} };
+  ws.onmessage = ev => {
+    const nb = new Uint8Array(ev.data), j = new Uint8Array(buf.length + nb.length); j.set(buf); j.set(nb, buf.length); buf = j;
+    while (buf.length >= 2) {
+      let mult = 1, len = 0, i = 1, d;
+      do { if (i >= buf.length) return; d = buf[i++]; len += (d & 127) * mult; mult *= 128; } while (d & 128);
+      if (buf.length < i + len) return;
+      const b0 = buf[0], tipo = b0 >> 4, corpo = buf.slice(i, i + len); buf = buf.slice(i + len);
+      if (tipo === 2) { clearTimeout(prazo); if (corpo[1] === 0) { c.aberto = true; ping = setInterval(() => { try { ws.send(new Uint8Array([0xC0, 0])); } catch (e) {} }, 20000); aoAbrir && aoAbrir(c); } else fim(); }
+      else if (tipo === 3) {
+        const tl = (corpo[0] << 8) | corpo[1], t = td.decode(corpo.subarray(2, 2 + tl)), qos = (b0 >> 1) & 3, ini = 2 + tl + (qos ? 2 : 0);
+        try { aoMsg(t, JSON.parse(td.decode(corpo.subarray(ini))), c); } catch (e) {}
+      }
+    }
+  };
+  ws.onclose = fim; ws.onerror = fim;
+  return c;
+}
+
+// ---------- P1 (anfitrião)
+let salaCodigo = null, cliId = null, canalRelay = null, brokersHost = [];
+function enviarP2(m) { const c = conexaoP2; if (c && c.open !== false) { try { c.send(m); } catch (e) {} } }
 let selForcar = false;
-function receberDoP2(d) {
+function receberDoP2(d, canal) {
   if (!d) return;
+  ultimoSinalP2 = tempoReal;
+  if (d.t === 'oi' || (!p2Conectado && canal && d.t === 'hb')) { if (canal) usarCanal(canal); return; }
+  if (d.t === 'hb') return;
   if (d.t === 'pronto') { enviarP2({ t: 'modo', tela: telaP2() === 'propria' ? 'propria' : 'controle' }); selForcar = true; enviarTela(estado); return; }
   if (d.b === 'pausa') { if (estado.nome === 'corrida') alternarPausa(); return; }
   if (d.b) { fontes.remoto[d.b] = d.s === 1; if (d.s === 1) pulso[1][d.b] = true; }
+}
+// troca de via sem derrubar o jogador (ex.: começou pela internet e depois a direta conectou)
+function usarCanal(c) {
+  if (conexaoP2 === c && p2Conectado) return;
+  if (p2Conectado && conexaoP2 && conexaoP2.tipo === 'direto' && c.tipo === 'relay' && conexaoP2.open !== false) return;   // direta tem preferência
+  const novo = !p2Conectado; conexaoP2 = c; ultimoSinalP2 = tempoReal;
+  if (novo) p2Entrou(c); else { enviarP2({ t: 'modo', tela: telaP2() === 'propria' ? 'propria' : 'controle' }); enviarTela(estado); }
 }
 function p2Entrou(con) {
   conexaoP2 = con; p2Conectado = true;
@@ -1763,35 +1817,65 @@ function p2Entrou(con) {
   enviarP2({ t: 'modo', tela: telaP2() === 'propria' ? 'propria' : 'controle' });
   if (estado.nome === 'titulo' || estado.nome === 'selecao') irPara(telaSelecao(2)); else enviarTela(estado);
 }
-function p2Saiu(con) {
-  if (conexaoP2 !== con) return; p2Conectado = false; conexaoP2 = null; fontes.remoto = {}; avisar('JOGADOR 2 DESCONECTOU');
+function p2Saiu() {
+  if (!p2Conectado) return;
+  p2Conectado = false; conexaoP2 = null; fontes.remoto = {}; avisar('JOGADOR 2 DESCONECTOU');
   for (const h of humanos) if (h.humano === 1) h.auto = true;
   if (estado.nome === 'selecao') irPara(telaSelecao(1));
 }
+function statusConvite(t) { const st = document.getElementById('convite-status'); if (st) st.textContent = t; }
 function abrirConvite() {
-  const modal = document.getElementById('convite'), st = document.getElementById('convite-status');
-  if (LOCAL2P) { modal.classList.add('on'); st.textContent = 'TESTE LOCAL: ABRA ?sala=' + LOCAL2P + '&local2p=1'; return; }
-  if (typeof Peer === 'undefined') { avisar('SEM INTERNET PARA CONVIDAR'); return; }
-  modal.classList.add('on'); if (peerHost) return;
-  try {
-    peerHost = new Peer();
-    peerHost.on('open', id => {
-      const link = LINK_JOGO + '?sala=' + id, qr = document.getElementById('qr'); qr.innerHTML = '';
-      if (typeof QRCode !== 'undefined') new QRCode(qr, { text: link, width: 172, height: 172 });
-      st.textContent = 'AGUARDANDO O JOGADOR 2...';
-    });
-    peerHost.on('connection', con => {
-      con.on('open', () => p2Entrou(con));
-      con.on('data', receberDoP2);
-      con.on('close', () => p2Saiu(con)); con.on('error', () => p2Saiu(con));
-    });
-    peerHost.on('disconnected', () => { try { peerHost.reconnect(); } catch (e) {} });
-    peerHost.on('error', () => { st.textContent = 'FALHA AO GERAR CONVITE. VERIFIQUE A INTERNET.'; peerHost = null; });
-  } catch (e) { st.textContent = 'CONVITE INDISPONÍVEL'; }
+  const modal = document.getElementById('convite');
+  modal.classList.add('on');
+  if (LOCAL2P) { statusConvite('TESTE LOCAL: ABRA ?sala=' + LOCAL2P + '&local2p=' + LOCAL2P); return; }
+  if (salaCodigo) return;                                  // sala já aberta: só mostra de novo
+  salaCodigo = novoCodigo();
+  const link = LINK_JOGO + '?sala=' + salaCodigo, qr = document.getElementById('qr'); qr.innerHTML = '';
+  if (typeof QRCode !== 'undefined') new QRCode(qr, { text: link, width: 172, height: 172 }); else qr.innerHTML = '<span style="font:9px monospace;color:#000;word-break:break-all;padding:10px">' + link + '</span>';
+  const cod = document.getElementById('convite-codigo'); if (cod) cod.textContent = 'SALA ' + salaCodigo;
+  statusConvite('PREPARANDO A SALA...');
+  let viasOk = 0;
+  const pronta = () => { viasOk++; if (!p2Conectado) statusConvite('AGUARDANDO O JOGADOR 2 ESCANEAR...'); };
+  // via 2: retransmissão (todos os servidores ao mesmo tempo; o P2 fala por qualquer um)
+  BROKERS.forEach(url => mqttConectar(url, (t, m, b) => {
+    if (!m || (m._c && cliId && m._c !== cliId && p2Conectado && tempoReal - ultimoSinalP2 < 8)) return;   // outro celular tentando entrar com a sala ocupada
+    if (m.t === 'oi') {
+      if (m._c !== cliId || !canalRelay || canalRelay.b.aberto !== true) {
+        cliId = m._c; statusConvite('JOGADOR 2 ENCONTRADO! CONECTANDO...');
+        canalRelay = { tipo: 'relay', b, open: true, send: d => { d._c = cliId; b.pub(topico(salaCodigo, 'h'), d); } };
+      }
+      receberDoP2(m, canalRelay); return;
+    }
+    if (m._c === cliId) receberDoP2(m, canalRelay);
+  }, b => { b.sub(topico(salaCodigo, 'c')); brokersHost.push(b); pronta(); }, b => { if (canalRelay && canalRelay.b === b) canalRelay.open = false; }));
+  // via 1: direta
+  if (typeof Peer !== 'undefined') {
+    try {
+      peerHost = new Peer(idPeer(salaCodigo), { config: ICE });
+      peerHost.on('open', pronta);
+      peerHost.on('connection', con => {
+        statusConvite('JOGADOR 2 ENCONTRADO! CONECTANDO...');
+        const canal = { tipo: 'direto', con, open: false, send: d => con.send(d) };
+        con.on('open', () => { canal.open = true; usarCanal(canal); });
+        con.on('data', d => receberDoP2(d, canal));
+        const caiu = () => { canal.open = false; if (conexaoP2 === canal && canalRelay && canalRelay.open) { conexaoP2 = canalRelay; enviarTela(estado); } };
+        con.on('close', caiu); con.on('error', caiu);
+      });
+      peerHost.on('disconnected', () => { try { peerHost.reconnect(); } catch (e) {} });
+      peerHost.on('error', () => {});
+    } catch (e) {}
+  }
+  setTimeout(() => { if (!viasOk && !p2Conectado) statusConvite('SEM INTERNET? NÃO CONSEGUI ABRIR A SALA. CONFIRA A CONEXÃO E TENTE DE NOVO.'); }, 8000);
 }
 document.getElementById('fechar-convite').addEventListener('click', () => document.getElementById('convite').classList.remove('on'));
 // teste local: o P1 escuta o canal ao abrir com ?local2p=nome
-if (LOCAL2P && !CLIENTE) { const con = canalLocal(LOCAL2P, d => { if (d && d.t === 'oi') { if (!p2Conectado) p2Entrou(con); } else receberDoP2(d); }); }
+if (LOCAL2P && !CLIENTE) { const con = canalLocal(LOCAL2P, d => receberDoP2(d, con)); }
+// batimentos: P1 avisa que está vivo fora da corrida; se o P2 some por 10 s, vira IA
+function batimentoHost() {
+  if (CLIENTE || !p2Conectado) return;
+  if (estado.nome !== 'corrida' && tempoReal - ultimoHbHost > 2) { ultimoHbHost = tempoReal; enviarP2({ t: 'hb' }); }
+  if (tempoReal - ultimoSinalP2 > 10) p2Saiu();
+}
 
 // ---------- P1: o que mandar para o P2
 function pacoteInicio() {
@@ -1820,17 +1904,46 @@ let cliPronto = false, canalCli = null, cliStatus = 'CONECTANDO...', cliModo = '
 const enviarHost = m => { if (canalCli && canalCli.open !== false) { try { canalCli.send(m); } catch (e) {} } };
 const toqueHost = k => { enviarHost({ b: k, s: 1 }); setTimeout(() => enviarHost({ b: k, s: 0 }), 90); };
 const meuFoco = () => humanos[1] || humanos[0];
+const cliId0 = Math.random().toString(36).slice(2, 10);
+let ultimoDoHost = 0, cliDesde = 0;
+function usarCanalCli(c) {
+  if (canalCli === c) return;
+  if (canalCli && canalCli.tipo === 'direto' && canalCli.open !== false && c.tipo === 'relay') return;
+  canalCli = c; cliStatus = c.tipo === 'direto' ? 'CONECTADO (DIRETO)' : c.tipo === 'relay' ? 'CONECTADO (PELA INTERNET)' : 'CONECTADO';
+  if (cliPronto) enviarHost({ t: 'pronto' });
+}
 function conectarCliente() {
-  if (LOCAL2P) { canalCli = canalLocal(LOCAL2P, receberDoHost); canalCli.send({ t: 'oi' }); cliStatus = 'CONECTADO'; return; }
-  if (typeof Peer === 'undefined') { cliStatus = 'SEM INTERNET'; return; }
-  const p = new Peer();
-  p.on('open', () => {
-    const con = p.connect(SALA, { reliable: true, serialization: 'json' });
-    con.on('open', () => { canalCli = con; cliStatus = 'CONECTADO'; if (cliPronto) enviarHost({ t: 'pronto' }); });
-    con.on('data', receberDoHost);
-    con.on('close', () => { cliStatus = 'DESCONECTADO • RECARREGUE A PÁGINA'; canalCli = null; irPara(telaEspera()); });
-  });
-  p.on('error', () => { cliStatus = 'NÃO FOI POSSÍVEL CONECTAR'; });
+  cliDesde = tempoReal;
+  if (LOCAL2P) { const c = canalLocal(LOCAL2P, receberDoHost); usarCanalCli(c); c.send({ t: 'oi' }); return; }
+  cliStatus = 'PROCURANDO O P1...';
+  const cod = String(SALA).toUpperCase();
+  // via 2: retransmissão — manda "oi" por todos os servidores até o P1 responder
+  BROKERS.forEach(url => mqttConectar(url, (t, m, b) => {
+    if (!m || m._c !== cliId0) return;
+    usarCanalCli(b.canal); receberDoHost(m);
+  }, b => {
+    b.canal = { tipo: 'relay', b, open: true, send: d => { d._c = cliId0; b.pub(topico(cod, 'c'), d); } };
+    b.sub(topico(cod, 'h'));
+    const oi = () => { if (b.aberto !== true || (canalCli && tempoReal - ultimoDoHost < 3)) return; b.pub(topico(cod, 'c'), { t: 'oi', _c: cliId0 }); };
+    oi(); b.oiT = setInterval(oi, 1500);
+  }, b => { if (b && b.canal) b.canal.open = false; if (b) clearInterval(b.oiT); }));
+  // via 1: direta
+  if (typeof Peer !== 'undefined') {
+    try {
+      const p = new Peer({ config: ICE });
+      p.on('open', () => {
+        const con = p.connect(idPeer(cod), { reliable: true, serialization: 'json' });
+        const canal = { tipo: 'direto', con, open: false, send: d => con.send(d) };
+        con.on('open', () => { canal.open = true; usarCanalCli(canal); canal.send({ t: 'oi' }); });
+        con.on('data', receberDoHost);
+        con.on('close', () => { canal.open = false; });
+      });
+      p.on('error', () => {});
+    } catch (e) {}
+  }
+  // batimento do P2 + volta da tela bloqueada
+  setInterval(() => enviarHost({ t: 'hb' }), 2000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) enviarHost({ t: 'oi' }); });
 }
 function aplicarModoCliente(m) {
   cliModo = m; document.body.classList.toggle('controle', m === 'controle');
@@ -1838,6 +1951,8 @@ function aplicarModoCliente(m) {
 }
 function receberDoHost(m) {
   if (!m || !m.t) return;
+  ultimoDoHost = tempoReal;
+  if (m.t === 'hb') return;
   if (m.t === 'modo') return aplicarModoCliente(m.tela);
   if (!cliPronto) return;   // ainda carregando: quando terminar, pede o estado de novo
   if (m.t === 'sel') { if (estado.sync) estado.sync(m.i, m.ok); return; }
@@ -1915,7 +2030,9 @@ function telaEspera(sub) {
     render() {
       fundoEscuro('#0d1014', '#040506'); logo(W / 2, 96, 0.9);
       txt('JOGADOR 2', W / 2, 164, '#5ab4ff', 24, 'c');
-      txt(cliStatus, W / 2, 204, cliStatus === 'CONECTADO' ? '#4ef03a' : '#ffd23a', 8, 'c');
+      const semSinal = canalCli && tempoReal - ultimoDoHost > 8, demora = !canalCli && tempoReal - cliDesde > 20;
+      txt(semSinal ? 'SEM SINAL DO P1... A TELA DELE ESTÁ LIGADA?' : cliStatus, W / 2, 204, canalCli && !semSinal ? '#4ef03a' : '#ffd23a', 8, 'c');
+      if (demora) { txt('NÃO ACHEI O P1. CONFIRA SE A TELA DO CONVITE', W / 2, 252, '#ff9a6a', 8, 'c'); txt('CONTINUA ABERTA NO CELULAR DELE E ESCANEIE DE NOVO.', W / 2, 266, '#ff9a6a', 8, 'c'); }
       txt(sub || 'AGUARDANDO O P1 ESCOLHER O MODO...', W / 2, 228, '#c8c8d2', 8, 'c');
       if (!SOM.ac && Math.floor(tempoReal * 2) % 2) txt('TOQUE NA TELA PARA ATIVAR O SOM', W / 2, 290, '#ffd23a', 8, 'c');
       txt('MANTENHA A TELA LIGADA', W / 2, 330, '#666', 8, 'c');
@@ -1990,7 +2107,9 @@ function quadro(t) {
   juntarEntrada();
   encaminharEntrada();
   while (acum >= STEP) { estado.update && estado.update(STEP); guardarAnterior(); acum -= STEP; }
-  if (!CLIENTE && p2Remoto() && estado.nome === 'corrida' && tempoReal - ultimoEnvio > 0.05) { ultimoEnvio = tempoReal; enviarEstado(); }
+  if (!CLIENTE && p2Remoto() && estado.nome === 'corrida' && tempoReal - ultimoEnvio > (conexaoP2 && conexaoP2.tipo === 'relay' ? 0.1 : 0.05)) { ultimoEnvio = tempoReal; enviarEstado(); }
+  batimentoHost();
+  if (CLIENTE && cliModo === 'controle') { const ps = document.getElementById('p2-status'); if (ps) ps.textContent = canalCli ? (tempoReal - ultimoDoHost > 8 ? 'SEM SINAL DO P1' : 'CONECTADO - OLHE A TELA DO P1') : cliStatus; }
   ctx.imageSmoothingEnabled = false;
   hiLimpar();
   estado.render && estado.render();
