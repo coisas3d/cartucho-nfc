@@ -85,7 +85,7 @@ addEventListener('resize', ajustarTela); addEventListener('orientationchange', (
 
 // ============================================================ IMAGENS
 const NOMES = ['piloto', 'piloto_leosao', 'piloto_gs1300', 'foto_versys', 'foto_gs850', 'foto_gs1300', 'retrato_jellison', 'retrato_leosao',
-  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a'];
+  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco', 'piloto_henrique', 'foto_tiger', 'retrato_henrique', 'foto_gs1300a', 'piloto_cezar', 'piloto_cleimar', 'foto_adv_prata', 'foto_adv_preto', 'retrato_cezar', 'retrato_cleimar'];
 const IMG = {};
 function carregar(prog) {
   let n = 0;
@@ -726,13 +726,13 @@ function hudPedagio(v, c, dois) {
   else if (!chegouPedagio(pg, T)) t1 = 'ESPERANDO O PAGADOR: ' + pg.nome;
   else t1 = c === pg ? 'VOCÊ PAGA! ESPERE A TURMA' : pg.nome + ' ESPERA A TURMA';
   txt(t1, cx, y + 6 * e, '#ffd23a', 8, 'c', false);
-  const rs = 30 * e, gap = Math.min(30 * e, (w - 16 - N * rs) / Math.max(1, N - 1)), tot = N * rs + (N - 1) * gap;
+  const rs = Math.min(30 * e, (w - 16 - (N - 1) * 6) / N), gap = Math.min(30 * e, (w - 16 - N * rs) / Math.max(1, N - 1)), tot = N * rs + (N - 1) * gap, muitos = N > 6;
   corredores.forEach((o, i) => {
     const ox = cx - tot / 2 + i * (rs + gap), oy = y + 20 * e, ok = chegouPedagio(o, T) || presoPedagio(o), r = IMG[o.def.retrato];
     ctx.fillStyle = o === pg ? '#ffd23a' : ok ? '#4ef03a' : '#555'; ctx.fillRect(ox - 2, oy - 2, rs + 4, rs + 4);
     if (r) { ctx.globalAlpha = ok ? 1 : 0.45; ctx.drawImage(r, ox, oy, rs, rs); ctx.globalAlpha = 1; }
     const falta = Math.max(0, T.z - 60 - o.z);
-    const km = falta / SEG / (FIM_I - START_I) * VIAGEM.km; txt(ok ? 'OK' : km < 1 ? Math.max(10, Math.round(km * 100) * 10) + 'M' : km.toFixed(1) + 'KM', ox + rs / 2, oy + rs + 3, ok ? '#4ef03a' : '#ff9a6a', 8, 'c', false);
+    const km = falta / SEG / (FIM_I - START_I) * VIAGEM.km; txt(ok ? 'OK' : muitos ? (km < 10 ? km.toFixed(1) : Math.round(km) + '') : km < 1 ? Math.max(10, Math.round(km * 100) * 10) + 'M' : km.toFixed(1) + 'KM', ox + rs / 2, oy + rs + 3, ok ? '#4ef03a' : '#ff9a6a', 8, 'c', false);
   });
   if (T.estado === 'pagando') { ctx.fillStyle = '#222'; ctx.fillRect(x + 10, y + h - 6, w - 20, 3); ctx.fillStyle = '#4ef03a'; ctx.fillRect(x + 10, y + h - 6, (w - 20) * Math.min(1, T.pagT / 1.4), 3); }
 }
@@ -1289,7 +1289,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v3.6', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v3.7', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
@@ -1630,7 +1630,7 @@ function telaResultado() {
           txt(curto(c.nome), x + 60, by + 30, '#111', 8, 'c', false); txt(fmtTempo(est(c)), x + 60, by + 44, '#222', 8, 'c', false);
           if (c.multas) txt(c.multas + ' MULTA' + (c.multas > 1 ? 'S' : ''), x + 60, by + 58, '#8a1a10', 8, 'c', false);
         });
-        ordem.slice(3).forEach((c, i) => txt((i + 4) + 'º ' + c.nome + '  ' + fmtTempo(est(c)), 14, 96 + i * 14, c.humano >= 0 ? '#4ef03a' : '#ddd', 8));
+        ordem.slice(3).forEach((c, i) => txt((i + 4) + 'º ' + curto(c.nome) + ' ' + fmtTempo(est(c)), 14, 96 + i * 13, c.humano >= 0 ? '#4ef03a' : '#ddd', 8));
         txt((novo ? 'NOVO RECORDE! ' : 'RECORDE: ') + fmtTempo(guardar.ler(chave, null)), 14, 42, novo ? '#ffd23a' : '#ddd', 8);
         humanos.forEach((q, i) => txt((humanos.length > 1 ? 'P' + (i + 1) + ': ' : 'VOCÊ: ') + posicao(q) + 'º • ' + plural(q.batidas, 'TOMBO') + ' • ' + plural(q.multas, 'MULTA'), 14, 58 + i * 14, '#fff', 8));
       }
@@ -1928,7 +1928,7 @@ function telaResultadoCliente(res) {
         txt((i + 1) + 'º', x + 60, by + 8, '#111', 16, 'c', false); const r = IMG[c.def.retrato]; if (r) ctx.drawImage(r, x + 28, by - 68, 64, 64);
         txt(curto(c.nome) + (c === eu ? ' (P2)' : c.humano === 0 ? ' (P1)' : ''), x + 60, by + 30, '#111', 8, 'c', false); txt(fmtTempo(c.tempo), x + 60, by + 44, '#222', 8, 'c', false);
       });
-      ordem.slice(3).forEach((c, i) => txt((i + 4) + 'º ' + c.nome + '  ' + fmtTempo(c.tempo), 14, 70 + i * 14, c === eu ? '#4ef03a' : '#ddd', 8));
+      ordem.slice(3).forEach((c, i) => txt((i + 4) + 'º ' + curto(c.nome) + ' ' + fmtTempo(c.tempo), 14, 70 + i * 13, c === eu ? '#4ef03a' : '#ddd', 8));
       if (eu) txt('VOCÊ: ' + (ordem.indexOf(eu) + 1) + 'º • ' + plural(eu.multas, 'MULTA') + ' • ' + plural(eu.batidas, 'TOMBO'), 14, 42, '#fff', 8);
       alvosToque = [];
       botao(20, H - 46, 260, 32, 'COMPARTILHAR', () => compartilhar(blob), false, '#1e6a3a');
