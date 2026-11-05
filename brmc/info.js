@@ -6,7 +6,8 @@ window.INFO = (function () {
 
   // ===== HISTÓRICO DE VERSÕES (a primeira da lista é a versão atual do jogo) =====
   const VERSOES = [
-    ['5.5', ['Física de batida corrigida: ninguém atravessa mais carros e caminhões (a área de colisão agora tem o tamanho real do veículo), e o trânsito freia para as motos na frente.', 'Música começa já no aviso de abertura.', 'Adriano: MT-09 a 215 km/h e a pior economia do clube.', 'Pilotos do jogo também buzinam, principalmente os Rôias.', 'Caminhoneiro buzinado tem 50% de chance de fechar a ultrapassagem.', 'Tombo agora soma +3 s no tempo.', 'Multa pela gravidade: até 20% acima do limite +5 s, até 50% +10 s, acima de 50% +20 s.']],
+    ['5.6', ['Multas mais leves: até 20% acima do limite +3 s, até 50% acima +7 s, mais de 50% acima +15 s (gravíssima).']],
+    ['5.5', ['Física de batida corrigida: ninguém atravessa mais carros e caminhões (a área de colisão agora tem o tamanho real do veículo), e o trânsito freia para as motos na frente.', 'Música começa já no aviso de abertura.', 'Adriano: MT-09 a 215 km/h e a pior economia do clube.', 'Pilotos do jogo também buzinam, principalmente os Rôias.', 'Caminhoneiro buzinado tem 50% de chance de fechar a ultrapassagem.', 'Tombo agora soma +3 s no tempo.', 'Multa pela gravidade do excesso de velocidade.']],
     ['5.4', ['Emblema da Coisas 3D no aviso de abertura, na tela SOBRE e no rodapé da tela inicial.']],
     ['5.3', ['Novo botão COMO JOGAR com o manual completo do jogo.', 'Novo menu NOVIDADES com o histórico de versões.', 'Novo menu SOBRE com os créditos da Coisas 3D, Instagram e WhatsApp.', 'Aviso de abertura: projeto sem fins lucrativos, uma homenagem ao Black Rock MC.']],
     ['5.2', ['Versão do jogo visível nas telas de abertura e inicial.']],
@@ -53,7 +54,7 @@ window.INFO = (function () {
     ])) +
     sec('📸 Radares', lista([
       'Antes de cada radar aparecem <b>3 placas</b> com a velocidade máxima, e o ícone de radar mostra a distância no painel.',
-      'Passou acima do limite: <b>flash</b> e multa somada ao seu tempo, conforme a gravidade: até 20% acima <b>+5 s</b> (média), até 50% acima <b>+10 s</b> (grave), mais de 50% acima <b>+20 s</b> (gravíssima).',
+      'Passou acima do limite: <b>flash</b> e multa somada ao seu tempo, conforme a gravidade: até 20% acima <b>+3 s</b> (média), até 50% acima <b>+7 s</b> (grave), mais de 50% acima <b>+15 s</b> (gravíssima).',
       'Os McNamaras às vezes ignoram a placa… e pagam por isso.'
     ])) +
     sec('📯 Buzina', lista([

@@ -563,9 +563,9 @@ function pilotoIA(c, seg) {
   return inp;
 }
 
-// penalidades: tombo +3 s | multa pela gravidade (como no CTB): até 20% acima +5 s, até 50% +10 s, acima de 50% +20 s
+// penalidades: tombo +3 s | multa pela gravidade (como no CTB): até 20% acima +3 s, até 50% +7 s, acima de 50% +15 s
 const PENA_TOMBO = 3;
-function multaPena(vel, lim) { const ex = (vel - lim) / lim; return ex > 0.5 ? [20, 'GRAVÍSSIMA'] : ex > 0.2 ? [10, 'GRAVE'] : [5, 'MÉDIA']; }
+function multaPena(vel, lim) { const ex = (vel - lim) / lim; return ex > 0.5 ? [15, 'GRAVÍSSIMA'] : ex > 0.2 ? [7, 'GRAVE'] : [3, 'MÉDIA']; }
 function bater(c, novaV) {
   if (c.crash > 0 || c.abast) return;
   c.crash = 1.7; c.giro = 0; c.v = Math.max(0, novaV); c.batidas = (c.batidas || 0) + 1;
