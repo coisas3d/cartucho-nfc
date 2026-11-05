@@ -1,6 +1,14 @@
 {
- "atualizado": null,
+ "atualizado": "2026-11-05T19:06:10.478Z",
  "viagem": [],
- "cafe": [],
+ "cafe": [
+  {
+   "n": "TESTE",
+   "p": "jellison",
+   "t": 70.5,
+   "m": 1,
+   "d": "2026-11-05"
+  }
+ ],
  "relogio": []
 }
