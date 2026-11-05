@@ -23,7 +23,10 @@ window.DADOS = (function () {
       vel: 225, acel: 0.95, economia: 0.50, curva: 0.88, capacete: '#cc2620', curto: 'MECÂNICO' },
     { id: 'pescoco', nome: 'FABINHO PESCOÇO', moto: 'BRMC GS 1300 TRIPLE BLACK', cc: 1300, tanque: 19, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.01,
       sprite: 'piloto_pescoco', foto: 'foto_gs1300p', tampa: [0.40, 0.31], retrato: 'retrato_pescoco', voz: 140,
-      vel: 222, acel: 0.92, economia: 0.54, curva: 0.84, capacete: '#1e1e22', curto: 'PESCOÇO' }
+      vel: 222, acel: 0.92, economia: 0.54, curva: 0.84, capacete: '#1e1e22', curto: 'PESCOÇO' },
+    { id: 'henrique', nome: 'HENRIQUE DO SAMUEL', moto: 'BRMC T900 RALLY PRO', cc: 888, tanque: 20, motor: 'triple', perfil: 'McNAMARA', ritmo: 1.0,
+      sprite: 'piloto_henrique', foto: 'foto_tiger', tampa: [0.40, 0.30], retrato: 'retrato_henrique', voz: 165,
+      vel: 210, acel: 0.86, economia: 0.68, curva: 0.92, capacete: '#b0aa98', curto: 'HENRIQUE' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -255,6 +258,25 @@ window.DADOS = (function () {
       pagador_espera: ['Pescoço chegou primeiro e tá esticando o pescoço pra ver a turma chegando!'],
       esperando_pagador: ['Cadê o Pescoço? A gente vai torcer o pescoço de tanto olhar pra trás!']
     },
+    henrique: {
+      geral: ['Henrique do Samuel... o Samuel sabe que você tá aqui?', 'Manda um abraço pro Samuel, Henrique!', 'Henrique é o único de três cilindros: dá pra reconhecer pelo ronco!',
+        'Henrique veio de tigre: cuidado que ele morde nas curvas!', 'Henrique, o único que não anda de BMW e ainda passa todo mundo!', 'A moto do Henrique é cor de areia: perfeita pra se esconder na estrada de terra!',
+        'Henrique é o mais caprichoso do clube: moto limpinha, óculos limpinho, cabelo no lugar!', 'Henrique pilota com elegância: até a curva ele faz com classe!',
+        'Henrique, para de arrumar o cabelo no retrovisor que o capacete vai bagunçar tudo de novo!'],
+      lanterna: ['Henrique lá atrás? Deve ter parado pra ligar pro Samuel!', 'Cadê o Henrique? O tigre dormiu!'],
+      lider: ['Henrique na frente! O tigre soltou a fera!', 'Henrique do Samuel liderando: o Samuel vai ficar orgulhoso!'],
+      ultrapassou: ['Henrique passou rugindo! Três cilindros não perdoam!', 'Lá vai o Henrique! Ninguém segura o tigre nas curvas!'],
+      batida: ['Henrique caiu! Levantou, ajeitou o cabelo e seguiu com classe!', 'Henrique caiu! Alguém avisa o Samuel!', 'O tigre tropeçou! Levanta, Henrique!'],
+      reserva: ['Henrique na reserva! O tigre tá com fome!'],
+      abastecendo: ['Henrique abastecendo e já limpando a moto com lencinho umedecido!', 'Henrique abastecendo: tigre também precisa comer!', 'Henrique, tira foto da moto no posto pro Samuel ver!'],
+      pedagio: ['Henrique, o pedágio é na conta do Samuel?'],
+      multa: ['Henrique multado! A multa vai pro endereço do Samuel?', 'O radar pegou o tigre! Sorria, Henrique!'],
+      buzina: ['Henrique buzinou! Parece um tigre rosnando!'],
+      chuva: ['Henrique, tigre não gosta de água, cuidado aí!', 'Chuva? O Henrique vai reclamar que molhou a moto que ele acabou de lavar!'],
+      pagador: ['Henrique paga o pedágio! Ou melhor, o Samuel paga!', 'Sorteado: Henrique do Samuel! Liga pro Samuel mandar o Pix!'],
+      pagador_espera: ['Henrique chegou rugindo no pedágio e agora vai esperar a turma toda!'],
+      esperando_pagador: ['Esperando o Henrique... deve tá explicando pro Samuel onde tá!']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -311,6 +333,13 @@ window.DADOS = (function () {
       ultrapassou: ['Vai, {alvo}, aproveita que eu tô olhando a paisagem!'],
       batida: ['{alvo}, cuidado com o pescoço aí!'],
       geral: ['Alguém viu como a Triple Black brilha no sol?']
+    },
+    henrique: {
+      largada: ['O tigre tá acordado! Bora, Black Rock!', 'Ai, gente, que dia lindo pra rodar! Bora!'],
+      passou_voce: ['Passei, {alvo}! Três cilindros, irmão!'],
+      ultrapassou: ['Vai, {alvo}, aproveita que o tigre tá de boa!'],
+      batida: ['{alvo}, quer que eu chame o Samuel pra te buscar?'],
+      geral: ['Essa moto faz curva que é uma beleza, viu?', 'Ai, gente, olha essa paisagem! Que coisa mais linda!', 'Gente, alguém tem um paninho? Minha viseira tá um horror!']
     },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],

@@ -73,9 +73,9 @@ window.SOM = (function () {
   // rpm 0-1, gas 0/1, tipo: twin | boxer
   S.motor = function (j, rpm, gas, vol, tipo) {
     const m = S.motores[j]; if (!m) return;
-    const t = S.ac.currentTime, base = tipo === 'boxer' ? 30 : 36, f = base + rpm * (tipo === 'boxer' ? 105 : 130);
+    const t = S.ac.currentTime, base = tipo === 'boxer' ? 30 : tipo === 'triple' ? 44 : 36, f = base + rpm * (tipo === 'boxer' ? 105 : tipo === 'triple' ? 165 : 130);
     m.o1.frequency.setTargetAtTime(f, t, 0.03); m.o2.frequency.setTargetAtTime(f / 2, t, 0.03); m.o3.frequency.setTargetAtTime(f * 1.5, t, 0.03);
-    m.lfo.frequency.setTargetAtTime(f / (tipo === 'boxer' ? 2 : 4), t, 0.03);
+    m.lfo.frequency.setTargetAtTime(f / (tipo === 'boxer' ? 2 : tipo === 'triple' ? 3 : 4), t, 0.03);
     m.f.frequency.setTargetAtTime(500 + rpm * 1600 + gas * 900, t, 0.05);
     m.g.gain.setTargetAtTime(vol * (0.035 + gas * 0.05 + rpm * 0.02), t, 0.06);
   };
