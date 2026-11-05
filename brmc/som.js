@@ -155,6 +155,16 @@ window.SOM = (function () {
     b.osc.forEach(([o, l]) => { o.stop(t + 0.09); l.stop(t + 0.09); });
   };
   S.buzina = (grave) => { S.buzinaOn(grave); S.buzinaOff(); };
+  // buzina a ar do caminhão respondendo (grave, longa, com dois toques)
+  S.buzinaCaminhao = () => {
+    if (!S.ac) return; const ac = S.ac, t0 = ac.currentTime;
+    const sat = ac.createWaveShaper(); sat.curve = curvaSat();
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2200; lp.Q.value = 0.7;
+    const pk = ac.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 700; pk.Q.value = 1.5; pk.gain.value = 7;
+    const g = ac.createGain(); g.gain.value = 0; sat.connect(pk); pk.connect(lp); lp.connect(g); g.connect(S.fx);
+    [[0, 0.22], [0.3, 0.75]].forEach(([a, d]) => { const t = t0 + a; g.gain.setTargetAtTime(0.16, t, 0.02); g.gain.setTargetAtTime(0, t + d, 0.03); });
+    [138, 174, 207].forEach(fr => { const o = ac.createOscillator(), og = ac.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(fr * 0.95, t0); o.frequency.exponentialRampToValueAtTime(fr, t0 + 0.06); og.gain.value = 0.5; o.connect(og); og.connect(sat); o.start(t0); o.stop(t0 + 1.2); });
+  };
   S.buzinaToque = (grave, dur) => { if (!S.ac) return; S.buzinaOn(grave); const b = bzAtiva; setTimeout(() => { if (bzAtiva === b) S.buzinaOff(); }, (dur || 0.25) * 1000); };
   S.flash = () => { tom(2400, 0.04, 'square', 0.12); ruido(0.12, 'highpass', 6000, 0.25); setTimeout(() => tom(1800, 0.05, 'sine', 0.1), 60); };
   S.multa = () => { [784, 659, 523].forEach((f, i) => setTimeout(() => tom(f, 0.14, 'square', 0.1), i * 120)); };

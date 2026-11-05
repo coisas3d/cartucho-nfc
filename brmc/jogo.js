@@ -325,6 +325,7 @@ const TIPOS = [
   { tras: 'truck_rear', frente: 'truck_front', w: 168, len: 820, vmin: 60, vmax: 85, p: 0.22, cores: 'frente', pesado: true },
   { tras: 'carreta_rear', frente: 'truck_front', w: 184, len: 1500, vmin: 55, vmax: 80, p: 0.18, cores: 'frente', pesado: true }
 ];
+const XINGOS = ['SAI DAÍ, MOTOQUEIRO! #@%&!', 'BUZINA PRA TUA MÃE!', 'TÁ COM PRESSA? PASSA POR CIMA!', 'ÔÔ BARBEIRO! #@$%!', 'NÃO SAIO! VAI ESPERAR!', 'QUER PASSAR? CRIA ASAS!', 'ACHA QUE É DONO DA ESTRADA?!'];
 const CORES_VEIC = [[200, 30, 30], [30, 80, 200], [228, 228, 228], [34, 34, 38], [240, 200, 40], [120, 120, 132], [20, 120, 60], [150, 60, 30], [90, 140, 200]];
 let trafego = [];
 function sortear() { let r = Math.random(); for (const t of TIPOS) { if ((r -= t.p) < 0) return t; } return TIPOS[0]; }
@@ -346,6 +347,7 @@ function atualizarTrafego(dt) {
   const fim = FIM_Z + 120 * SEG, ini = (START_I + 40) * SEG;
   for (const v of trafego) {
     const D = tipoEm(v.z) === 'D';
+    if (v.xinga > 0) v.xinga -= dt;
     if (v.oposto) v.alvoX = D ? v.faixaD : -0.5;
     else if (v.cede > 0) { v.cede -= dt; v.alvoX = v.cedeX; v.v = Math.max(v.vBase * 0.7, v.v - 20 * KMH * dt); v.freio = 1; v.pisca = 0.2; }
     else {
@@ -519,6 +521,7 @@ function pilotoIA(c, seg) {
       else { alvoV = Math.min(alvoV, obst.v * 0.95); if (melhor < obst.len / 2 + 2800) inp.freio = c.v > alvoV + 3 * KMH; }
     }
   }
+  if (ia.cedeAte > tempoReal && alvoX < 1.3) { alvoX = ia.cedeX; alvoV = Math.min(alvoV, c.v * 0.995); }
   inp.esq = c.x > alvoX + 0.05; inp.dir = c.x < alvoX - 0.05;
   if (c.v > alvoV) { inp.acel = false; if (c.v > alvoV + 12 * KMH) inp.freio = true; }
   if (alvoV === 0 && c.v > 2 * KMH) inp.freio = true;
@@ -647,15 +650,32 @@ function multar(c, R) {
 // buzina: os carros da frente abrem passagem (pista dupla: trocam de faixa; via simples: encostam)
 function buzinar(c) {
   c.buzT = 0.45; c.buzinas++; if (c.auto) SOM.buzinaToque(c.def.motor === 'boxer', 0.3); else SOM.buzinaOn(c.def.motor === 'boxer');
+  let xingou = null;
   for (const v of trafego) {
     if (v.oposto) continue; const dz = v.z - c.z;
     if (dz > 0 && dz < 5200 && Math.abs(v.x - c.x) < 0.8) {
       const D = tipoEm(v.z) === 'D';
       const livre = x => !trafego.some(o => !o.oposto && o !== v && Math.abs(o.x - x) < 0.4 && Math.abs(o.z - v.z) < 2200);
-      v.cedeX = D && v.x < 0 && livre(0.5) ? 0.5 : 1.16; v.cede = 3.2;
+      if (v.pesado) {   // caminhão e carreta não saem da frente: o motorista xinga
+        if (!(v.xinga > 0)) { v.xingaI = Math.floor(Math.random() * XINGOS.length); xingou = xingou || v; }
+        v.xinga = 2.4;
+      } else { v.cedeX = D && v.x < 0 && livre(0.5) ? 0.5 : 1.16; v.cede = 3.2; }
     }
   }
-  if (Math.random() < 0.22) falarSobre('buzina', c);
+  // membros do moto clube na frente também abrem passagem
+  let abriu = null;
+  for (const o of corredores) {
+    if (o === c || !o.ia || (o.humano >= 0 && !o.auto) || o.crash > 0 || o.abast || o.fim) continue;
+    const dz = o.z - c.z;
+    if (dz > 0 && dz < 3600 && Math.abs(o.x - c.x) < 0.45) {
+      const lado = o.x >= c.x ? 1 : -1; let x = o.x + lado * 0.6; if (x > 1.15 || x < -0.9) x = o.x - lado * 0.6;
+      o.ia.cedeX = clamp(x, -0.9, 1.15); o.ia.cedeAte = tempoReal + 2.6; abriu = abriu || o;
+    }
+  }
+  const local = c.humano >= 0 && !c.auto && (!p2Remoto() || c.humano === 0);
+  if (xingou) { if (local) setTimeout(() => SOM.buzinaCaminhao(), 380); if (Math.random() < 0.5) { radio.cd = 0; falarSobre('xingado', c); } }
+  else if (abriu && Math.random() < 0.45) { radio.cd = 0; falarSobre('abre_passagem', c, abriu); }
+  else if (Math.random() < 0.22) falarSobre('buzina', c);
 }
 function colisoes() {
   for (const c of corredores) {
@@ -1023,7 +1043,7 @@ function renderVista(vi, v, foco, idx) {
     maxy = b.y;
   }
   // ---- objetos de trás para frente
-  const porSeg = new Map();
+  const porSeg = new Map(); const baloes = [];
   const add = (z, o) => { const i = Math.floor(z / SEG) - base.i; if (i > 0 && i < lim) { let l = porSeg.get(i); if (!l) porSeg.set(i, l = []); l.push(o); } };
   for (const t of trafego) add(t.z, { t });
   for (const c of corredores) if (c !== foco) add(c.z, { c });
@@ -1070,6 +1090,7 @@ function renderVista(vi, v, foco, idx) {
           if (!obj.oposto && (obj.freio || tarde > 0.4)) { const al = obj.freio ? 0.8 : 0.4; luz(g, px - dw * 0.4, py - dh * 0.35, dw * 0.18, 'rgba(255,40,30,A)', al); luz(g, px + dw * 0.4, py - dh * 0.35, dw * 0.18, 'rgba(255,40,30,A)', al); }
           if (obj.oposto && tarde > 0.3) { luz(g, px - dw * 0.35, py - dh * 0.3, dw * 0.3, 'rgba(255,240,200,A)', tarde * 0.7); luz(g, px + dw * 0.35, py - dh * 0.3, dw * 0.3, 'rgba(255,240,200,A)', tarde * 0.7); }
           if (obj.pisca > 0 && Math.floor(tempoReal * 4) % 2) luz(g, px + (obj.alvoX < obj.x ? -1 : 1) * dw * 0.45, py - dh * 0.4, dw * 0.12, 'rgba(255,170,30,A)', 0.9);
+          if (obj.xinga > 0 && dh > 14 && !obj.oposto) baloes.push([px, Math.max(py - dh - 6 * k, 30), obj, nvA * clamp((dh - 14) / 18, 0, 1)]);
         } else if (obj.fantasma) {
           g.globalAlpha = 0.42 * nvA; desenharSprite(g, obj.img, sc, k, px, py, -0.5, a.clip, 1, obj.lean * 0.42); g.globalAlpha = nvA;
         } else {
@@ -1089,6 +1110,7 @@ function renderVista(vi, v, foco, idx) {
       }
     }
   }
+  for (const [bx, by, o, al] of baloes) { g.globalAlpha = al; balaoXingo(g, bx, by, XINGOS[o.xingaI || 0], o.xinga); }
   g.globalAlpha = 1;
   if (neb > 0.02) { g.globalAlpha = neb * 0.2; g.fillStyle = nevCss; g.fillRect(0, 0, v.w, v.h); g.globalAlpha = 1; }
   // ---- moto do jogador
@@ -1362,7 +1384,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v4.8', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v4.9', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
@@ -1449,6 +1471,16 @@ function telaSelecao(n, cli) {   // cli = celular do P2 mostrando a escolha dele
   };
 }
 // ============================================================ SELEÇÃO PREMIUM (1 jogador)
+// balão de xingamento do caminhoneiro (tremidinho, texto vermelho)
+function balaoXingo(g, x, yb, txt, t) {
+  const pal = txt.split(' '), lin = ['']; for (const w of pal) { const l = lin[lin.length - 1]; if ((l + ' ' + w).trim().length > 14 && l) lin.push(w); else lin[lin.length - 1] = (l + ' ' + w).trim(); }
+  const tw = Math.max.apply(null, lin.map(l => l.length)) * 8.4 + 14, th = lin.length * 10 + 8, tr = Math.floor(tempoReal * 18) % 2;
+  const bx = Math.round(clamp(x - tw / 2, 4, W - tw - 4)) + (t > 2 ? tr : 0), by = Math.round(yb - th - 6);
+  g.fillStyle = '#ffffff'; caminhoArred(g, bx, by, tw, th, 5); g.fill(); g.strokeStyle = '#111'; g.lineWidth = 1.5; g.stroke();
+  g.beginPath(); g.moveTo(clamp(x, bx + 8, bx + tw - 8) - 4, by + th - 1); g.lineTo(clamp(x, bx + 8, bx + tw - 8) + 2, by + th + 6); g.lineTo(clamp(x, bx + 8, bx + tw - 8) + 5, by + th - 1); g.closePath(); g.fill();
+  g.beginPath(); g.moveTo(clamp(x, bx + 8, bx + tw - 8) - 4, by + th); g.lineTo(clamp(x, bx + 8, bx + tw - 8) + 2, by + th + 6); g.lineTo(clamp(x, bx + 8, bx + tw - 8) + 5, by + th); g.stroke();
+  lin.forEach((l, i) => A.txt(g, l, bx + tw / 2, by + 4 + i * 10, '#d01818', 8, 'c', false));
+}
 function caminhoArred(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.lineTo(x + w - r, y); g.quadraticCurveTo(x + w, y, x + w, y + r); g.lineTo(x + w, y + h - r); g.quadraticCurveTo(x + w, y + h, x + w - r, y + h); g.lineTo(x + r, y + h); g.quadraticCurveTo(x, y + h, x, y + h - r); g.lineTo(x, y + r); g.quadraticCurveTo(x, y, x + r, y); g.closePath(); }
 const autonomia = p => 0.5 / (1.4 - p.economia * 0.85);
 // barras relativas ao grupo: o pior do clube ainda aparece com 2/10 (nunca zerado)
@@ -2027,7 +2059,7 @@ function enviarEstado() {
     Math.round(c.comb * 10), Math.round(c.rpm * 1000), c.marcha, c.gas, c.freando ? 1 : 0, c.fora ? 1 : 0, c.fim ? 1 : 0, c.tempo == null ? -1 : Math.round(c.tempo * 100),
     c.penal, c.multas, c.batidas || 0, Math.round(c.susp * 10), Math.round(c.roll * 10000), c.vacuo ? 1 : 0, c.abast ? Math.round(c.abast.t * 100) : 0, c.abriu > 0 ? 1 : 0, c.multaInfo ? c.multaInfo[1] : 0]);
   const tr = [];
-  trafego.forEach((v, i) => { if (v.z > foco.z - 5000 && v.z < foco.z + 48000) tr.push(i, Math.round(v.z), Math.round(v.x * 1000), Math.round(v.v), v.pisca > 0 ? (v.alvoX < v.x ? 1 : 2) : 0, v.freio ? 1 : 0); });
+  trafego.forEach((v, i) => { if (v.z > foco.z - 5000 && v.z < foco.z + 48000) tr.push(i, Math.round(v.z), Math.round(v.x * 1000), Math.round(v.v), v.pisca > 0 ? (v.alvoX < v.x ? 1 : 2) : 0, v.freio ? 1 : 0, v.xinga > 0 ? v.xingaI + 1 : 0); });
   enviarP2({ t: 's', tc: Math.round(tempoCorrida * 100), ct: Math.round(contagem * 100), pz: pausado ? 1 : 0, rl: Math.round(relampago * 100), c, tr,
     pd: PEDAGIOS.map(T => [T.pagador, EST_PED.indexOf(T.estado), Math.round(T.sorteio * 100), Math.round(T.pagT * 100), Math.round(T.anuncio * 100)]) });
 }
@@ -2131,9 +2163,10 @@ function aplicarEstado(m) {
     if (c.abriu && !antes.abriu) SOM.cancela();
   });
   cliPrimeiro = false;
-  for (let i = 0; i < m.tr.length; i += 6) {
+  for (let i = 0; i < m.tr.length; i += 7) {
     const v = trafego[m.tr[i]]; if (!v) continue;
     v.zRec = m.tr[i + 1]; v.tRec = tempoReal; v.xRec = m.tr[i + 2] / 1000; v.v = m.tr[i + 3]; v.pisca = m.tr[i + 4] ? 0.3 : 0; v.alvoX = v.xRec + (m.tr[i + 4] === 1 ? -0.1 : m.tr[i + 4] === 2 ? 0.1 : 0); v.freio = m.tr[i + 5];
+    const xg = m.tr[i + 6]; if (xg && !(v.xinga > 0)) { v.xingaI = xg - 1; const mf = meuFoco(); if (mf && Math.abs(v.z - mf.z) < 6000) SOM.buzinaCaminhao(); } v.xinga = xg ? 0.3 : 0;
   }
   m.pd.forEach((a, k) => { const T = PEDAGIOS[k]; if (!T) return; T.pagador = a[0]; T.estado = EST_PED[a[1]] || 'livre'; T.sorteio = a[2] / 100; T.pagT = a[3] / 100; T.anuncio = a[4] / 100; if (T.estado === 'aberto') for (const c of corredores) c.pag[T.k] = true; });
 }
@@ -2268,7 +2301,7 @@ function iniciar() {
 }
 // modo offline: guarda o jogo no aparelho (funciona sem internet depois da 1ª visita)
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-window.BRMC = { simular(s) { for (let i = 0; i < s * 60; i++) { juntarEntrada(); estado.update(STEP); guardarAnterior(); } }, get estado() { return estado; }, get corredores() { return corredores; },
+window.BRMC = { simular(s) { for (let i = 0; i < s * 60; i++) { juntarEntrada(); estado.update(STEP); guardarAnterior(); } }, get estado() { return estado; }, get trafego() { return trafego; }, buzinar(c) { buzinar(c); }, get corredores() { return corredores; },
   get humanos() { return humanos; }, get tempo() { return tempoCorrida; }, get radio() { return radio; }, get postos() { return POSTOS; }, get pedagios() { return PEDAGIOS; }, get radares() { return RADARES; }, get clima() { return CLIMA; }, set clima(c) { CLIMA = c; }, get modo() { return MODO; }, modoJogo: m => iniciarModo(m), cartao: () => gerarCartao(humanos[0], 1, 'TESTE').then(b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); })), buzinar: () => buzinar(humanos[0]), get trafego() { return trafego; }, get viagem() { return VIAGEM; }, desenharAvisos, dist: () => [DIST, START_I * SEG, FIM_Z, CONS()], entrada: fontes };
 iniciar();
 })();
