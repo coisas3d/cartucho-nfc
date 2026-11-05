@@ -1,5 +1,5 @@
 {
- "atualizado": "2026-11-05T22:03:23.500Z",
+ "atualizado": "2026-11-05T22:05:07.339Z",
  "viagem": [
   {
    "n": "HENZO",
@@ -17,6 +17,13 @@
   }
  ],
  "cafe": [
+  {
+   "n": "HENZO",
+   "p": "henrique",
+   "t": 64.6,
+   "m": 1,
+   "d": "2026-11-05"
+  },
   {
    "n": "TESTE",
    "p": "jellison",
