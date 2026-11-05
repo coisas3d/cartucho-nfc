@@ -130,6 +130,11 @@
     body.controle .volante { left: 6vw; bottom: calc(12vh + var(--u) * 0.15); width: calc(var(--u) * 2.1); }
     body.controle .buzina { left: calc(6vw + var(--u) * 0.71); bottom: calc(12vh + var(--u) * 1.15 + 16px); }
   }
+  /* direção por inclinação: some o volante de setas */
+  body.inclinar .volante { display: none; }
+  #p2-incl { position: absolute; top: 14px; left: 14px; font: 9px 'Press Start 2P', monospace; color: #fff; background: #1e3a6a; border: 2px solid #5ab4ff;
+    border-radius: 999px; padding: 10px 12px; letter-spacing: 0.05em; z-index: 3; }
+  body.inclinar #p2-incl { background: #ff6a00; border-color: #ffd23a; }
   /* ===== painéis: COMO JOGAR / NOVIDADES / SOBRE ===== */
   #painel { display: none; position: fixed; inset: 0; z-index: 70; background: rgba(0,0,0,0.82); align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; }
   #painel.on { display: flex; }
@@ -236,6 +241,7 @@
 
 <div id="p2" class="pad">
   <div id="p2-topo"><img src="hd/emblema_64.png" alt=""><b>JOGADOR 2</b><span id="p2-status">CONECTANDO...</span></div>
+  <button type="button" id="p2-incl">DIREÇÃO: BOTÕES</button>
   <div class="volante vidro"><div class="bt meia" id="p2-esq" data-k="esq"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="bt meia" id="p2-dir" data-k="dir"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
   <div class="bt redondo vidro buzina" id="p2-buzina" data-k="buzina"><svg viewBox="0 0 24 24"><path d="M3 9.5h3.2L12 5v14l-5.8-4.5H3z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.3 6a8.6 8.6 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>BUZINA</span></div>
   <div class="bt redondo vidro freio" id="p2-freio" data-k="freio"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/><g fill="currentColor"><circle cx="12" cy="6.6" r="1"/><circle cx="17.4" cy="12" r="1"/><circle cx="12" cy="17.4" r="1"/><circle cx="6.6" cy="12" r="1"/></g><path d="M18.5 5.5l2.2-1.3 1 2.4-2.3.9z" fill="currentColor"/></svg><span>FREIO</span></div>

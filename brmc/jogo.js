@@ -390,7 +390,47 @@ function juntarEntrada() {
     entrada[0][k] = !!(fontes.teclado[0][k] || fontes.toque[k] || pulso[0][k]);
     entrada[1][k] = !!(fontes.teclado[1][k] || fontes.remoto[k] || pulso[1][k]);
   }
+  // direção por inclinação (analógica): vale só para a moto; setas apertadas têm prioridade
+  entrada[0].giro = INCL.on && INCL.ok && !entrada[0].esq && !entrada[0].dir ? INCL.giro : null;
+  entrada[1].giro = fontes.remoto.giro != null && !entrada[1].esq && !entrada[1].dir ? fontes.remoto.giro : null;
 }
+
+// ============================================================ DIREÇÃO POR INCLINAÇÃO (sensor de movimento do celular)
+// Cada celular liga a sua (P1 em OPÇÕES; P2 na tela de escolha do piloto ou no controle). Acelerar, frear e buzinar continuam nos botões.
+const INCL = { on: guardar.ler('inclinar', false), ok: false, giro: 0, bruto: 0, ouvindo: false, enviado: null, t: 0 };
+const ehIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function lerInclinacao(e) {
+  const a = e.accelerationIncludingGravity; if (!a || a.x == null) return;
+  const s = ehIOS ? -1 : 1, ax = a.x * s, ay = a.y * s, az = (a.z || 0) * s;
+  const th = ((screen.orientation && screen.orientation.angle != null ? screen.orientation.angle : (window.orientation || 0)) * Math.PI) / 180;
+  const sx = ax * Math.cos(th) - ay * Math.sin(th), sy = ax * Math.sin(th) + ay * Math.cos(th);
+  const ang = Math.atan2(-sx, Math.hypot(sy, az)) * 180 / Math.PI;            // graus: + = celular girado para a direita (como um guidão)
+  const g = Math.sign(ang) * clamp((Math.abs(ang) - 3) / 22, 0, 1);          // zona morta de 3°, giro total com 25°
+  INCL.bruto = g; INCL.giro += (g - INCL.giro) * 0.35; INCL.t = performance.now();
+  if (!INCL.ok) { INCL.ok = true; atualizarHTML(); }
+}
+function ouvirInclinacao() { if (INCL.ouvindo) return; INCL.ouvindo = true; addEventListener('devicemotion', lerInclinacao); }
+function pedirInclinacao() {   // precisa vir de um toque (iPhone pede permissão)
+  const DM = window.DeviceMotionEvent;
+  if (DM && typeof DM.requestPermission === 'function') return DM.requestPermission().then(r => { if (r === 'granted') { ouvirInclinacao(); return true; } return false; }).catch(() => false);
+  ouvirInclinacao(); return Promise.resolve(!!DM);
+}
+window.pedirInclinacao = () => { if (INCL.on) pedirInclinacao(); };
+function alternarInclinacao() {
+  INCL.on = !INCL.on; guardar.gravar('inclinar', INCL.on); atualizarHTML();
+  if (!INCL.on) { avisar('DIREÇÃO PELOS BOTÕES'); return; }
+  // no iPhone a permissão só pode ser pedida no fim do toque: espera o touchend/click deste mesmo toque
+  let feito = false;
+  const pedir = () => { if (feito) return; feito = true; removeEventListener('touchend', pedir, true); removeEventListener('click', pedir, true);
+    pedirInclinacao().then(ok => setTimeout(() => {
+      if (!INCL.on) return;
+      if (INCL.ok) avisar('INCLINE O CELULAR PARA PILOTAR!');
+      else { avisar(ok ? 'SENSOR DE MOVIMENTO NÃO ENCONTRADO' : 'PERMISSÃO DO SENSOR NEGADA'); }
+    }, 700)); };
+  addEventListener('touchend', pedir, true); addEventListener('click', pedir, true);
+  setTimeout(pedir, 600);   // teclado/mouse no computador
+}
+if (INCL.on) ouvirInclinacao();   // Android: já começa a ouvir (no iPhone a permissão vem no botão do aviso de abertura)
 const apertou = (j, k) => entrada[j][k] && !anterior[j][k];
 function guardarAnterior() { for (let j = 0; j < 2; j++) { anterior[j] = Object.assign({}, entrada[j]); pulso[j] = {}; } juntarEntrada(); }
 const TECLAS = { ArrowLeft: [0, 'esq'], ArrowRight: [0, 'dir'], ArrowUp: [0, 'acel'], ArrowDown: [0, 'freio'], KeyZ: [0, 'acel'], KeyX: [0, 'freio'], Space: [0, 'acel'], Enter: [0, 'acel'],
@@ -596,7 +636,7 @@ function atualizarCorredor(c, dt) {
   }
   const pc = c.v / c.max;
   // ---- inclinação e direção (com inércia)
-  const st = (inp.esq ? -1 : 0) + (inp.dir ? 1 : 0);
+  const st = inp.giro != null ? inp.giro : (inp.esq ? -1 : 0) + (inp.dir ? 1 : 0);
   const alvoLean = st * Math.min(1, 0.45 + pc);
   const mol = c.molhado = chuvaEm(c.z);
   c.lean += (alvoLean - c.lean) * Math.min(1, (4.5 + 4 * c.curva) * (1 - 0.28 * mol) * dt);
@@ -1464,13 +1504,14 @@ function telaOpcoes() {
   const ops = () => [['MÚSICA: ' + (SOM.musicaOn ? 'SIM' : 'NÃO'), () => SOM.alternarMusica()], ['EFEITOS: ' + (SOM.efeitosOn ? 'SIM' : 'NÃO'), () => SOM.alternarEfeitos()],
     ['VIBRAR: ' + (guardar.ler('vibrar', true) ? 'SIM' : 'NÃO'), () => guardar.gravar('vibrar', !guardar.ler('vibrar', true))],
     ['GRÁFICOS: ' + (QUAL === 'auto' ? 'AUTOMÁTICO' + (leve ? ' (LEVE)' : '') : QUAL === 'leve' ? 'LEVE' : 'ALTA'), () => { QUAL = QUAL === 'auto' ? 'alta' : QUAL === 'alta' ? 'leve' : 'auto'; guardar.gravar('qualidade', QUAL); guardar.gravar('autoLeve', false); leve = QUAL === 'leve'; }],
+    ['DIREÇÃO: ' + (INCL.on ? 'INCLINAR O CELULAR' : 'BOTÕES ◀ ▶'), () => alternarInclinacao()],
     ['2 JOGADORES: ' + (telaP2() === 'propria' ? 'CADA UM NO SEU CELULAR' : 'TELA DIVIDIDA'), () => { guardar.gravar('telaP2', telaP2() === 'propria' ? 'dividida' : 'propria'); enviarP2({ t: 'modo', tela: telaP2() === 'propria' ? 'propria' : 'controle' }); }], ['VOLTAR', () => irPara(telaTitulo())]];
   return {
     nome: 'opcoes',
     update() { const o = ops(); if (apertou(0, 'esq')) sel = (sel + o.length - 1) % o.length; if (apertou(0, 'dir')) sel = (sel + 1) % o.length; if (apertou(0, 'acel')) { SOM.confirma(); o[sel][1](); } if (apertou(0, 'freio')) irPara(telaTitulo()); },
     render() {
-      fundoEscuro(); logo(W / 2, 64, 0.6); txt('OPÇÕES', W / 2, 120, '#fff', 24, 'c'); alvosToque = [];
-      ops().forEach(([r, fn], i) => botao(W / 2 - 170, 138 + i * 34, 340, 28, r, () => { sel = i; SOM.confirma(); fn(); }, i === sel));
+      fundoEscuro(); logo(W / 2, 48, 0.5); txt('OPÇÕES', W / 2, 98, '#fff', 24, 'c'); alvosToque = [];
+      ops().forEach(([r, fn], i) => botao(W / 2 - 170, 134 + i * 31, 340, 26, r, () => { sel = i; SOM.confirma(); fn(); }, i === sel));
     }
   };
 }
@@ -1537,6 +1578,7 @@ function telaSelecao(n, cli) {   // cli = celular do P2 mostrando a escolha dele
       txt('ESCOLHA SEU PILOTO', W / 2, n === 1 ? 10 : 8, '#ff8a2a', n === 1 ? 16 : 8, 'c');
       if (n === 1 && !cli) txt(MODO === 'cafe' ? 'TOMAR UM CAFEZINHO' : MODO === 'relogio' ? 'CONTRA O RELÓGIO' : 'VIAGEM COMPLETA', 170, 36, '#9ad0ff', 8, 'c');
       botao(8, 8, 70, 22, 'VOLTAR', () => cli ? toqueHost('freio') : irPara(telaTitulo()));
+      if (cli) botao(W - 158, 8, 150, 22, 'DIREÇÃO: ' + (INCL.on ? 'INCLINAR' : 'BOTÕES'), () => alternarInclinacao(), INCL.on, '#1e3a6a');
     }
   };
 }
@@ -1581,7 +1623,7 @@ function selecaoPremium(st, cli, mudar, conf, escolher) {
   luz(ctx, 175, 175, 200, 'rgba(' + acento.join(',') + ',A)', 0.22);
   ctx.fillStyle = 'rgba(255,255,255,0.035)'; ctx.fillRect(0, 238, 334, 30);
   // título
-  txt('ESCOLHA SEU PILOTO', W / 2 + 40, 9, '#ffffff', 16, 'c');
+  txt('ESCOLHA SEU PILOTO', cli ? 238 : W / 2 + 40, 9, '#ffffff', 16, 'c');
   const modo = MODO === 'cafe' ? 'TOMAR UM CAFEZINHO' : MODO === 'relogio' ? 'CONTRA O RELÓGIO' : 'VIAGEM COMPLETA';
   if (!cli) txt(modo, W / 2 + 40, 29, '#9ad0ff', 8, 'c');
   // moto (foto realista) + plaquinha do modelo
@@ -1638,6 +1680,7 @@ function selecaoPremium(st, cli, mudar, conf, escolher) {
     botao(W / 2 - 100, 316, 200, 32, cli ? 'CONFIRMAR' : 'CONFIRMAR', () => conf(0), true);
   } else txt(cli ? 'PRONTO! AGUARDANDO O P1' : 'PRONTO!', W / 2, 326, '#4ef03a', cli ? 8 : 16, 'c');
   botao(8, 8, 70, 22, 'VOLTAR', () => cli ? toqueHost('freio') : irPara(telaTitulo()));
+  if (cli) botao(W - 158, 8, 150, 22, 'DIREÇÃO: ' + (INCL.on ? 'INCLINAR' : 'BOTÕES'), () => alternarInclinacao(), INCL.on, '#1e3a6a');
 }
 function iconeClima(x, y, tipo, e) {
   e = e || 1;
@@ -1974,7 +2017,7 @@ function alternarPausa() {
 // ============================================================ HTML / CONVITE P2
 const elControles = document.getElementById('controles'), btnPausa = document.getElementById('btn-pausa');
 const ehToque = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
-function atualizarHTML() { const corr = estado.nome === 'corrida'; elControles.classList.toggle('on', corr && ehToque && !pausado && !(CLIENTE && cliModo === 'controle')); btnPausa.classList.toggle('on', corr && !pausado); }
+function atualizarHTML() { document.body.classList.toggle('inclinar', INCL.on && INCL.ok); const corr = estado.nome === 'corrida'; elControles.classList.toggle('on', corr && ehToque && !pausado && !(CLIENTE && cliModo === 'controle')); btnPausa.classList.toggle('on', corr && !pausado); }
 btnPausa.addEventListener('click', () => CLIENTE ? enviarHost({ b: 'pausa' }) : alternarPausa());
 function avisar(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(avisar.t); avisar.t = setTimeout(() => t.style.display = 'none', 3000); }
 // ============================================================ 2 JOGADORES EM REDE
@@ -2040,6 +2083,7 @@ function receberDoP2(d, canal) {
   if (d.t === 'hb') return;
   if (d.t === 'pronto') { enviarP2({ t: 'modo', tela: telaP2() === 'propria' ? 'propria' : 'controle' }); selForcar = true; enviarTela(estado); return; }
   if (d.b === 'pausa') { if (estado.nome === 'corrida') alternarPausa(); return; }
+  if (d.g !== undefined) fontes.remoto.giro = d.g === null ? null : clamp(+d.g, -1, 1);
   if (d.b) { fontes.remoto[d.b] = d.s === 1; if (d.s === 1) pulso[1][d.b] = true; }
 }
 // troca de via sem derrubar o jogador (ex.: começou pela internet e depois a direta conectou)
@@ -2332,11 +2376,22 @@ function telaResultadoCliente(res) {
 function encaminharEntrada() {
   if (!CLIENTE || cliModo !== 'propria') return;
   for (const k of ['esq', 'dir', 'acel', 'freio', 'buzina']) { const v = !!entrada[0][k]; if (v !== !!cliEnviado[k]) { cliEnviado[k] = v; enviarHost({ b: k, s: v ? 1 : 0 }); } }
+  enviarGiro(entrada[0].giro);
+}
+// manda o giro analógico para o P1 só quando muda (máx. ~20 por segundo)
+let giroT = 0;
+function enviarGiro(g) {
+  const v = g == null ? null : Math.round(g * 50) / 50;
+  if (v === INCL.enviado || tempoReal - giroT < 0.05) return;
+  INCL.enviado = v; giroT = tempoReal; enviarHost({ g: v });
 }
 function iniciarCliente() {
   // modo controle (tela dividida): botões grandes que mandam direto para o P1
   ligarBotoes(document.getElementById('p2'), {}, (k, v) => { enviarHost({ b: k, s: v ? 1 : 0 }); });
   document.getElementById('p2-status').textContent = 'OLHE A TELA DO P1';
+  const bi = document.getElementById('p2-incl'), rot = () => { bi.textContent = 'DIREÇÃO: ' + (INCL.on ? 'INCLINAR' : 'BOTÕES'); };
+  rot(); bi.addEventListener('click', () => { alternarInclinacao(); rot(); });
+  setInterval(() => { if (cliModo === 'controle') { const pre = (document.querySelector('#p2 [data-k=esq].press') || document.querySelector('#p2 [data-k=dir].press')); enviarGiro(INCL.on && INCL.ok && !pre ? INCL.giro : null); } }, 50);
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
   conectarCliente();
 }
@@ -2376,7 +2431,7 @@ function iniciar() {
 }
 // modo offline: guarda o jogo no aparelho (funciona sem internet depois da 1ª visita)
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-window.BRMC = { simular(s) { for (let i = 0; i < s * 60; i++) { juntarEntrada(); estado.update(STEP); guardarAnterior(); } }, get estado() { return estado; }, get trafego() { return trafego; }, buzinar(c) { buzinar(c); }, get corredores() { return corredores; },
-  get humanos() { return humanos; }, get tempo() { return tempoCorrida; }, get radio() { return radio; }, get postos() { return POSTOS; }, get pedagios() { return PEDAGIOS; }, get radares() { return RADARES; }, get clima() { return CLIMA; }, set clima(c) { CLIMA = c; }, get modo() { return MODO; }, modoJogo: m => iniciarModo(m), cartao: () => gerarCartao(humanos[0], 1, 'TESTE').then(b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); })), buzinar: () => buzinar(humanos[0]), get trafego() { return trafego; }, get viagem() { return VIAGEM; }, desenharAvisos, dist: () => [DIST, START_I * SEG, FIM_Z, CONS()], entrada: fontes };
+window.BRMC = { simular(s) { for (let i = 0; i < s * 60; i++) { juntarEntrada(); estado.update(STEP); guardarAnterior(); } }, get estado() { return estado; }, get trafego() { return trafego; }, get entradas() { return entrada; }, buzinar(c) { buzinar(c); }, get corredores() { return corredores; },
+  get humanos() { return humanos; }, get tempo() { return tempoCorrida; }, get radio() { return radio; }, get postos() { return POSTOS; }, get pedagios() { return PEDAGIOS; }, get radares() { return RADARES; }, get clima() { return CLIMA; }, set clima(c) { CLIMA = c; }, get modo() { return MODO; }, modoJogo: m => iniciarModo(m), cartao: () => gerarCartao(humanos[0], 1, 'TESTE').then(b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); })), buzinar: () => buzinar(humanos[0]), get trafego() { return trafego; }, get entrada() { return entrada; }, get viagem() { return VIAGEM; }, desenharAvisos, dist: () => [DIST, START_I * SEG, FIM_Z, CONS()], entrada: fontes };
 iniciar();
 })();

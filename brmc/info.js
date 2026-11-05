@@ -6,6 +6,7 @@ window.INFO = (function () {
 
   // ===== HISTÓRICO DE VERSÕES (a primeira da lista é a versão atual do jogo) =====
   const VERSOES = [
+    ['5.7', ['Nova opção de pilotagem: DIREÇÃO POR INCLINAÇÃO. Incline o celular como um guidão para desviar; acelerar, frear e buzinar continuam nos botões.', 'P1 liga em OPÇÕES → DIREÇÃO. O Jogador 2 liga no próprio celular (botão DIREÇÃO na escolha do piloto ou no controle).']],
     ['5.6', ['Multas mais leves: até 20% acima do limite +3 s, até 50% acima +7 s, mais de 50% acima +15 s (gravíssima).']],
     ['5.5', ['Física de batida corrigida: ninguém atravessa mais carros e caminhões (a área de colisão agora tem o tamanho real do veículo), e o trânsito freia para as motos na frente.', 'Música começa já no aviso de abertura.', 'Adriano: MT-09 a 215 km/h e a pior economia do clube.', 'Pilotos do jogo também buzinam, principalmente os Rôias.', 'Caminhoneiro buzinado tem 50% de chance de fechar a ultrapassagem.', 'Tombo agora soma +3 s no tempo.', 'Multa pela gravidade do excesso de velocidade.']],
     ['5.4', ['Emblema da Coisas 3D no aviso de abertura, na tela SOBRE e no rodapé da tela inicial.']],
@@ -27,6 +28,8 @@ window.INFO = (function () {
     sec('🎯 Objetivo', '<p>Pilotar com a turma do <b>Black Rock MC</b> de <b>Itaúna até Aparecida</b> e chegar na frente. Na estrada tem trânsito, postos, pedágios, radares, chuva e neblina na serra. O tempo final é o tempo da corrida <b>mais as penalidades</b> (multas e tombos).</p>') +
     sec('🎮 Controles', lista([
       '<b>Celular:</b> setas ◀ ▶ para desviar, <b>ACELERA</b>, <b>FREIO</b> e <b>BUZINA</b>. O botão <b>II</b> pausa.',
+      '<b>Direção por inclinação (opcional):</b> em <b>OPÇÕES → DIREÇÃO</b> escolha <b>INCLINAR O CELULAR</b>. Gire o celular deitado como um guidão para desviar; acelerar, frear e buzinar continuam nos botões. As setas somem da tela. No iPhone, permita o acesso ao sensor de movimento quando ele pedir.',
+      '<b>Jogador 2:</b> cada celular escolhe a sua direção. O P2 liga no botão <b>DIREÇÃO</b> do próprio celular (na escolha do piloto ou na tela de controle).',
       '<b>Teclado (P1):</b> ← → desviar, ↑ / Z / Espaço acelerar, ↓ / X frear, H ou B buzinar, P ou Esc pausar.',
       '<b>Teclado (P2 no mesmo computador):</b> A / D desviar, W acelerar, S frear, E buzinar.'
     ])) +
@@ -111,7 +114,7 @@ window.INFO = (function () {
 
   // ===== aviso antes de abrir o jogo =====
   const aviso = document.getElementById('aviso');
-  document.getElementById('aviso-ok').addEventListener('click', () => { aviso.classList.remove('on'); try { if (window.SOM) { SOM.iniciar(); SOM.tocarMusica('menu'); } } catch (e) {} });
+  document.getElementById('aviso-ok').addEventListener('click', () => { aviso.classList.remove('on'); try { if (window.SOM) { SOM.iniciar(); SOM.tocarMusica('menu'); } if (window.pedirInclinacao) pedirInclinacao(); } catch (e) {} });
   if (navigator.webdriver || new URLSearchParams(location.search).get('semaviso') === '1') aviso.classList.remove('on');
 
   return {
