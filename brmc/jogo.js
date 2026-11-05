@@ -426,7 +426,7 @@ const tempoTanque = def => 2 + Math.pow((def.cc || 800) / 250, 1.4);   // segund
 
 function criarCorredor(def, humano) {
   const max = def.vel * KMH, ouro = humano >= 0 && !demo && usaOuro(def);
-  return { nome: def.nome, def, img: spriteMoto(def, ouro), ouro, max, acelB: 205 * KMH / (7.2 - def.acel * 3.4), consumo: 1.4 - def.economia * 0.85, curva: def.curva,
+  return { nome: def.nome, def, img: spriteMoto(def, ouro), ouro, max, acelB: 10700 / (def.t100 || 4), consumo: 1.4 - def.economia * 0.85, curva: def.curva,
     z: 0, x: 0, v: 0, lean: 0, susp: 0, suspV: 0, crash: 0, giro: 0, comb: 100, fim: false, tempo: null, humano, auto: humano < 0,
     marcha: 1, troca: 0, rpm: 0, vacuoT: 0, vacuo: false, gas: 0, freando: false, abast: null, postoLivre: true, bg: 0, cx: 0, roll: 0,
     fora: false, rasp: 0, reservaDita: false, pag: {}, pagT: 0, abriu: 0, penal: 0, multas: 0, multaT: 0, radarOk: {}, buzinas: 0, buzT: 0, abastecidas: 0, molhado: 0, ia: { skill: (def.ritmo || 0.9) + rnd(-0.02, 0.02), faixa: pick([0.5, 0.35, 0.65]), encher: 0 } };
@@ -481,7 +481,7 @@ function pilotoIA(c, seg) {
   }
   let curvaMax = 0;
   for (let j = 0; j < 36; j += 3) curvaMax = Math.max(curvaMax, Math.abs(segs[Math.min(seg.i + j, segs.length - 1)].curva));
-  if (curvaMax > 0.5) alvoV = Math.min(alvoV, c.max * clamp((c.def.imprudente ? 1.12 : 0.95) / (curvaMax * 0.4 * (1.15 - 0.35 * c.curva)), 0.55, 1) * (1 - 0.12 * chuvaEm(c.z)));
+  if (curvaMax > 0.5) alvoV = Math.min(alvoV, c.max * clamp(0.95 / (curvaMax * 0.4 * (1.15 - 0.35 * c.curva)), 0.55, 1) * (1 - 0.12 * chuvaEm(c.z)));
   // radar: os McNamaras às vezes ignoram a placa...
   const RD = RADARES.find(r => r.z > c.z && r.z - c.z < 75 * SEG);
   if (RD && !c.fim) {
@@ -616,6 +616,8 @@ function atualizarCorredor(c, dt) {
     c.abast = { t: 0, ini: c.comb }; c.v = 0; c.abastecidas++;
     if (c.humano >= 0 && !demo) { SOM.bomba(true); falarSobre('abastecendo', c); }
   }
+  // sem gasolina: depois de alguns segundos chega o galão de socorro (5 litros) e a viagem segue
+  if (c.comb <= 0 && !c.abast && !c.fim) { c.semT = (c.semT || 0) + dt; if (c.semT > 4) { c.semT = 0; c.comb = 22; c.galoes = (c.galoes || 0) + 1; if (!demo) { radio.cd = 0; falarSobre('galao', c); } } } else c.semT = 0;
   if (c.humano >= 0 && !demo && c.comb <= 10 && !c.reservaDita) { c.reservaDita = true; SOM.alerta(); falarSobre('reserva', c); }
   if (c.comb > 20) c.reservaDita = false;
   // ---- suspensão (crista de morro e buracos)
@@ -1247,7 +1249,7 @@ function hud(v, c, idx) {
   hudPedagio(v, c, dois);
   if (c.abriu > 0) msg('CANCELA ABERTA • ACELERA!', cx, v.y + v.h * 0.55, '#4ef03a', dois ? 8 : 16);
   if (c.fim) { txt('CHEGADA!', cx, cy - T / 2, '#fff', T, 'c'); txt(pos + 'º LUGAR  ' + fmtTempo(c.tempo), cx, cy + T * 0.8, '#ffd23a', dois ? 8 : 16, 'c'); }
-  else if (c.comb <= 0 && !c.abast) txt('SEM COMBUSTÍVEL!', cx, cy, '#ff3a2a', dois ? 8 : 16, 'c');
+  else if (c.comb <= 0 && !c.abast) { txt('SEM COMBUSTÍVEL!', cx, cy, '#ff3a2a', dois ? 8 : 16, 'c'); txt('ESPERANDO O GALÃO DE SOCORRO...', cx, cy + (dois ? 12 : 22), '#ffd23a', 8, 'c'); }
   else if (!c.abast) {
     const p = proximoPosto(c.z);
     if (p && p.z0 - c.z < 180 * SEG && p.z0 - c.z > 0 && c.comb < 80 && Math.floor(tempoReal * 2.5) % 2) txt('POSTO À FRENTE • ENCOSTE À DIREITA', cx, cy + 20, '#ffd23a', 8, 'c');
@@ -1351,7 +1353,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v4.5', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v4.6', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
@@ -1407,7 +1409,8 @@ function telaSelecao(n, cli) {   // cli = celular do P2 mostrando a escolha dele
         txt(p.moto, tx, ry + 40, '#c8c8d2', 8);
         txt(p.cc + ' CC • ' + p.tanque + ' L', tx, ry + 54, '#9a9aa4', 8);
         txt('PERFIL: ' + p.perfil, tx, ry + (n === 1 ? 70 : 66), p.perfil === 'ROIA' ? '#5ab4ff' : '#ff4a2a', 8);
-        if (n === 1) txt('ABASTECE EM ' + tempoTanque(p).toFixed(1) + ' S', tx, ry + 86, '#9a9aa4', 8);
+        if (n === 1) { txt('ABASTECE EM ' + tempoTanque(p).toFixed(1) + ' S', tx, ry + 86, '#9a9aa4', 8); txt('0-100: ' + String(p.t100).replace('.', ',') + ' S', tx, ry + 100, '#9a9aa4', 8);
+          txt(p.perfil === 'ROIA' ? p.vel + ' DE ' + p.velMoto + ' KM/H' : p.vel + ' KM/H', tx, ry + 114, p.perfil === 'ROIA' ? '#5ab4ff' : '#9a9aa4', 8); }
         const est = [['VELOCIDADE', (p.vel - 170) / 70], ['ACELERAÇÃO', p.acel], ['ECONOMIA', p.economia], ['CURVAS', p.curva]];
         const sx = n === 1 ? 344 : v.x + 14, sy = n === 1 ? 186 : 262, bw = n === 1 ? 284 : v.w - 28;
         est.forEach(([r, f], i) => {

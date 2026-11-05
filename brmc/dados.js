@@ -53,6 +53,26 @@ window.DADOS = (function () {
       vel: 221, acel: 0.91, economia: 0.57, curva: 0.87, capacete: '#2a2c32', curto: 'SAMUEL' }
   ];
 
+  // ------------------------------------------------------------------ BALANCEAMENTO
+  // Moto: velocidade máxima (km/h) e 0 a 100 km/h oficial (s).
+  // McNAMARA usa 100% da velocidade da moto; ROIA usa 92% -> gasta menos e faz curva melhor.
+  // Curva e consumo saem da velocidade que o piloto usa: quanto mais rápido, pior de curva e mais gastão.
+  const MOTO = { jellison: [195, 4.4], leosao: [202, 4.1], jefao: [230, 3.4], lucas: [230, 3.4], fabinho: [232, 3.4], pescoco: [230, 3.4], henrique: [205, 4.0],
+    cezar: [225, 3.6], cleimar: [225, 3.6], mazinho: [225, 3.6], samuca: [215, 3.9], alan: [190, 4.2], ramon: [185, 5.2], adriano: [224, 3.3], samuel: [230, 3.4] };
+  const ROIA_FRAC = 0.92, V0 = 170, V1 = 232;
+  const lim = (v, a, b) => Math.max(a, Math.min(b, v));
+  const economiaDe = vel => { const alc = 0.82 - (vel - V0) / (V1 - V0) * 0.37; return (1.4 - 0.5 / alc) / 0.85; };   // alcance: 82% (lento) a 45% (mais rápido)
+  for (const p of PERSONAGENS) {
+    const [vm, t] = MOTO[p.id] || [200, 4];
+    p.velMoto = vm; p.t100 = t;
+    p.vel = Math.round(vm * (p.perfil === 'ROIA' ? ROIA_FRAC : 1));
+    p.acel = lim((6.0 - t) / 2.8, 0, 1);                                     // só para a barra da seleção
+    p.curva = lim(0.95 - (p.vel - V0) / (V1 - V0) * 0.35, 0.5, 0.97);
+    p.economia = lim(economiaDe(p.vel), 0.2, 0.97);
+    p.ritmo = p.perfil === 'ROIA' ? 0.99 : 1.0;
+  }
+  { const j = PERSONAGENS.find(p => p.id === 'jellison'), a = PERSONAGENS.find(p => p.id === 'alan'); if (j && a) j.economia = a.economia; }   // Versys = mesma economia da F 750
+
   // ------------------------------------------------------------------ VIAGEM 1
   // Cada trecho: { n: segmentos, c: curva (- esq / + dir), m: subida/descida, z: zona, t: 'S' via simples | 'D' pista dupla }
   // extras: placa (3 linhas), fala (evento do rádio), pedagio, posto
@@ -188,6 +208,7 @@ window.DADOS = (function () {
     buzina: ['Bi-bi! Abre caminho que o Black Rock vem aí!', 'Que buzina é essa, {alvo}? Parece pato!'],
     chuva: ['Começou a chover na serra! Devagar nas curvas!', 'Chuva! Quem esqueceu a capa levanta a mão!', 'Asfalto molhado, freia com carinho, rapaziada!'],
     neblina: ['Neblina na Mantiqueira! Liga o farol e reza!', 'Não tô vendo nem o para-lama, que neblina!'],
+    galao: ['{alvo} ficou sem gasolina! Lá vem o galão de socorro!', 'Galão de 5 litros pro {alvo}! Planejamento zero!', 'Empurra não, {alvo}! O galão chegou!'],
     pagador: ['Sorteio do pedágio: hoje quem paga é o {alvo}!', 'O pedágio é por conta do {alvo}! Ninguém passa sem ele!', 'Sorteado! {alvo} paga o pedágio da turma!'],
     pagador_espera: ['{alvo} chegou primeiro, mas é o pagador: vai esperar a turma toda!', 'Senta aí, {alvo}! Pagador só passa com todo mundo junto!', 'Pagador adiantado, {alvo}? Agora espera os Roias!'],
     esperando_pagador: ['Todo mundo na cancela esperando o pagador {alvo}!', 'Cadê o {alvo}? A carteira dele que paga o pedágio!', 'Anda, {alvo}! O moto clube inteiro tá parado te esperando!'],
