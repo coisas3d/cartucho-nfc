@@ -17,7 +17,7 @@ const params = new URLSearchParams(location.search);
 const SALA = params.get('sala'), DEV2P = params.get('dev2p') === '1';
 window.FONTE_TESTE = params.get('fonteteste') === '1';
 // RANKING GLOBAL: endereço do Cloudflare Worker (veja servidor/worker.js). Vazio = só lê o ranking.json do site
-const RANKING_GLOBAL = params.get('rank') || '';
+const RANKING_GLOBAL = params.get('rank') || 'https://brmc-ranking.coisas3d-contato.workers.dev';
 const LINK_JOGO = location.origin + location.pathname;
 let MODO = 'viagem';                       // viagem | cafe | relogio
 let CLIMA = { tipo: 'sol' };               // sol | chuva | neblina (na serra)
@@ -1384,7 +1384,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v5.0', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v5.1', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
