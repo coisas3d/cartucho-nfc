@@ -12,15 +12,18 @@ window.DADOS = (function () {
     { id: 'leosao', nome: 'LEOSÃO', moto: 'BRMC GS 850 RALLYE', cc: 853, tanque: 15, motor: 'twin', perfil: 'McNAMARA', ritmo: 1.0,
       sprite: 'piloto_leosao', foto: 'foto_gs850', tampa: [0.42, 0.25], retrato: 'retrato_leosao', voz: 150,
       vel: 200, acel: 0.82, economia: 0.70, curva: 0.85, capacete: '#b0b4ba' },
-    { id: 'jefao', nome: 'JEFÃO', moto: 'BRMC GS 1300', cc: 1300, tanque: 19, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
-      sprite: 'piloto_gs1300', foto: 'foto_gs1300', tampa: [0.37, 0.33], retrato: 'retrato_jefao', voz: 120,
+    { id: 'jefao', nome: 'JEFÃO', moto: 'BRMC GS 1300 TRIPLE BLACK', cc: 1300, tanque: 19, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
+      sprite: 'piloto_gs1300', foto: 'foto_gs1300', tampa: [0.37, 0.31], retrato: 'retrato_jefao', voz: 120,
       vel: 200, acel: 0.90, economia: 0.61, curva: 0.80, capacete: '#52565e' },
     { id: 'lucas', nome: 'LUCAS CHURROS', moto: 'BRMC GS 1300 RALLYE', cc: 1300, tanque: 30, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
       sprite: 'piloto_lucas', foto: 'foto_gs1300l', tampa: [0.43, 0.31], retrato: 'retrato_lucas', voz: 200,
-      vel: 210, acel: 0.86, economia: 0.80, curva: 0.80, capacete: '#e4e6e8' },
+      vel: 210, acel: 0.86, economia: 0.80, curva: 0.80, capacete: '#e4e6e8', curto: 'LUCAS' },
     { id: 'fabinho', nome: 'FABINHO MECÂNICO', moto: 'BRMC GS 1300 RALLYE', cc: 1300, tanque: 30, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.02,
       sprite: 'piloto_fabinho', foto: 'foto_gs1300r', tampa: [0.47, 0.32], retrato: 'retrato_fabinho', voz: 135,
-      vel: 225, acel: 0.95, economia: 0.50, curva: 0.88, capacete: '#cc2620' }
+      vel: 225, acel: 0.95, economia: 0.50, curva: 0.88, capacete: '#cc2620', curto: 'MECÂNICO' },
+    { id: 'pescoco', nome: 'FABINHO PESCOÇO', moto: 'BRMC GS 1300 TRIPLE BLACK', cc: 1300, tanque: 19, motor: 'boxer', perfil: 'McNAMARA', ritmo: 1.01,
+      sprite: 'piloto_pescoco', foto: 'foto_gs1300p', tampa: [0.40, 0.31], retrato: 'retrato_pescoco', voz: 140,
+      vel: 222, acel: 0.92, economia: 0.54, curva: 0.84, capacete: '#1e1e22', curto: 'PESCOÇO' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -234,6 +237,24 @@ window.DADOS = (function () {
       pagador_espera: ['Fabinho chegou voando no pedágio e agora vai ter que esperar os Roias!', 'Senta aí, Fabinho! McNamara pagador espera a turma toda!'],
       esperando_pagador: ['Esperando o Fabinho... deve ter parado no posto pela décima vez!']
     },
+    pescoco: {
+      geral: ['Fabinho Pescoço ganhou o apelido de tanto virar o pescoço pra ver se os Roias tão vindo!', 'Pescoço, olha pra frente que a estrada não tá no retrovisor!',
+        'Dois Fabinhos no clube: um conserta a moto, o outro torce o pescoço olhando paisagem!', 'Fabinho Pescoço de Triple Black: até a camiseta combina com a moto!',
+        'Pescoço, esse cabelo aí dentro do capacete é aerodinâmico?'],
+      lanterna: ['Fabinho Pescoço lá atrás? Travou o pescoço olhando o retrovisor!', 'Pescoço em último? Parou pra arrumar o cabelo!'],
+      lider: ['Fabinho Pescoço na frente! Vira o pescoço pra ver a gente comendo poeira!', 'McNamara de Triple Black na liderança: Pescoço disparou!'],
+      ultrapassou: ['Lá vai o Pescoço! Nem olhou pro lado!', 'Fabinho Pescoço passou que nem um vulto preto!'],
+      batida: ['Pescoço caiu! Alguém confere se o pescoço tá no lugar!', 'Levanta, Pescoço! O cabelo nem desarrumou!'],
+      reserva: ['Fabinho Pescoço na reserva! A Triple Black bebe que nem McNamara!'],
+      abastecendo: ['Pescoço abastecendo... e tirando foto da moto pro Instagram!', 'Fabinho Pescoço no posto: enche o tanque e dá um tapa no visual!'],
+      pedagio: ['Pescoço chegou no pedágio olhando pra todo lado procurando a tag!'],
+      multa: ['Fabinho Pescoço multado! Tava virando o pescoço e esqueceu do radar!', 'Pescoço, sorria! O radar pegou seu melhor ângulo!'],
+      buzina: ['Pescoço buzinando e virando o pescoço pra ver se assustou alguém!'],
+      chuva: ['Pescoço, a chuva vai acabar com esse topete!'],
+      pagador: ['Fabinho Pescoço paga o pedágio! Até a carteira é Triple Black!', 'Sorteio: o Pescoço paga! Pode esticar o pescoço pra procurar a tag!'],
+      pagador_espera: ['Pescoço chegou primeiro e tá esticando o pescoço pra ver a turma chegando!'],
+      esperando_pagador: ['Cadê o Pescoço? A gente vai torcer o pescoço de tanto olhar pra trás!']
+    },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
         'A moto do Jellison ainda tem cheiro de nova de tão pouco que anda!', 'Jellison, esses três baús são pra levar a feira inteira?', 'Jellison trouxe a autorização da esposa assinada?'],
@@ -283,6 +304,13 @@ window.DADOS = (function () {
       batida: ['{alvo}, depois passa na oficina que eu dou um jeito!'],
       lanterna: ['Calma, {alvo}, já já eu volto pra te ajudar a empurrar!'],
       geral: ['Essa GS tá redondinha, fui eu que regulei!', 'Alguém sabe onde é o próximo posto? Pergunto por nada...']
+    },
+    pescoco: {
+      largada: ['Triple Black aquecida! Segura que eu vou de McNamara!'],
+      passou_voce: ['Passei, {alvo}! Nem precisei virar o pescoço!'],
+      ultrapassou: ['Vai, {alvo}, aproveita que eu tô olhando a paisagem!'],
+      batida: ['{alvo}, cuidado com o pescoço aí!'],
+      geral: ['Alguém viu como a Triple Black brilha no sol?']
     },
     jellison: {
       largada: ['Amor, tô saindo! ... ops, canal errado.', 'Consegui a liberação! Bora!'],

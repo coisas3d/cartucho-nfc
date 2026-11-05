@@ -33,7 +33,7 @@ const guardar = {
   ler(k, d) { try { const v = localStorage.getItem('brmc_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   gravar(k, v) { try { localStorage.setItem('brmc_' + k, JSON.stringify(v)); } catch (e) {} }
 };
-const curto = n => n.length > 12 ? n.split(' ')[0] : n;
+const curto = n => { const p = PERSONAGENS.find(q => q.nome === n); return p && p.curto ? p.curto : n.length > 12 ? n.split(' ')[0] : n; };
 const plural = (n, p) => (n || 0) + ' ' + p + ((n || 0) === 1 ? '' : 'S');
 function fmtTempo(t) { if (t == null || !isFinite(t)) return '--:--.-'; const m = Math.floor(t / 60), s = t - m * 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1); }
 const txt = (s, x, y, cor, tam, al, sombra) => A.txt(ctx, s, x, y, cor, tam, al, sombra);
@@ -85,7 +85,7 @@ addEventListener('resize', ajustarTela); addEventListener('orientationchange', (
 
 // ============================================================ IMAGENS
 const NOMES = ['piloto', 'piloto_leosao', 'piloto_gs1300', 'foto_versys', 'foto_gs850', 'foto_gs1300', 'retrato_jellison', 'retrato_leosao',
-  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho'];
+  'retrato_jefao', 'emblema_64', 'emblema_128', 'emblema_192', 'car_rear', 'car_front', 'truck_rear', 'truck_front', 'carreta_rear', 'moto_rear', 'moto_front', 'pine', 'rock', 'qr_jogo', 'piloto_lucas', 'piloto_fabinho', 'foto_gs1300l', 'foto_gs1300r', 'retrato_lucas', 'retrato_fabinho', 'piloto_pescoco', 'foto_gs1300p', 'retrato_pescoco'];
 const IMG = {};
 function carregar(prog) {
   let n = 0;
@@ -726,7 +726,7 @@ function hudPedagio(v, c, dois) {
   else if (!chegouPedagio(pg, T)) t1 = 'ESPERANDO O PAGADOR: ' + pg.nome;
   else t1 = c === pg ? 'VOCÊ PAGA! ESPERE A TURMA' : pg.nome + ' ESPERA A TURMA';
   txt(t1, cx, y + 6 * e, '#ffd23a', 8, 'c', false);
-  const rs = 30 * e, gap = 30 * e, tot = N * rs + (N - 1) * gap;
+  const rs = 30 * e, gap = Math.min(30 * e, (w - 16 - N * rs) / Math.max(1, N - 1)), tot = N * rs + (N - 1) * gap;
   corredores.forEach((o, i) => {
     const ox = cx - tot / 2 + i * (rs + gap), oy = y + 20 * e, ok = chegouPedagio(o, T) || presoPedagio(o), r = IMG[o.def.retrato];
     ctx.fillStyle = o === pg ? '#ffd23a' : ok ? '#4ef03a' : '#555'; ctx.fillRect(ox - 2, oy - 2, rs + 4, rs + 4);
@@ -1289,7 +1289,7 @@ function telaTitulo() {
       const nc = Object.keys(guardar.ler('conquistas', {})).length;
       txt('CONQUISTAS ' + nc + '/' + CONQUISTAS.length, 10, H - 14, '#8a8a92', 8, 'e', false);
       if (Math.floor(tempoReal * 1.5) % 2) txt('TOQUE EM UMA OPÇÃO', W / 2, 326, '#ffd23a', 8, 'c');
-      txt('v3.2', W - 8, H - 14, '#666', 8, 'd', false);
+      txt('v3.3', W - 8, H - 14, '#666', 8, 'd', false);
     }
   };
 }
