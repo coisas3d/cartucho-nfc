@@ -6,6 +6,7 @@ window.INFO = (function () {
 
   // ===== HISTÓRICO DE VERSÕES (a primeira da lista é a versão atual do jogo) =====
   const VERSOES = [
+    ['5.4', ['Emblema da Coisas 3D no aviso de abertura, na tela SOBRE e no rodapé da tela inicial.']],
     ['5.3', ['Novo botão COMO JOGAR com o manual completo do jogo.', 'Novo menu NOVIDADES com o histórico de versões.', 'Novo menu SOBRE com os créditos da Coisas 3D, Instagram e WhatsApp.', 'Aviso de abertura: projeto sem fins lucrativos, uma homenagem ao Black Rock MC.']],
     ['5.2', ['Versão do jogo visível nas telas de abertura e inicial.']],
     ['5.1', ['Ranking global ligado: cada corrida terminada vai para o ranking de todos os celulares.']],
@@ -90,7 +91,7 @@ window.INFO = (function () {
 
   const SOBRE =
     '<div class="sobre-topo"><img src="hd/emblema_128.png" alt=""><div><b>BLACK ROCK MC</b><span>THE GAME • VERSÃO ' + VERSOES[0][0] + '</span></div></div>' +
-    sec('Desenvolvido por', '<p class="empresa">COISAS 3D</p><p>Jogo criado pela <b>Coisas 3D</b> como um presente para os membros do <b>Black Rock Moto Clube – Itaúna – MG</b>.</p>') +
+    sec('Desenvolvido por', '<div class="empresa-logo"><img src="hd/coisas3d_256.png" alt="Coisas 3D"><p class="empresa">COISAS 3D</p></div><p>Jogo criado pela <b>Coisas 3D</b> como um presente para os membros do <b>Black Rock Moto Clube – Itaúna – MG</b>.</p>') +
     '<div class="links"><a class="link insta" href="' + INSTAGRAM + '" target="_blank" rel="noopener">📷 INSTAGRAM<small>@coisas3doficial</small></a>' +
     '<a class="link zap" href="' + WHATSAPP + '" target="_blank" rel="noopener">💬 WHATSAPP<small>Fale com a Coisas 3D</small></a></div>' +
     sec('Aviso', '<p>Projeto <b>sem fins lucrativos</b>, uma homenagem divertida aos membros do clube. A arte em pixel e as músicas foram feitas especialmente para o jogo.</p>');
