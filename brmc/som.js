@@ -42,7 +42,7 @@ window.SOM = (function () {
     for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
     S.ruido = nb;
     // vento e cascalho (contínuos)
-    S.vento = loopRuido('bandpass', 700, 0.6); S.cascalho = loopRuido('lowpass', 500, 1);
+    S.vento = loopRuido('bandpass', 700, 0.6); S.cascalho = loopRuido('lowpass', 500, 1); S.chuvaL = loopRuido('highpass', 2600, 0.4);
     // motores (até 2 jogadores)
     for (let j = 0; j < 2; j++) S.motores.push(criarMotor());
     setInterval(agendar, 25);
@@ -84,7 +84,8 @@ window.SOM = (function () {
     S.vento.g.gain.setTargetAtTime(Math.pow(vel, 2) * 0.12, t, 0.2); S.vento.fl.frequency.setTargetAtTime(400 + vel * 900, t, 0.2);
     S.cascalho.g.gain.setTargetAtTime(terra ? 0.18 * Math.min(1, vel * 2) : 0, t, 0.08);
   };
-  S.silenciar = function () { if (!S.ac) return; const t = S.ac.currentTime; S.motores.forEach(m => m.g.gain.setTargetAtTime(0, t, 0.05)); S.ambiente(0, false); };
+  S.silenciar = function () { if (!S.ac) return; const t = S.ac.currentTime; S.motores.forEach(m => m.g.gain.setTargetAtTime(0, t, 0.05)); S.ambiente(0, false); S.chuva(0); };
+  S.chuva = function (i) { if (!S.ac) return; S.chuvaL.g.gain.setTargetAtTime(i * 0.16, S.ac.currentTime, 0.4); };
 
   // ------------------------------------------------------------ efeitos
   function env(node, t, a, d, v) { node.gain.setValueAtTime(0.0001, t); node.gain.linearRampToValueAtTime(v, t + a); node.gain.exponentialRampToValueAtTime(0.0001, t + a + d); }
@@ -113,6 +114,16 @@ window.SOM = (function () {
     if (!on && S._bomba) { S._bomba.g.gain.setTargetAtTime(0, S.ac.currentTime, 0.05); S._bomba.o.stop(S.ac.currentTime + 0.3); S._bomba = null; tom(700, 0.06, 'square', 0.1); setTimeout(() => tom(500, 0.08, 'square', 0.1), 90); }
   };
   S.cancela = () => { tom(1500, 0.08, 'sine', 0.15); setTimeout(() => tom(260, 0.3, 'sawtooth', 0.05, null, null, 520), 120); };
+  // buzina de moto (duas notas desafinadas, levemente distorcidas)
+  S.buzina = (grave) => {
+    if (!S.ac) return; const ac = S.ac, t = ac.currentTime, f = ac.createBiquadFilter(), g = ac.createGain();
+    f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 0.7; env(g, t, 0.01, 0.42, 0.22); f.connect(g); g.connect(S.fx);
+    [grave ? 340 : 410, grave ? 425 : 512].forEach(fr => { const o = ac.createOscillator(); o.type = 'square'; o.frequency.value = fr; o.connect(f); o.start(t); o.stop(t + 0.45); });
+  };
+  S.flash = () => { tom(2400, 0.04, 'square', 0.12); ruido(0.12, 'highpass', 6000, 0.25); setTimeout(() => tom(1800, 0.05, 'sine', 0.1), 60); };
+  S.multa = () => { [784, 659, 523].forEach((f, i) => setTimeout(() => tom(f, 0.14, 'square', 0.1), i * 120)); };
+  S.trovao = () => { ruido(2.6, 'lowpass', 160, 0.9, null, null, 0.7); setTimeout(() => ruido(1.8, 'lowpass', 260, 0.5), 200); };
+  S.conquista = () => { [659, 784, 988, 1319].forEach((f, i) => setTimeout(() => tom(f, 0.22, 'square', 0.1), i * 90)); };
   S.chegada = () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => tom(f, 0.4, 'square', 0.14), i * 140)); };
 
   // ------------------------------------------------------------ TRILHA: rock épico original (Mi menor, 148 bpm)
@@ -131,30 +142,47 @@ window.SOM = (function () {
   // melodia do refrão em colcheias (8 por compasso, 8 compassos); null = pausa, '-' = segura
   const MEL = [71, '-', 76, '-', 78, 79, '-', 78, 76, '-', '-', '-', 74, 76, 79, '-', 74, '-', '-', 71, '-', 74, 76, '-', 78, '-', '-', '-', 81, '-', 79, 78,
                79, '-', 78, 76, '-', 71, 76, '-', 79, '-', 81, 83, '-', '-', 81, 79, 78, '-', 79, 81, '-', 74, '-', '-', 78, '-', '-', '-', '-', '-', '-', '-'];
-  let compasso = 0, refCont = 0, ponteCont = 0;
+  // estilos: pista dupla = rock épico | via simples = groove tranquilo | serra = tenso
+  const ESTILOS = {
+    menu: { sec: ROTEIRO, volta: VOLTA, ini: 0 },
+    pista: { sec: ROTEIRO, volta: VOLTA, ini: 4 },
+    simples: { sec: ['calmo', 'calmo', 'calmo', 'calmo2', 'calmo', 'calmo', 'calmo3', 'calmo2'], volta: 0, ini: 0 },
+    serra: { sec: ['tenso', 'tenso', 'tenso', 'tenso2', 'tenso', 'tenso', 'tenso3', 'tenso2'], volta: 0, ini: 0 }
+  };
+  const CALMO = [40, 36, 43, 38], TENSO = [40, 40, 41, 40, 43, 42, 41, 40];
+  const MEL_CALMO = [64, '-', 67, 69, 71, '-', 69, 67, 64, '-', '-', 62, 64, '-', '-', '-', 67, '-', 69, 71, 74, '-', 71, 69, 71, '-', '-', 69, 67, '-', '-', '-'];
+  let compasso = 0, refCont = 0, ponteCont = 0, estilo = ESTILOS.menu, pedidoEstilo = null, secCont = 0;
 
   S.tocarMusica = function (modo) {
     S.modo = modo || 'jogo';
     if (!S.ac) { S.pedido = S.modo; return; }
-    if (!S.tocando) { S.tocando = true; S.prox = S.ac.currentTime + 0.1; S.passo = 0; compasso = modo === 'menu' ? 0 : 4; refCont = 0; }
+    const e = S.modo === 'menu' ? 'menu' : 'pista';
+    if (!S.tocando) { S.tocando = true; S.prox = S.ac.currentTime + 0.1; S.passo = 0; estilo = ESTILOS[e]; compasso = estilo.ini; refCont = 0; S.estilo = e; }
+    else S.estiloMusica(e);
   };
   S.pararMusica = function () { S.tocando = false; };
+  // troca de estilo no próximo compasso (sem cortar a música)
+  S.estiloMusica = function (e) { if (S.estilo === e || !ESTILOS[e]) return; S.estilo = e; pedidoEstilo = e; };
 
   function agendar() {
     if (!S.ac || !S.tocando) return;
     while (S.prox < S.ac.currentTime + 0.15) {
-      tocarPasso(ROTEIRO[compasso], S.passo, S.prox);
+      tocarPasso(estilo.sec[compasso], S.passo, S.prox);
       S.passo++; S.prox += SEMI;
       if (S.passo >= 16) {
-        S.passo = 0; const sec = ROTEIRO[compasso];
+        S.passo = 0; const sec = estilo.sec[compasso]; secCont++;
         if (sec === 'refrao') refCont++; if (sec === 'ponte' || sec === 'ponte2') ponteCont++;
-        compasso++; if (compasso >= ROTEIRO.length) { compasso = VOLTA; refCont = 0; ponteCont = 0; }
-        if (ROTEIRO[compasso] === 'refrao' && ROTEIRO[compasso - 1] !== 'refrao') refCont = 0;
-        if (ROTEIRO[compasso] === 'ponte' && ROTEIRO[compasso - 1] !== 'ponte') ponteCont = 0;
+        compasso++; if (compasso >= estilo.sec.length) { compasso = estilo.volta; refCont = 0; ponteCont = 0; }
+        if (pedidoEstilo && (compasso % 2 === 0 || estilo === ESTILOS.menu)) { estilo = ESTILOS[pedidoEstilo]; compasso = estilo.ini; pedidoEstilo = null; refCont = 0; ponteCont = 0; secCont = 0; S.virada = true; }
+        if (estilo.sec[compasso] === 'refrao' && estilo.sec[compasso - 1] !== 'refrao') refCont = 0;
+        if (estilo.sec[compasso] === 'ponte' && estilo.sec[compasso - 1] !== 'ponte') ponteCont = 0;
       }
     }
   }
   function tocarPasso(sec, p, t) {
+    if (S.virada && p === 0) { prato(t, 0.4); S.virada = false; }
+    if (sec.indexOf('calmo') === 0) return passoCalmo(sec, p, t);
+    if (sec.indexOf('tenso') === 0) return passoTenso(sec, p, t);
     const forte = sec === 'refrao' || sec === 'final';
     // ---------- bateria
     if (sec === 'intro') { if (p === 0) prato(t, 0.5); if (p % 4 === 0) chimbal(t, 0.05); if (p === 12 || p === 14) surdo(t, 110); }
@@ -195,6 +223,35 @@ window.SOM = (function () {
       if (p % 4 === 2) solo(raiz + 36 + (p % 8 === 2 ? 7 : 12), t, SEMI * 1.6, 0.04);
     }
   }
+  // via simples: groove tranquilo com guitarra limpa dedilhada
+  function passoCalmo(sec, p, t) {
+    const raiz = CALMO[compasso % 4];
+    if (p === 0 || p === 10) bumbo(t); if (p === 4 || p === 12) aro(t); if (p % 2 === 0) chimbal(t, 0.03);
+    if (p === 0) { baixo(raiz - 12, t, SEMI * 6); cordas(raiz, t, SEMI * 16, 0.025); }
+    if (p === 8) baixo(raiz - 5, t, SEMI * 6);
+    const arp = [0, 7, 12, 16, 19, 16, 12, 7], iv = arp[(p / 2) | 0];
+    if (p % 2 === 0) limpa(raiz + 12 + (iv === 16 ? (TERCA[raiz] === 3 ? 15 : 16) : iv), t, SEMI * 3);
+    if (sec !== 'calmo' && p % 2 === 0) {
+      const i = (sec === 'calmo2' ? 0 : 16) + p / 2, n = MEL_CALMO[i];
+      if (typeof n === 'number') { let d = 1; while (MEL_CALMO[i + d] === '-') d++; solo(n, t, SEMI * 2 * d * 0.95, 0.05); }
+    }
+  }
+  // serra: palhetada abafada, cromatismo e tambores
+  function passoTenso(sec, p, t) {
+    const raiz = TENSO[(secCont % 8)];
+    abafado(raiz, t); if (p % 4 === 0) baixo(raiz - 12, t, SEMI * 3);
+    if (p === 0 || p === 3 || p === 8 || p === 11) bumbo(t); if (p === 4 || p === 12) caixa(t, 0.3);
+    chimbal(t, p % 4 === 0 ? 0.07 : 0.04);
+    if (sec === 'tenso2' && p >= 8) surdo(t, 180 - (p - 8) * 12);
+    if (p === 0) { cordas(raiz + 1, t, SEMI * 16, 0.03); if (sec === 'tenso3') prato(t, 0.3); }
+    if (sec === 'tenso3' && p % 4 === 2) solo(raiz + 36 + (p === 6 || p === 14 ? 1 : 0), t, SEMI * 1.5, 0.045);
+  }
+  function limpa(m, t, dur) { const ac = S.ac, o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter();
+    f.type = 'lowpass'; f.frequency.setValueAtTime(3200, t); f.frequency.exponentialRampToValueAtTime(700, t + dur);
+    o.type = 'triangle'; o2.type = 'square'; o.frequency.value = mtof(m); o2.frequency.value = mtof(m); o2.detune.value = 6;
+    env(g, t, 0.004, dur, 0.06); o.connect(f); o2.connect(f); f.connect(g); g.connect(S.mus); g.connect(S.revIn); g.connect(S.dly);
+    o.start(t); o2.start(t); o.stop(t + dur + 0.05); o2.stop(t + dur + 0.05); }
+  function aro(t) { ruido(0.05, 'bandpass', 3200, 0.18, S.mus, t, 2); }
   // instrumentos
   function osc(tipo, f, t, dur, dest, vol, det) {
     const ac = S.ac, o = ac.createOscillator(), g = ac.createGain();
@@ -210,9 +267,10 @@ window.SOM = (function () {
     [0, 7].forEach(iv => osc('sawtooth', mtof(raiz + iv), t, SEMI * 0.7, f, 0.32));
   }
   function baixo(m, t, dur) { osc('square', mtof(m), t, dur, S.mus, 0.07); osc('sine', mtof(m), t, dur, S.mus, 0.16); }
-  function cordas(raiz, t, dur) {
+  function cordas(raiz, t, dur, vol) {
+    vol = vol || 0.05;
     const ac = S.ac, f = ac.createBiquadFilter(), g = ac.createGain(); f.type = 'lowpass'; f.frequency.value = 2200;
-    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.05, t + 0.35); g.gain.setValueAtTime(0.05, t + dur * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.35); g.gain.setValueAtTime(vol, t + dur * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     f.connect(g); g.connect(S.mus); g.connect(S.revIn);
     [12, 19, 24, 24 + (TERCA[raiz] || 3)].forEach(iv => { [-10, 10].forEach(d => { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(raiz + iv); o.detune.value = d; o.connect(f); o.start(t); o.stop(t + dur + 0.05); }); });
   }

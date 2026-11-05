@@ -14,7 +14,7 @@ window.DADOS = (function () {
       vel: 200, acel: 0.82, economia: 0.70, curva: 0.85, capacete: '#b0b4ba' },
     { id: 'jefao', nome: 'JEFÃO', moto: 'BRMC GS 1300', cc: 1300, tanque: 19, motor: 'boxer', perfil: 'ROIA', ritmo: 0.95,
       sprite: 'piloto_gs1300', foto: 'foto_gs1300', tampa: [0.37, 0.33], retrato: 'retrato_jefao', voz: 120,
-      vel: 225, acel: 0.90, economia: 0.48, curva: 0.80, capacete: '#52565e' }
+      vel: 200, acel: 0.90, economia: 0.61, curva: 0.80, capacete: '#52565e' }
   ];
 
   // ------------------------------------------------------------------ VIAGEM 1
@@ -22,19 +22,22 @@ window.DADOS = (function () {
   // extras: placa (3 linhas), fala (evento do rádio), pedagio, posto
   const VIAGEM1 = {
     id: 'v1b', nome: 'VIAGEM 1', titulo: 'ITAÚNA → APARECIDA', km: 450, semente: 2026,
-    sub: 'FERNÃO DIAS • SUL DE MINAS • SERRA • DUTRA',
+    sub: 'FERNÃO DIAS • SUL DE MINAS • SERRA • DUTRA', modo: 'viagem',
+    info: '2 POSTOS • 2 PEDÁGIOS • 4 RADARES • VIA SIMPLES E DUPLA',
+    largada: ['ITAÚNA', 'MINAS GERAIS', '#146e3c'], chegada: ['APARECIDA', 'SANTUÁRIO NACIONAL', '#b4141e'],
+    fim: 'CHEGAMOS EM APARECIDA!', basilica: true, ceu: [0, 1],
     trechos: [
       // Itaúna -> Itatiaiuçu (via simples)
       { n: 120, c: 0, m: 0, z: 'cidade', t: 'S' },
       { n: 180, c: 2, m: 8, z: 'campo', t: 'S', placa: ['ITATIAIUÇU', '22 KM', ''] },
       { n: 160, c: -3, m: -8, z: 'campo', t: 'S' },
-      { n: 200, c: 0, m: 10, z: 'eucalipto', t: 'S' },
+      { n: 200, c: 0, m: 10, z: 'eucalipto', t: 'S', radar: 80, oculto: true },
       // Fernão Dias (pista dupla)
       { n: 200, c: 2, m: -10, z: 'campo', t: 'D', placa: ['BR-381', 'FERNÃO DIAS', 'SÃO PAULO'], fala: 'fernao' },
       { n: 240, c: -2, m: 14, z: 'campo', t: 'D', placa: ['ITAGUARA', '', ''] },
       { n: 160, c: 0, m: 0, z: 'pedagio', t: 'D', pedagio: true },
       { n: 220, c: 2, m: -14, z: 'eucalipto', t: 'D' },
-      { n: 240, c: 0, m: 0, z: 'campo', t: 'D', placa: ['CARMÓPOLIS', 'DE MINAS', ''] },
+      { n: 240, c: 0, m: 0, z: 'campo', t: 'D', placa: ['CARMÓPOLIS', 'DE MINAS', ''], radar: 110 },
       { n: 200, c: -3, m: 18, z: 'campo', t: 'D' },
       { n: 280, c: 0, m: 0, z: 'eucalipto', t: 'D', posto: true },
       { n: 240, c: 3, m: -18, z: 'campo', t: 'D' },
@@ -45,7 +48,7 @@ window.DADOS = (function () {
       { n: 180, c: 3, m: 10, z: 'campo', t: 'S', placa: ['CAMPANHA', '', ''], fala: 'simples' },
       { n: 160, c: -4, m: -10, z: 'campo', t: 'S' },
       { n: 180, c: 4, m: 14, z: 'eucalipto', t: 'S' },
-      { n: 160, c: 0, m: 0, z: 'cidade', t: 'S', placa: ['SÃO LOURENÇO', '', ''] },
+      { n: 160, c: 0, m: 0, z: 'cidade', t: 'S', placa: ['SÃO LOURENÇO', '', ''], radar: 60 },
       { n: 200, c: 3, m: 10, z: 'campo', t: 'S', placa: ['POUSO ALTO', '', ''] },
       { n: 180, c: -4, m: -10, z: 'campo', t: 'S' },
       { n: 200, c: 0, m: 0, z: 'cidade', t: 'S', placa: ['PASSA QUATRO', '', ''], posto: true },
@@ -59,7 +62,7 @@ window.DADOS = (function () {
       // Via Dutra (pista dupla)
       { n: 160, c: 0, m: 0, z: 'cidade', t: 'D', placa: ['CRUZEIRO', 'BR-116 DUTRA', ''], fala: 'dutra' },
       { n: 220, c: 2, m: 0, z: 'campo', t: 'D', placa: ['CACHOEIRA', 'PAULISTA', ''] },
-      { n: 200, c: -2, m: 0, z: 'campo', t: 'D', placa: ['LORENA', '', ''] },
+      { n: 200, c: -2, m: 0, z: 'campo', t: 'D', placa: ['LORENA', '', ''], radar: 110 },
       { n: 200, c: 0, m: 0, z: 'cidade', t: 'D', placa: ['GUARATINGUETÁ', '', ''] },
       { n: 200, c: 0, m: 0, z: 'cidade', t: 'D', placa: ['APARECIDA', 'SANTUÁRIO', 'NACIONAL'], fala: 'aparecida' }
     ],
@@ -71,6 +74,53 @@ window.DADOS = (function () {
       ['GUARATINGUETÁ', -22.82, -45.19, 'et'], ['APARECIDA', -22.85, -45.23, 'eb']
     ]
   };
+
+
+  // ------------------------------------------------------------------ TOMAR UM CAFEZINHO (passeio curto: ~1 min)
+  // Passa Quatro -> Serra da Mantiqueira -> Cruzeiro. Sem posto: o tanque já sai cheio.
+  const CAFEZINHO = {
+    id: 'cafe1', nome: 'TOMAR UM CAFEZINHO', titulo: 'PASSA QUATRO → CRUZEIRO', km: 45, semente: 777, modo: 'cafe',
+    sub: 'SERRA DA MANTIQUEIRA • DESCIDA PARA O VALE', info: 'PASSEIO CURTO • SEM POSTO • 2 RADARES • SERRA',
+    largada: ['PASSA QUATRO', 'MINAS GERAIS', '#146e3c'], chegada: ['CRUZEIRO', 'PARADA DO CAFÉ', '#6a3a1a'],
+    fim: 'HORA DO CAFEZINHO!', semCombustivel: true, ceu: [0.42, 0.62],
+    falas: { largada: 'cafe_largada', chegada: 'cafe_chegada' },
+    trechos: [
+      { n: 140, c: 0, m: 0, z: 'cidade', t: 'S', placa: ['PASSA QUATRO', '', ''], radar: 60 },
+      { n: 200, c: 3, m: 10, z: 'campo', t: 'S' },
+      { n: 160, c: -3, m: -6, z: 'eucalipto', t: 'S' },
+      { n: 130, c: -5, m: 24, z: 'serra', t: 'S', placa: ['SERRA DA', 'MANTIQUEIRA', 'CURVAS'], fala: 'serra' },
+      { n: 110, c: 6, m: 20, z: 'serra', t: 'S' },
+      { n: 120, c: -6, m: 18, z: 'serra', t: 'S' },
+      { n: 120, c: 4, m: 14, z: 'serra', t: 'S' },
+      { n: 110, c: 5, m: -24, z: 'serra', t: 'S', placa: ['DIVISA', 'SÃO PAULO', ''], fala: 'divisa' },
+      { n: 120, c: -6, m: -22, z: 'serra', t: 'S' },
+      { n: 110, c: 4, m: -16, z: 'serra', t: 'S' },
+      { n: 120, c: -5, m: -14, z: 'serra', t: 'S' },
+      { n: 160, c: 2, m: -6, z: 'campo', t: 'S' },
+      { n: 160, c: 0, m: 0, z: 'cidade', t: 'D', placa: ['CRUZEIRO', 'BR-116 DUTRA', ''], fala: 'dutra', radar: 110, oculto: true },
+      { n: 200, c: 2, m: 0, z: 'campo', t: 'D' },
+      { n: 160, c: 0, m: 0, z: 'cidade', t: 'D', placa: ['CRUZEIRO', 'CAFÉ DO BRMC', '500 M'] }
+    ],
+    mapa: [['PASSA QUATRO', -22.39, -44.97, 'd'], ['DIVISA MG/SP', -22.47, -44.99, 'e'], ['CRUZEIRO', -22.58, -44.96, 'd']]
+  };
+
+  // ------------------------------------------------------------------ CONQUISTAS
+  // premio: 'ouro' = libera o CAPACETE DOURADO do piloto usado
+  const CONQUISTAS = [
+    { id: 'romeiro', nome: 'ROMEIRO', desc: 'CHEGUE EM APARECIDA' },
+    { id: 'mcnamara', nome: 'McNAMARA DE VERDADE', desc: '1º LUGAR NA VIAGEM COMPLETA', premio: 'ouro' },
+    { id: 'liso', nome: 'PILOTO LISO', desc: 'TERMINE SEM TOMBAR' },
+    { id: 'cidadao', nome: 'CIDADÃO DE BEM', desc: 'VIAGEM COMPLETA SEM MULTA' },
+    { id: 'cafe', nome: 'CAFÉ PASSADO NA HORA', desc: 'VENÇA O CAFEZINHO' },
+    { id: 'pato', nome: 'PATO NA CHUVA', desc: 'TERMINE COM CHUVA NA SERRA' },
+    { id: 'neblina', nome: 'FAROL DE MILHA', desc: 'TERMINE COM NEBLINA' },
+    { id: 'fantasma', nome: 'VENCI MEU FANTASMA', desc: 'BATA SEU RECORDE NO RELÓGIO' },
+    { id: 'roia', nome: 'ROIA RAIZ', desc: 'CHEGUE EM ÚLTIMO' },
+    { id: 'cnh', nome: 'CNH EM RISCO', desc: 'LEVE 3 MULTAS NUMA CORRIDA' },
+    { id: 'frentista', nome: 'AMIGO DO FRENTISTA', desc: 'ABASTEÇA 2 VEZES' },
+    { id: 'bibi', nome: 'BI-BI!', desc: 'BUZINE 15 VEZES NUMA CORRIDA' },
+    { id: 'trinca', nome: 'TRINCA DE OURO', desc: 'VENÇA A VIAGEM COM OS 3 PILOTOS' }
+  ];
 
   // ------------------------------------------------------------------ INTERCOMUNICADOR
   // {alvo} = de quem se fala. ROIA = anda devagar | McNAMARA = acelera demais
@@ -92,7 +142,16 @@ window.DADOS = (function () {
     divisa: ['Bem-vindos a São Paulo! O pão de queijo acabou!', 'Divisa! Agora é Cruzeiro e Dutra!'],
     dutra: ['Via Dutra! Olho nas carretas, turma!', 'Dutra! Já dá pra sentir o cheiro de Aparecida!'],
     aparecida: ['Tô vendo a Basílica! Chegamos, Nossa Senhora!', 'Aparecida à vista! Que viagem, irmãos!'],
-    chegada: ['Chegamos! Bênção dada, motor quente!', 'Valeu, Black Rock! Agora é foto na frente da Basílica!']
+    chegada: ['Chegamos! Bênção dada, motor quente!', 'Valeu, Black Rock! Agora é foto na frente da Basílica!'],
+    cafe_largada: ['Bora tomar um cafezinho em Cruzeiro?', 'Cafezinho rápido: desce a serra e volta pro almoço!', 'Quem chegar por último paga o pão de queijo!'],
+    cafe_chegada: ['Chegamos! Cafezinho e pão de queijo por conta do último!', 'Café passado na hora! Valeu, Black Rock!'],
+    multa: ['Flash! {alvo} foi multado!', 'Sorria, {alvo}, você foi fotografado!', '{alvo} levou multa! Vai pagar o café de todo mundo!'],
+    radar: ['Radar à frente! Segura o McNamara aí!', 'Olha o radar, turma! Respeita a placa!'],
+    radar_oculto: ['Radar escondido atrás da árvore! Isso é covardia!', 'Tinha radar escondido! Quem passou voando já era!'],
+    buzina: ['Bi-bi! Abre caminho que o Black Rock vem aí!', 'Que buzina é essa, {alvo}? Parece pato!'],
+    chuva: ['Começou a chover na serra! Devagar nas curvas!', 'Chuva! Quem esqueceu a capa levanta a mão!', 'Asfalto molhado, freia com carinho, rapaziada!'],
+    neblina: ['Neblina na Mantiqueira! Liga o farol e reza!', 'Não tô vendo nem o para-lama, que neblina!'],
+    fantasma: ['Seu fantasma tá na frente, {alvo}! Até ele é mais rápido!', 'Olha o fantasma do {alvo}! Que medo!']
   };
   // falas SOBRE cada membro (quando ele é o alvo)
   const SOBRE = {
@@ -105,7 +164,10 @@ window.DADOS = (function () {
       reserva: ['Reserva? O Leosão? Impossível, ele planeja tudo no Excel!'],
       abastecendo: ['Leosão abastecendo com cronômetro na mão!', 'Pastor, abastece rápido que o cronograma tá atrasando!'],
       pedagio: ['O Leosão já tava com o dinheiro trocado desde Itaúna!'],
-      lanterna: ['Leosão em último?! Chama a ambulância que o Pastor tá passando mal!']
+      lanterna: ['Leosão em último?! Chama a ambulância que o Pastor tá passando mal!'],
+      multa: ['O Pastor foi multado! Vai ter que dizimar pro DETRAN!', 'Leosão multado! Isso não tava na planilha!', 'McNamara multado! Bem feito, Pastor!'],
+      buzina: ['Leosão buzinando: é o sino chamando pra missa!', 'Calma, Pastor, buzina não faz a estrada andar!'],
+      chuva: ['Leosão, chuva não tava no cronograma, né?']
     },
     jefao: {
       geral: ['Jefão, 1300 cilindradas pra andar a 80 por hora? Roia demais!', 'A GS 1300 do Jefão tá pedindo socorro no modo passeio!',
@@ -116,7 +178,10 @@ window.DADOS = (function () {
       batida: ['Jefão caiu a 40 por hora, foi quase em câmera lenta!', 'O Jefão caiu tão devagar que deu tempo de tirar foto!'],
       reserva: ['Jefão na reserva! Gastou tudo andando a 80?'],
       abastecendo: ['Jefão abastecendo... vai demorar mais que a viagem!', 'Jefão, o tanque da 1300 enche devagar igual você pilota!'],
-      pedagio: ['Jefão, nesse pedágio dava pra ter passado andando!']
+      pedagio: ['Jefão, nesse pedágio dava pra ter passado andando!'],
+      multa: ['Jefão multado?! Como? A 81 por hora?', 'Até o Jefão tomou multa! O radar ficou surpreso!'],
+      buzina: ['Jefão buzinou! Acordou, finalmente!', 'Buzina da 1300 é mais rápida que o Jefão!'],
+      chuva: ['Jefão na chuva: agora ele tem desculpa pra andar devagar!']
     },
     jellison: {
       geral: ['Jellison, a patroa liberou até que horas?', 'Milagre! Jellison tirou a moto da garagem!', 'Jellison, manda foto pra esposa provando que tá vivo!',
@@ -127,7 +192,10 @@ window.DADOS = (function () {
       batida: ['Jellison caiu! Agora a patroa não deixa sair por um ano!', 'Levanta, Jellison! Se a esposa vê, acabou o passeio!'],
       reserva: ['Jellison na reserva... a esposa só liberou meio tanque!'],
       abastecendo: ['Jellison, abastece e liga pra esposa avisando!', 'Jellison, guarda a nota do posto pra prestar contas em casa!'],
-      pedagio: ['Jellison, pede o reembolso do pedágio pra patroa!']
+      pedagio: ['Jellison, pede o reembolso do pedágio pra patroa!'],
+      multa: ['Jellison multado! A patroa vai saber!', 'Jellison, a multa chega no endereço de casa... boa sorte!', 'Multa pro Jellison! Acabou a liberação do ano!'],
+      buzina: ['Buzina baixo, Jellison, senão a patroa escuta lá de Itaúna!', 'Jellison buzinando de alegria: hoje tá liberado!'],
+      chuva: ['Jellison, se molhar a roupa a patroa vai perguntar onde você tava!']
     }
   };
   // falas DITAS por cada membro
@@ -155,5 +223,5 @@ window.DADOS = (function () {
     }
   };
 
-  return { PERSONAGENS, VIAGENS: [VIAGEM1], FALAS, SOBRE, DE };
+  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE };
 })();
