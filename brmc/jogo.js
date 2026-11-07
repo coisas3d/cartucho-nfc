@@ -508,7 +508,8 @@ const MARCHAS = [0.2, 0.36, 0.52, 0.68, 0.84, 1.01];
 const tempoTanque = def => 2 + Math.pow((def.cc || 800) / 250, 1.4);   // segundos para encher o tanque todo (650: 5,8 s | 853: 7,6 s | 1300: 12 s)
 
 function criarCorredor(def, humano) {
-  const max = def.vel * KMH, ouro = humano >= 0 && !demo && usaOuro(def);
+  // quem joga sempre usa a velocidade máxima da moto; o "92% dos Rôias" vale só para os pilotos do jogo
+  const max = (humano >= 0 && !demo ? (def.velMoto || def.vel) : def.vel) * KMH, ouro = humano >= 0 && !demo && usaOuro(def);
   return { nome: def.nome, def, img: spriteMoto(def, ouro), ouro, max, acelB: 10700 / (def.t100 || 4), consumo: 1.4 - def.economia * 0.85, curva: def.curva,
     z: 0, x: 0, v: 0, lean: 0, susp: 0, suspV: 0, crash: 0, giro: 0, comb: 100, fim: false, tempo: null, humano, auto: humano < 0,
     marcha: 1, troca: 0, rpm: 0, vacuoT: 0, vacuo: false, gas: 0, freando: false, abast: null, postoLivre: true, bg: 0, cx: 0, roll: 0,
@@ -877,21 +878,19 @@ function hudPedagio(v, c, dois) {
   if (!grupo()) return;
   const T = PEDAGIOS.find(p => p.estado !== 'livre' && p.estado !== 'aberto' && !c.pag[p.k]); if (!T) return;
   const e = dois ? 0.62 : 1, cx = v.x + v.w / 2, N = corredores.length, pg = corredores[T.pagador];
-  if (T.estado === 'sorteio' || T.anuncio > 0) {
-    const w = 236 * e, h = 82 * e, x = cx - w / 2, y = v.y + v.h * (dois ? 0.32 : 0.41);
-    ctx.fillStyle = 'rgba(8,10,14,0.92)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = '#ffd23a'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
-    txt('SORTEIO DO PEDÁGIO', cx, y + 6 * e, '#ffd23a', 8, 'c', false);
-    const q = T.estado === 'sorteio' ? corredores[Math.floor(tempoReal * (6 + 10 * T.sorteio)) % N] : pg, rs = 44 * e;
-    const ret = IMG[q.def.retrato]; ctx.fillStyle = T.estado === 'sorteio' ? '#5ab4ff' : '#ffd23a'; ctx.fillRect(x + 10 * e - 2, y + 26 * e - 2, rs + 4, rs + 4);
-    if (ret) ctx.drawImage(ret, x + 10 * e, y + 26 * e, rs, rs);
-    txt(T.estado === 'sorteio' ? 'QUEM PAGA?' : 'QUEM PAGA:', x + 64 * e, y + 30 * e, '#c8c8d2', 8, 'e', false);
-    const livreT = w - 64 * e - 8;
-    txt(T.estado === 'sorteio' ? q.nome + '?' : q.nome + '!', x + 64 * e, y + 46 * e, T.estado === 'sorteio' ? '#fff' : '#4ef03a', dois ? 8 : 16, 'e', false, livreT);
-    if (T.estado !== 'sorteio') txt('SÓ PASSA COM TODO MUNDO', x + 64 * e, y + 66 * e, '#9ad0ff', 8, 'e', false, livreT);
+  if (T.estado === 'sorteio' || T.anuncio > 0) {   // sorteio no cantinho esquerdo, sem tapar a pista
+    const q = T.estado === 'sorteio' ? corredores[Math.floor(tempoReal * (6 + 10 * T.sorteio)) % N] : pg, ret = IMG[q.def.retrato];
+    const bx = v.x + (dois ? 4 : 8), by = v.y + (dois ? 128 : 200), bw = dois ? 120 : 150, bh = dois ? 30 : 40, rs = dois ? 22 : 30;
+    ctx.fillStyle = 'rgba(6,8,12,0.85)'; ctx.fillRect(bx - 4, by - 4, bw, bh); ctx.strokeStyle = '#ffd23a'; ctx.lineWidth = 1.5; ctx.strokeRect(bx - 3.5, by - 3.5, bw - 1, bh - 1);
+    ctx.fillStyle = T.estado === 'sorteio' ? '#5ab4ff' : '#ffd23a'; ctx.fillRect(bx - 1, by - 1, rs + 2, rs + 2); if (ret) ctx.drawImage(ret, bx, by, rs, rs);
+    const tx = bx + rs + 6, livre = bw - rs - 14;
+    txt(T.estado === 'sorteio' ? 'SORTEIO PEDÁGIO' : 'QUEM PAGA:', tx, by, '#ffd23a', 8, 'e', false, livre);
+    txt(T.estado === 'sorteio' ? q.nome + '?' : q.nome + '!', tx, by + (dois ? 11 : 14), T.estado === 'sorteio' ? '#fff' : '#4ef03a', 8, 'e', false, livre);
+    if (!dois && T.estado !== 'sorteio') txt('SÓ PASSA C/ TODOS', tx, by + 26, '#9ad0ff', 8, 'e', false, livre);
     return;
   }
   // selo do pagador + painel de espera na cancela
-  const bx = v.x + (dois ? 4 : 8), by = v.y + (dois ? 96 : 128), ret = IMG[pg.def.retrato];
+  const bx = v.x + (dois ? 4 : 8), by = v.y + (dois ? 128 : 200), ret = IMG[pg.def.retrato];
   ctx.fillStyle = 'rgba(6,8,12,0.8)'; ctx.fillRect(bx - 4, by - 4, dois ? 92 : 118, dois ? 26 : 34);
   ctx.fillStyle = '#ffd23a'; ctx.fillRect(bx - 1, by - 1, (dois ? 18 : 26) + 2, (dois ? 18 : 26) + 2); if (ret) ctx.drawImage(ret, bx, by, dois ? 18 : 26, dois ? 18 : 26);
   txt('PAGADOR', bx + (dois ? 22 : 32), by, '#ffd23a', 8, 'e', false); txt(pg.nome, bx + (dois ? 22 : 32), by + (dois ? 10 : 14), '#fff', 8, 'e', false, (dois ? 92 : 118) - (dois ? 26 : 36));
@@ -1624,7 +1623,7 @@ function telaSelecao(n, cli) {   // cli = celular do P2 mostrando a escolha dele
         txt(p.cc + ' CC • ' + p.tanque + ' L', tx, ry + 54, '#9a9aa4', 8);
         txt('PERFIL: ' + p.perfil, tx, ry + (n === 1 ? 70 : 66), p.perfil === 'ROIA' ? '#5ab4ff' : '#ff4a2a', 8);
         if (n === 1) { txt('ABASTECE EM ' + tempoTanque(p).toFixed(1) + ' S', tx, ry + 86, '#9a9aa4', 8); txt('0-100: ' + String(p.t100).replace('.', ',') + ' S', tx, ry + 100, '#9a9aa4', 8);
-          txt(p.perfil === 'ROIA' ? p.vel + ' DE ' + p.velMoto + ' KM/H' : p.vel + ' KM/H', tx, ry + 114, p.perfil === 'ROIA' ? '#5ab4ff' : '#9a9aa4', 8); }
+          txt((p.velMoto || p.vel) + ' KM/H', tx, ry + 114, '#9a9aa4', 8); }
         const est = STATS.map(q => [q.r, notaRel(p, q.f)]);
         const sx = n === 1 ? 344 : v.x + 14, sy = n === 1 ? 186 : 262, bw = n === 1 ? 284 : v.w - 28;
         est.forEach(([r, f], i) => {
@@ -1668,7 +1667,7 @@ const autonomia = p => 0.5 / (1.4 - p.economia * 0.85);
 // barras relativas ao grupo: o pior do clube ainda aparece com 2/10 (nunca zerado)
 function notaRel(p, f) { const vs = PERSONAGENS.map(f), mn = Math.min(...vs), mx = Math.max(...vs); return mx > mn ? 0.25 + 0.75 * (f(p) - mn) / (mx - mn) : 0.6; }
 const STATS = [
-  { r: 'VELOCIDADE', f: p => p.vel, v: p => p.vel + ' KM/H', c: ['#ff9a2a', '#ff3a1a'] },
+  { r: 'VELOCIDADE', f: p => p.velMoto || p.vel, v: p => (p.velMoto || p.vel) + ' KM/H', c: ['#ff9a2a', '#ff3a1a'] },
   { r: 'ACELERAÇÃO', f: p => 1 / (p.t100 || 4), v: p => '0-100 ' + (p.t100 || 4).toFixed(1).replace('.', ',') + 'S', c: ['#ffe24a', '#ff9a1a'] },
   { r: 'ECONOMIA', f: p => p.economia, v: p => autonomia(p) > 0.66 ? '1 PARADA' : '2 PARADAS', c: ['#7dff6a', '#1fb84a'] },
   { r: 'CURVAS', f: p => p.curva, v: p => 'NOTA ' + Math.round(notaRel(p, q => q.curva) * 10), c: ['#7ad0ff', '#2a7aff'] }
@@ -1726,7 +1725,7 @@ function selecaoPremium(st, cli, mudar, conf, escolher) {
   const nome = p.nome, tam = nome.length * 16 <= cx0 + cw - 10 - tx ? 16 : 8;
   if (tam === 16) txt(nome, tx, ry + 26, '#ffffff', 16, 'e');
   else { const partes = quebrar(nome, Math.floor((cx0 + cw - 10 - tx) / 8)); partes.slice(0, 2).forEach((l, i) => txt(l, tx, ry + 26 + i * 12, '#ffffff', 8, 'e')); }
-  txt('VEL. ' + p.vel + (p.perfil === 'ROIA' ? ' DE ' + p.velMoto : '') + ' KM/H', tx, ry + 60, '#8a92a0', 8, 'e', false);
+  txt('VEL. MÁX. ' + (p.velMoto || p.vel) + ' KM/H', tx, ry + 60, '#8a92a0', 8, 'e', false);
   // estatísticas com barras segmentadas
   let sy = cy0 + 108;
   for (const s of STATS) {
