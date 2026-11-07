@@ -6,6 +6,7 @@ window.INFO = (function () {
 
   // ===== HISTÓRICO DE VERSÕES (a primeira da lista é a versão atual do jogo) =====
   const VERSOES = [
+    ['6.2', ['Quem joga sempre usa a velocidade máxima da moto (os 92% dos Rôias valem só para os pilotos do jogo).', 'Sorteio do pedágio saiu do meio da tela: agora aparece no cantinho esquerdo, abaixo do aviso de radar.']],
     ['6.1', ['Marcos das outras cidades: Cachoeira da Pataca e Matriz das Dores em Itaguara, Igreja do Carmo em Carmópolis, catedral de 1787 e casarões em Campanha, o morro do hotel e o Pouso dos Bandeirantes em Pouso Alto, a basílica dos relógios, o mirante da Santa e a Revolução de 1932 em Cruzeiro, a Rua das Palmeiras e a Basílica de São Benedito em Lorena.', 'Textos longos nas caixas (nome do pagador do pedágio, avisos) agora diminuem para caber, sem cortar.']],
     ['6.0', ['Viagem completa muito mais longa: cerca de 8 minutos, com 15 cidades, 5 postos, 3 pedágios e 9 radares.', 'Largada saindo do posto de gasolina, dentro de Itaúna (com a Matriz de Sant\'Ana e a capela no morro).', 'Placas e avisos de BEM-VINDO e VOLTE SEMPRE em cada cidade, com as cidades do lado certo da estrada.', 'Marcos das cidades: Cristo na serra de Itatiaiuçu, Rei do Futebol em Três Corações, Parque das Águas em São Lourenço, Maria Fumaça em Passa Quatro, santuário em Cachoeira Paulista e Frei Galvão em Guaratinguetá.', 'Contra o Relógio agora é um trecho de 3 minutos da Fernão Dias.', 'Pilotos do jogo desviam melhor do trânsito.', 'Ranking zerado (nova temporada) para todos os modos.']],
     ['5.7', ['Nova opção de pilotagem: DIREÇÃO POR INCLINAÇÃO. Incline o celular como um guidão para desviar; acelerar, frear e buzinar continuam nos botões.', 'P1 liga em OPÇÕES → DIREÇÃO. O Jogador 2 liga no próprio celular (botão DIREÇÃO na escolha do piloto ou no controle).']],
@@ -42,7 +43,8 @@ window.INFO = (function () {
       '<b>2 jogadores:</b> você e um amigo na mesma corrida (veja abaixo).'
     ])) +
     sec('🏍️ Pilotos: Roias e McNamaras', '<p>Cada membro tem a sua moto, com velocidade, aceleração (0-100), economia e curvas diferentes.</p>' + lista([
-      '<b>ROIA:</b> não estica a moto (anda a 92% da máxima), gasta menos gasolina e faz curva melhor.',
+      '<b>ROIA:</b> gasta menos gasolina e faz curva melhor. Os Rôias controlados pelo jogo não esticam a moto (andam a 92% da máxima).',
+      '<b>Você</b> sempre pode levar a moto escolhida até a velocidade máxima dela, seja Rôia ou McNamara.',
       '<b>McNAMARA:</b> vai no talo (100% da máxima), mas bebe mais e precisa parar mais vezes.'
     ])) +
     sec('🏙️ Cidades do caminho', lista([
