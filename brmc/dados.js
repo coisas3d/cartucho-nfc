@@ -77,61 +77,100 @@ window.DADOS = (function () {
   // ------------------------------------------------------------------ VIAGEM 1
   // Cada trecho: { n: segmentos, c: curva (- esq / + dir), m: subida/descida, z: zona, t: 'S' via simples | 'D' pista dupla }
   // extras: placa (3 linhas), fala (evento do rádio), pedagio, posto
+  // Cidades: cidade (nome), lado ('e' esquerda | 'd' direita | 'ambos' = a estrada passa por dentro), porte ('pequena' | 'grande'),
+  // marcos: sprites de pontos marcantes [arte, posição no trecho 0-1, x, escala] | horiz: marco no horizonte [arte, lado]
+  const MAPA_V1 = [
+    ['ITAÚNA', -20.07, -44.57, 'd'], ['ITATIAIUÇU', -20.20, -44.42, 'd'], ['ITAGUARA', -20.39, -44.49, 'd'], ['CARMÓPOLIS', -20.54, -44.63, 'e'],
+    ['TRÊS CORAÇÕES', -21.69, -45.25, 'e'], ['CAMPANHA', -21.84, -45.40, 'e'], ['SÃO LOURENÇO', -22.12, -45.05, 'e'], ['POUSO ALTO', -22.20, -44.97, 'd'],
+    ['PASSA QUATRO', -22.39, -44.97, 'd'], ['CRUZEIRO', -22.58, -44.96, 'd'], ['CACHOEIRA PTA.', -22.66, -45.01, 'd'], ['LORENA', -22.73, -45.12, 'd'],
+    ['GUARATINGUETÁ', -22.82, -45.19, 'et'], ['APARECIDA', -22.85, -45.23, 'eb']
+  ];
   const VIAGEM1 = {
-    id: 'v1b', nome: 'VIAGEM 1', titulo: 'ITAÚNA → APARECIDA', km: 450, semente: 2026,
+    id: 'v2', nome: 'VIAGEM 1', titulo: 'ITAÚNA → APARECIDA', km: 450, semente: 2026,
     sub: 'FERNÃO DIAS • SUL DE MINAS • SERRA • DUTRA', modo: 'viagem',
-    info: '2 POSTOS • 2 PEDÁGIOS • 4 RADARES • VIA SIMPLES E DUPLA',
+    info: '5 POSTOS • 3 PEDÁGIOS • 9 RADARES • 15 CIDADES',
     largada: ['ITAÚNA', 'MINAS GERAIS', '#146e3c'], chegada: ['APARECIDA', 'SANTUÁRIO NACIONAL', '#b4141e'],
-    fim: 'CHEGAMOS EM APARECIDA!', basilica: true, ceu: [0, 1],
+    fim: 'CHEGAMOS EM APARECIDA!', basilica: true, ceu: [0, 1], largadaPosto: true,
     trechos: [
-      // Itaúna -> Itatiaiuçu (via simples)
-      { n: 120, c: 0, m: 0, z: 'cidade', t: 'S' },
-      { n: 180, c: 2, m: 8, z: 'campo', t: 'S', placa: ['ITATIAIUÇU', '22 KM', ''] },
-      { n: 160, c: -3, m: -8, z: 'campo', t: 'S' },
-      { n: 200, c: 0, m: 10, z: 'eucalipto', t: 'S', radar: 80, oculto: true },
+      // Itaúna: largada no posto, dentro da cidade
+      { n: 300, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'ITAÚNA', lado: 'ambos', porte: 'grande', semEntrada: true, radar: 60,
+        marcos: [['matriz', 0.42, -2.3, 1.5], ['igrejas', 0.8, 2.6, 1.2]], horiz: ['capela', 'd'] },
+      { n: 460, c: 2, m: 8, z: 'campo', t: 'S', placa: ['ITATIAIUÇU', '22 KM', ''] },
+      { n: 440, c: -3, m: -8, z: 'campo', t: 'S' },
+      { n: 460, c: 2, m: 10, z: 'eucalipto', t: 'S', radar: 80 },
+      { n: 260, c: -1, m: 0, z: 'cidade', t: 'S', cidade: 'ITATIAIUÇU', lado: 'ambos', porte: 'pequena', radar: 60, horiz: ['cristo', 'e'], marcos: [['igrejas', 0.5, 2.5, 1.2]] },
+      { n: 350, c: 2, m: -6, z: 'campo', t: 'S' },
       // Fernão Dias (pista dupla)
-      { n: 200, c: 2, m: -10, z: 'campo', t: 'D', placa: ['BR-381', 'FERNÃO DIAS', 'SÃO PAULO'], fala: 'fernao' },
-      { n: 240, c: -2, m: 14, z: 'campo', t: 'D', placa: ['ITAGUARA', '', ''] },
+      { n: 550, c: 2, m: -10, z: 'campo', t: 'D', placa: ['BR-381', 'FERNÃO DIAS', 'SÃO PAULO'], fala: 'fernao' },
+      { n: 460, c: -2, m: 14, z: 'eucalipto', t: 'D' },
+      { n: 240, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'ITAGUARA', lado: 'e', porte: 'pequena', marcos: [['igrejas', 0.5, -5.0, 1.3]] },
       { n: 160, c: 0, m: 0, z: 'pedagio', t: 'D', pedagio: true },
-      { n: 220, c: 2, m: -14, z: 'eucalipto', t: 'D' },
-      { n: 240, c: 0, m: 0, z: 'campo', t: 'D', placa: ['CARMÓPOLIS', 'DE MINAS', ''], radar: 110 },
-      { n: 200, c: -3, m: 18, z: 'campo', t: 'D' },
-      { n: 280, c: 0, m: 0, z: 'eucalipto', t: 'D', posto: true },
-      { n: 240, c: 3, m: -18, z: 'campo', t: 'D' },
+      { n: 550, c: 2, m: -14, z: 'campo', t: 'D', radar: 110 },
+      { n: 530, c: -2, m: 10, z: 'eucalipto', t: 'D', posto: true },
+      { n: 580, c: 3, m: -12, z: 'campo', t: 'D' },
+      { n: 240, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CARMÓPOLIS DE MINAS', lado: 'd', porte: 'pequena', marcos: [['igrejas', 0.5, 2.8, 1.3]] },
+      { n: 600, c: -3, m: 18, z: 'campo', t: 'D' },
       { n: 160, c: 0, m: 0, z: 'pedagio', t: 'D', pedagio: true },
-      { n: 200, c: -2, m: 8, z: 'campo', t: 'D' },
-      { n: 200, c: 0, m: 0, z: 'cidade', t: 'D', placa: ['TRÊS CORAÇÕES', '', ''] },
+      { n: 580, c: 2, m: -16, z: 'eucalipto', t: 'D', radar: 110 },
+      { n: 600, c: -2, m: 8, z: 'campo', t: 'D' },
+      { n: 550, c: 0, m: 0, z: 'campo', t: 'D', posto: true },
+      { n: 580, c: 3, m: -10, z: 'eucalipto', t: 'D' },
+      { n: 600, c: -2, m: 12, z: 'campo', t: 'D' },
+      { n: 160, c: 0, m: 0, z: 'pedagio', t: 'D', pedagio: true },
+      { n: 550, c: 2, m: -8, z: 'campo', t: 'D', placa: ['TRÊS CORAÇÕES', '5 KM', ''] },
+      { n: 320, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'TRÊS CORAÇÕES', lado: 'ambos', porte: 'grande', radar: 60, marcos: [['futebol', 0.5, 2.5, 1.5]] },
       // Sul de Minas (via simples)
-      { n: 180, c: 3, m: 10, z: 'campo', t: 'S', placa: ['CAMPANHA', '', ''], fala: 'simples' },
-      { n: 160, c: -4, m: -10, z: 'campo', t: 'S' },
-      { n: 180, c: 4, m: 14, z: 'eucalipto', t: 'S' },
-      { n: 160, c: 0, m: 0, z: 'cidade', t: 'S', placa: ['SÃO LOURENÇO', '', ''], radar: 60 },
-      { n: 200, c: 3, m: 10, z: 'campo', t: 'S', placa: ['POUSO ALTO', '', ''] },
-      { n: 180, c: -4, m: -10, z: 'campo', t: 'S' },
-      { n: 200, c: 0, m: 0, z: 'cidade', t: 'S', placa: ['PASSA QUATRO', '', ''], posto: true },
+      { n: 530, c: 3, m: 10, z: 'campo', t: 'S', fala: 'simples' },
+      { n: 460, c: -4, m: -10, z: 'campo', t: 'S' },
+      { n: 240, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'CAMPANHA', lado: 'd', porte: 'pequena', marcos: [['igrejas', 0.5, 2.4, 1.3]] },
+      { n: 530, c: 4, m: 14, z: 'eucalipto', t: 'S', posto: true },
+      { n: 500, c: -3, m: -8, z: 'campo', t: 'S', radar: 80 },
+      { n: 320, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'SÃO LOURENÇO', lado: 'ambos', porte: 'grande', radar: 60, marcos: [['parque', 0.5, -3.0, 1.5]] },
+      { n: 500, c: 3, m: 10, z: 'campo', t: 'S' },
+      { n: 220, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'POUSO ALTO', lado: 'e', porte: 'pequena', marcos: [['igrejas', 0.5, -2.4, 1.3]] },
+      { n: 500, c: -4, m: -10, z: 'campo', t: 'S', posto: true },
+      { n: 440, c: 3, m: 8, z: 'eucalipto', t: 'S' },
+      { n: 300, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'PASSA QUATRO', lado: 'ambos', porte: 'pequena', marcos: [['estacao', 0.5, 3.0, 1.4]] },
       // Serra da Mantiqueira (via simples, curvas fechadas)
-      { n: 140, c: -5, m: 24, z: 'serra', t: 'S', placa: ['SERRA DA', 'MANTIQUEIRA', 'CURVAS'], fala: 'serra' },
-      { n: 120, c: 6, m: 20, z: 'serra', t: 'S' },
-      { n: 140, c: -6, m: 18, z: 'serra', t: 'S' },
-      { n: 120, c: 5, m: -24, z: 'serra', t: 'S', placa: ['DIVISA', 'SÃO PAULO', ''], fala: 'divisa' },
-      { n: 140, c: -6, m: -22, z: 'serra', t: 'S' },
-      { n: 120, c: 4, m: -16, z: 'serra', t: 'S' },
+      { n: 180, c: -5, m: 24, z: 'serra', t: 'S', placa: ['SERRA DA', 'MANTIQUEIRA', 'CURVAS'], fala: 'serra' },
+      { n: 160, c: 6, m: 20, z: 'serra', t: 'S' },
+      { n: 180, c: -6, m: 18, z: 'serra', t: 'S' },
+      { n: 160, c: 5, m: -24, z: 'serra', t: 'S', placa: ['DIVISA', 'SÃO PAULO', ''], fala: 'divisa' },
+      { n: 180, c: -6, m: -22, z: 'serra', t: 'S' },
+      { n: 160, c: 4, m: -16, z: 'serra', t: 'S' },
       // Via Dutra (pista dupla)
-      { n: 160, c: 0, m: 0, z: 'cidade', t: 'D', placa: ['CRUZEIRO', 'BR-116 DUTRA', ''], fala: 'dutra' },
-      { n: 220, c: 2, m: 0, z: 'campo', t: 'D', placa: ['CACHOEIRA', 'PAULISTA', ''] },
-      { n: 200, c: -2, m: 0, z: 'campo', t: 'D', placa: ['LORENA', '', ''], radar: 110 },
-      { n: 200, c: 0, m: 0, z: 'cidade', t: 'D', placa: ['GUARATINGUETÁ', '', ''] },
-      { n: 200, c: 0, m: 0, z: 'cidade', t: 'D', placa: ['APARECIDA', 'SANTUÁRIO', 'NACIONAL'], fala: 'aparecida' }
+      { n: 280, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CRUZEIRO', lado: 'ambos', porte: 'grande', placa: ['CRUZEIRO', 'BR-116 DUTRA', ''], fala: 'dutra' },
+      { n: 550, c: 2, m: 0, z: 'campo', t: 'D', posto: true },
+      { n: 280, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CACHOEIRA PAULISTA', lado: 'd', porte: 'pequena', marcos: [['santuario', 0.5, 3.2, 1.6]] },
+      { n: 580, c: -2, m: 0, z: 'campo', t: 'D', radar: 110 },
+      { n: 260, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'LORENA', lado: 'e', porte: 'grande' },
+      { n: 550, c: 2, m: 0, z: 'campo', t: 'D' },
+      { n: 280, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'GUARATINGUETÁ', lado: 'd', porte: 'grande', marcos: [['catedral', 0.55, 3.0, 1.4], ['freigalvao', 0.25, 1.6, 0.9]] },
+      { n: 440, c: -1, m: 0, z: 'campo', t: 'D' },
+      { n: 260, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'APARECIDA', lado: 'ambos', porte: 'grande', placa: ['APARECIDA', 'SANTUÁRIO', 'NACIONAL'], fala: 'aparecida' }
     ],
-    // mapa da tela de rota: [nome, lat, lon, lado do rótulo]
-    mapa: [
-      ['ITAÚNA', -20.07, -44.57, 'd'], ['ITATIAIUÇU', -20.20, -44.42, 'd'], ['ITAGUARA', -20.39, -44.49, 'd'], ['CARMÓPOLIS', -20.54, -44.63, 'e'],
-      ['TRÊS CORAÇÕES', -21.69, -45.25, 'e'], ['CAMPANHA', -21.84, -45.40, 'e'], ['SÃO LOURENÇO', -22.12, -45.05, 'e'], ['POUSO ALTO', -22.20, -44.97, 'd'],
-      ['PASSA QUATRO', -22.39, -44.97, 'd'], ['CRUZEIRO', -22.58, -44.96, 'd'], ['CACHOEIRA PTA.', -22.66, -45.01, 'd'], ['LORENA', -22.73, -45.12, 'd'],
-      ['GUARATINGUETÁ', -22.82, -45.19, 'et'], ['APARECIDA', -22.85, -45.23, 'eb']
-    ]
+    mapa: MAPA_V1
   };
-
+  // ------------------------------------------------------------------ CONTRA O RELÓGIO (~3 min): trecho da Fernão Dias
+  const RELOGIO = {
+    id: 'rel2', nome: 'CONTRA O RELÓGIO', titulo: 'FERNÃO DIAS', km: 160, semente: 4242, modo: 'relogio',
+    sub: 'ITAGUARA → TRÊS CORAÇÕES • PISTA DUPLA', info: '1 POSTO • 1 PEDÁGIO • 3 RADARES • 3 CIDADES',
+    largada: ['ITAGUARA', 'FERNÃO DIAS', '#146e3c'], chegada: ['TRÊS CORAÇÕES', 'FIM DO TRECHO', '#b4141e'], fim: 'TRECHO CONCLUÍDO!', ceu: [0, 1],
+    trechos: [
+      { n: 200, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'ITAGUARA', lado: 'e', porte: 'pequena', semEntrada: true, marcos: [['igrejas', 0.5, -5.0, 1.3]] },
+      { n: 840, c: 2, m: -12, z: 'campo', t: 'D', radar: 110 },
+      { n: 800, c: -2, m: 10, z: 'eucalipto', t: 'D' },
+      { n: 240, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CARMÓPOLIS DE MINAS', lado: 'd', porte: 'pequena', marcos: [['igrejas', 0.5, 2.8, 1.3]] },
+      { n: 880, c: -3, m: 18, z: 'campo', t: 'D' },
+      { n: 160, c: 0, m: 0, z: 'pedagio', t: 'D', pedagio: true },
+      { n: 840, c: 2, m: -16, z: 'eucalipto', t: 'D', radar: 110 },
+      { n: 800, c: 0, m: 0, z: 'campo', t: 'D', posto: true },
+      { n: 880, c: 3, m: -10, z: 'eucalipto', t: 'D' },
+      { n: 840, c: -2, m: 12, z: 'campo', t: 'D', placa: ['TRÊS CORAÇÕES', '5 KM', ''] },
+      { n: 300, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'TRÊS CORAÇÕES', lado: 'ambos', porte: 'grande', radar: 60, marcos: [['futebol', 0.5, 2.5, 1.5]] }
+    ],
+    mapa: [['ITAGUARA', -20.39, -44.49, 'd'], ['CARMÓPOLIS', -20.54, -44.63, 'e'], ['TRÊS CORAÇÕES', -21.69, -45.25, 'e']]
+  };
 
   // ------------------------------------------------------------------ TOMAR UM CAFEZINHO (passeio curto: ~1 min)
   // Passa Quatro -> Serra da Mantiqueira -> Cruzeiro. Sem posto: o tanque já sai cheio.
@@ -176,7 +215,7 @@ window.DADOS = (function () {
     { id: 'cnh', nome: 'CNH EM RISCO', desc: 'LEVE 3 MULTAS NUMA CORRIDA' },
     { id: 'frentista', nome: 'AMIGO DO FRENTISTA', desc: 'ABASTEÇA 2 VEZES' },
     { id: 'bibi', nome: 'BI-BI!', desc: 'BUZINE 15 VEZES NUMA CORRIDA' },
-    { id: 'patrocinador', nome: 'PATROCINADOR OFICIAL', desc: 'SEJA O PAGADOR NOS 2 PEDÁGIOS' },
+    { id: 'patrocinador', nome: 'PATROCINADOR OFICIAL', desc: 'PAGUE 2 PEDÁGIOS NA MESMA VIAGEM' },
     { id: 'trinca', nome: 'TODO MUNDO VENCEU', desc: 'VENÇA A VIAGEM COM TODOS OS PILOTOS' }
   ];
 
@@ -653,5 +692,5 @@ window.DADOS = (function () {
     }
   };
 
-  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO], CONQUISTAS, FALAS, SOBRE, DE, PUXA, ZOA, ZOA_PESO, CASAL, ZOA_CASAL };
+  return { PERSONAGENS, VIAGENS: [VIAGEM1, CAFEZINHO, RELOGIO], CONQUISTAS, FALAS, SOBRE, DE, PUXA, ZOA, ZOA_PESO, CASAL, ZOA_CASAL };
 })();

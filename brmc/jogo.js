@@ -161,6 +161,7 @@ function paleta(p) {
 }
 
 // ============================================================ PISTA
+let CIDADES = [], HORIZ = [];
 let VIAGEM = null, segs = [], START_I = 30, FIM_I = 0, FIM_Z = 0, DIST = 1, POSTOS = [], MARCOS = [], PEDAGIOS = [], RADARES = [];
 const ART = {};
 function easeIn(a, b, p) { return a + (b - a) * p * p; }
@@ -187,6 +188,12 @@ function gerarArte() {
   ART.predios = [...Array(10)].map((_, i) => A.predio(i * 13 + 1, i % 3 === 0)); ART.outdoors = [A.outdoor(0, E), A.outdoor(1)];
   ART.posto = A.posto(IMG.emblema_64); ART.pedagio = A.pedagioPremium(IMG.emblema_64); ART.cabine = A.cabine(); ART.passarela = A.passarela();
   ART.radar = arteRadar();
+  // cidades da viagem
+  ART.casas = [1, 2, 3, 4, 5, 6].map(sd => A.casa(sd * 11)); ART.igrejas = [3, 8, 14].map(sd => A.igreja(sd));
+  ART.cid = { matriz: A.matrizSantana(), igrejas: ART.igrejas[0], futebol: A.monumentoFutebol(), parque: A.parqueAguas(), estacao: A.estacaoTrem(),
+    santuario: A.santuario(), catedral: A.catedral(), freigalvao: A.placaMarrom(['TERRA DE', 'FREI GALVÃO']) };
+  ART.horiz = { capela: Object.assign(A.capelaMorro(), { __id: 'capela' }), cristo: Object.assign(A.cristoSerra(), { __id: 'cristo' }) };
+  ART.postoLargada = A.postoLargada(IMG.emblema_64);
   const tag = (c, id) => { c.__id = id; return c; };
   ART.mont = tag(A.silhueta(1024, 70, 3, 3, 1), 'mont'); ART.mont2 = tag(A.silhueta(1024, 46, 9, 5, 1.4), 'mont2');
   ART.morro = tag(A.silhueta(1024, 26, 5, 8, 0.6), 'morro'); ART.sky = tag(A.skyline(1024, 90, 4), 'sky');
@@ -219,7 +226,7 @@ function montarViagem(v) {
   VIAGEM = v; segs = []; const R = A.rng(v.semente);
   let tipo = v.trechos[0].t;
   addTrecho(0, 80, 0, 0, 0, 'cidade', tipo);
-  const marcas = [];
+  const marcas = []; CIDADES = []; HORIZ = [];
   for (const tr of v.trechos) {
     const ini = segs.length, e = Math.round(tr.n * 0.3);
     if (tr.t !== tipo) { marcas.push({ i: ini - 30, placa: tr.t === 'D' ? ['INÍCIO DA', 'PISTA DUPLA', ''] : ['FIM DA', 'PISTA DUPLA', 'MÃO DUPLA'] }); tipo = tr.t; }
@@ -228,6 +235,13 @@ function montarViagem(v) {
     if (tr.pedagio) marcas.push({ i: ini + Math.round(tr.n / 2), pedagio: true });
     if (tr.posto) marcas.push({ i: ini + Math.round(tr.n / 2), posto: true });
     if (tr.radar) marcas.push({ i: ini + Math.round(tr.n * 0.6), radar: tr.radar, oculto: !!tr.oculto });
+    if (tr.cidade) {
+      const fim = segs.length;
+      for (let j = ini; j < fim; j++) { segs[j].lado = tr.lado || 'ambos'; segs[j].porte = tr.porte || 'grande'; }
+      CIDADES.push({ nome: tr.cidade, i0: ini, i1: fim, lado: tr.lado || 'ambos', semEntrada: !!tr.semEntrada });
+      (tr.marcos || []).forEach(([arte, pos, x, esc]) => marcas.push({ i: ini + Math.round(tr.n * pos), marco: arte, x, esc }));
+      if (tr.horiz) HORIZ.push({ i0: ini - 140, i1: fim + 40, img: tr.horiz[0], lado: tr.horiz[1] });
+    }
   }
   FIM_I = segs.length + 30; addTrecho(0, 360, 0, 0, 0, 'cidade', tipo);
   FIM_Z = FIM_I * SEG; DIST = FIM_Z - START_I * SEG;
@@ -266,11 +280,15 @@ function montarViagem(v) {
         addSpr(m.i - 100, A.placaVerde(['RADAR', 'A 500 M', m.radar + ' KM/H']), 1.6, 1, true);
         MARCOS.push({ i: m.i - 170, z: (m.i - 170) * SEG, fala: 'radar', feito: false });
       }
+    } else if (m.marco) {
+      const img = ART.cid[m.marco]; if (img) addSpr(m.i, img, m.x, m.esc, true);
+      for (let j = m.i - 10; j <= m.i + 3; j++) if (segs[j]) segs[j].semPredio = m.x < 0 ? 'e' : 'd';   // abre espaço para o marco aparecer
     } else {
       if (m.placa) addSpr(m.i, A.placaVerde(m.placa), 1.5, 1, true);
       MARCOS.push({ i: m.i, z: m.i * SEG, fala: m.fala, feito: false });
     }
   }
+  if (v.largadaPosto) for (let j = 0; j <= START_I + 50; j++) segs[j].posto = true;   // pátio do posto de largada
   // cenário por zona (na via simples a vegetação chega mais perto dos dois lados)
   for (let i = 40; i < segs.length; i++) {
     const s = segs[i], z = s.zona, D = s.tipo === 'D', xe = D ? -4.4 : -1.7;
@@ -278,8 +296,13 @@ function montarViagem(v) {
     if (D && i % 12 === 0) addSpr(i, ART.poste, -1.55, 1, false);
     if (i % 25 === 0) addSpr(i, A.marcoKm(Math.round((i - START_I) / (FIM_I - START_I) * v.km)), 1.42, 1, false);
     if (z === 'cidade') {
-      if (i % 4 === 0) addSpr(i, ART.predios[Math.floor(R() * ART.predios.length)], 2.0 + R() * 1.6, 1.4, true);
-      if (i % 5 === 2) addSpr(i, ART.predios[Math.floor(R() * ART.predios.length)], xe - 0.3 - R() * 1.5, 1.4, !D);
+      const lado = s.lado || 'ambos', peq = s.porte === 'pequena', dir = lado !== 'e' && s.semPredio !== 'd', esq = lado !== 'd' && s.semPredio !== 'e';
+      const pr = () => peq ? ART.casas[Math.floor(R() * ART.casas.length)] : (R() < 0.25 ? ART.casas[Math.floor(R() * ART.casas.length)] : ART.predios[Math.floor(R() * ART.predios.length)]);
+      if (dir && i % 4 === 0) addSpr(i, pr(), 2.0 + R() * 1.6, peq ? 1.5 : 1.4, true);
+      if (esq && i % 5 === 2) addSpr(i, pr(), xe - 0.3 - R() * 1.5, peq ? 1.5 : 1.4, !D);
+      if (!dir) { if (i % 5 === 0 && R() < 0.8) addSpr(i, ART.arvores[Math.floor(R() * 5)], 1.8 + R() * 2.5, 1.2, true); if (i % 6 === 0) addSpr(i, ART.cerca, 2.6, 1, false); }
+      if (!esq && i % 7 === 0 && R() < 0.6) addSpr(i, ART.arvores[Math.floor(R() * 5)], xe - 0.2 - R() * 2.5, 1.2, !D);
+      if (i % 9 === 4) addSpr(i, ART.poste, dir ? 1.5 : -1.5, 1, false);
     } else if (z === 'eucalipto') {
       if (i % 2 === 0) addSpr(i, ART.eucs[Math.floor(R() * 3)], 1.7 + R() * 2.2, 1.3, true);
       if (i % 3 === 0) addSpr(i, ART.eucs[Math.floor(R() * 3)], xe - R() * 2, 1.3, !D);
@@ -303,6 +326,14 @@ function montarViagem(v) {
   const arco = d => memo('arco' + d.join(), () => A.arco(d[0], d[1], d[2], IMG.emblema_128));
   addSpr(START_I, arco(v.largada), 0, 1.15, false, { cruza: true });
   addSpr(FIM_I, arco(v.chegada), 0, 1.15, false, { cruza: true });
+  for (const C of CIDADES) {
+    if (!C.semEntrada) addSpr(C.i0 - 14, memo('pc_' + C.nome, () => A.portalCidade('BEM-VINDO A', C.nome)), 1.55, 1, true);
+    addSpr(Math.min(segs.length - 1, C.i1 + 6), memo('ps_' + C.nome, () => A.portalCidade('VOLTE SEMPRE A', C.nome, true)), segs[C.i1] && segs[C.i1].tipo === 'D' ? -1.7 : -1.55, 1, true);
+  }
+  // largada no posto (pátio à direita da pista, a turma sai dele para a estrada)
+  if (v.largadaPosto) {
+    addSpr(START_I + 6, ART.postoLargada, 4.5, 1.7, false); addSpr(START_I - 12, ART.postoLargada, 4.5, 1.7, false);
+  }
   MARCOS.sort((a, b) => a.z - b.z);
   // peso da serra (0-1): onde a chuva e a neblina aparecem
   let d = 1e9; for (const s of segs) { d = s.zona === 'serra' ? 0 : d + 1; s.serra = d; }
@@ -488,7 +519,11 @@ function novaCorrida(escolhas, ehDemo) {
   const lista = MODO === 'relogio' && !demo ? [] : PERSONAGENS.filter(p => usados.indexOf(p) < 0).map(d => [d, -1]);
   if (demo) CLIMA = { tipo: 'sol' };
   escolhas.forEach((c, j) => lista.push([PERSONAGENS[c], j]));
-  corredores = lista.map(([d, h], i) => { const c = criarCorredor(d, h), fila = Math.floor(i / 2); c.z = (START_I - 5 - fila * 5) * SEG; c.x = i % 2 ? 0.55 : -0.35; c.cx = c.x * ROAD; return c; });
+  const posto = VIAGEM.largadaPosto && !demo;
+  corredores = lista.map(([d, h], i) => { const c = criarCorredor(d, h);
+    if (posto) { const fila = Math.floor(i / 3); c.z = (START_I - 4 - fila * 5) * SEG; c.x = [1.3, 1.9, 2.5][i % 3]; }   // alinhados no pátio do posto
+    else { const fila = Math.floor(i / 2); c.z = (START_I - 5 - fila * 5) * SEG; c.x = i % 2 ? 0.55 : -0.35; }
+    c.cx = c.x * ROAD; return c; });
   humanos = corredores.filter(c => c.humano >= 0).sort((a, b) => a.humano - b.humano);
   gerarTrafego(); particulas = [[], []]; radio.fila = []; radio.atual = null; radio.cd = 0;
   for (const m of MARCOS) m.feito = false;
@@ -522,6 +557,8 @@ function precisaAbastecer(c, p) {
   return naChegada < (alvo - p.z) * taxa * 1.08 ? Math.min(100, (alvo - p.z) * taxa * 1.15 + 8) : 0;
 }
 
+// distância lateral até um veículo, contando para onde ele está indo (quem cede, troca de faixa ou fecha a moto)
+const dLat = (v, x) => { const a = Math.min(v.x, v.alvoX), b = Math.max(v.x, v.alvoX); return x < a ? a - x : x > b ? x - b : 0; };
 function pilotoIA(c, seg) {
   const ia = c.ia, inp = { acel: true };
   let alvoV = c.max * ia.skill, alvoX = ia.faixa;
@@ -557,7 +594,7 @@ function pilotoIA(c, seg) {
     let obst = null, melhor = 1e9;
     for (const v of trafego) {
       const dz = v.z - c.z, hor = Math.max(1800, (c.v - v.v) * 1.5);
-      if (dz > -(v.len / 2 + 150) && dz < hor && Math.abs(v.x - c.x) < v.hw + MOTO_HW + 0.1 && dz < melhor) { melhor = dz; obst = v; }
+      if (dz > -(v.len / 2 + 150) && dz < hor && dLat(v, c.x) < v.hw + MOTO_HW + 0.1 && dz < melhor) { melhor = dz; obst = v; }
     }
     if (obst && !obst.oposto && melhor < 4500 && !(c.buzT > 0) && tempoCorrida > (ia.buzCd || 0) && !c.fim) {
       ia.buzCd = tempoCorrida + rnd(4, 9);
@@ -570,15 +607,15 @@ function pilotoIA(c, seg) {
         if (x < -0.98 || x > 1.3) return false;
         for (const v of trafego) {
           const dz = v.z - c.z, alc = v.oposto ? (c.v - v.v) * tPass + 1200 : Math.max(1500, (c.v - v.v) * 2.4);
-          if (dz > -(v.len / 2 + 220) && dz < alc && Math.abs(v.x - x) < v.hw + MOTO_HW + 0.08) return false;
+          if (dz > -(v.len / 2 + 220) && dz < alc && dLat(v, x) < v.hw + MOTO_HW + 0.08) return false;
         }
         return true;
       };
-      const a = obst.x + obst.hw + MOTO_HW + 0.12, b = obst.x - obst.hw - MOTO_HW - 0.12;
+      const mg = obst.pesado ? 0.18 : 0.14, a = obst.x + obst.hw + MOTO_HW + mg, b = obst.x - obst.hw - MOTO_HW - mg;
       const opc = obst.oposto ? [0.5, 1.15].filter(livre) : [a, b, -0.5, 0.5].filter(livre).sort((m, n) => Math.abs(m - c.x) - Math.abs(n - c.x));
-      if (opc.length) alvoX = opc[0];
+      if (opc.length) { alvoX = opc[0]; const falta = Math.abs(alvoX - c.x), tempo = (melhor - obst.len / 2) / Math.max(1, c.v - obst.v); if (!obst.oposto && falta > 0.15 && tempo < falta * 0.9) { alvoV = Math.min(alvoV, obst.v + 20 * KMH); inp.freio = c.v > alvoV; } }
       else if (obst.oposto) { alvoX = 1.15; alvoV = Math.min(alvoV, c.max * 0.4); }
-      else { alvoV = Math.min(alvoV, obst.v * 0.95); if (melhor < obst.len / 2 + 2800) inp.freio = c.v > alvoV + 3 * KMH; }
+      else { alvoV = Math.min(alvoV, obst.v * 0.95); if (melhor < obst.len / 2 + Math.max(2800, (c.v - obst.v) * 2.4)) inp.freio = c.v > alvoV + 3 * KMH; }
     }
   }
   if (alvoX < 1.3) {
@@ -661,6 +698,7 @@ function atualizarCorredor(c, dt) {
   if (!vac) for (const o of corredores) { if (o === c) continue; const dz = o.z - c.z; if (dz > 200 && dz < 1300 && Math.abs(o.x - c.x) < 0.14) { vac = o; break; } }
   c.vacuoT = vac && pc > 0.5 ? c.vacuoT + dt : 0; c.vacuo = c.vacuoT > 0.45; c.vacuoDe = vac;
   // ---- fora da pista, defensa, posto
+  if (VIAGEM.largadaPosto && c.z < (START_I + 50) * SEG && c.x > 1.05 && c.v > 8 * KMH) c.x -= 1.1 * dt;   // saída do posto: a moto já vai embicando para a pista
   const noPosto = seg.posto && c.x > 1.0 && c.x < 3.2, pedagio = seg.pedagio, D = seg.tipo === 'D';
   c.fora = (c.x > ACOST && !noPosto && !pedagio) || (!D && c.x < -ACOST);
   if (c.fora) {
@@ -1099,6 +1137,14 @@ function renderVista(vi, v, foco, idx) {
   foco.cidA = lerp(foco.cidA || 0, cid ? 1 : 0, 0.02);
   if (foco.cidA > 0.02) camada(g, tingir(ART.sky, mixc(PAL.mont, [40, 40, 50], 0.4)), v, foco.bg * 1.1, horiz + 2, k, foco.cidA);
   camada(g, tingir(ART.morro, PAL.morro), v, foco.bg * 1.5, horiz + 2, k);
+  for (const Hz of HORIZ) {   // marco no horizonte: aparece ao se aproximar e vai ficando para trás do lado certo
+    const fi = foco.z / SEG; if (fi < Hz.i0 || fi > Hz.i1) continue;
+    const u = (fi - Hz.i0) / (Hz.i1 - Hz.i0), a = clamp(Math.min(u / 0.15, (1 - u) / 0.1), 0, 1), img = ART.horiz[Hz.img]; if (!img) continue;
+    const esc = k * (0.42 + u * 0.38) * (Hz.img === 'cristo' ? 0.62 : 0.85), bw = img.width * esc, bh = img.height * esc, dirx = Hz.lado === 'e' ? -1 : 1;
+    const xc = v.w / 2 + dirx * v.w * (0.14 + u * 0.24);
+    g.globalAlpha = a; g.drawImage(img, Math.round(xc - bw / 2), Math.round(horiz + 4 - bh), Math.round(bw), Math.round(bh));
+    g.globalAlpha = a * 0.35; g.drawImage(tingir(img, PAL.morro), Math.round(xc - bw / 2), Math.round(horiz + 4 - bh), Math.round(bw), Math.round(bh)); g.globalAlpha = 1;
+  }
   if (VIAGEM.basilica && pr > 0.88) { // Basílica surgindo no horizonte
     const a = clamp((pr - 0.88) / 0.08, 0, 1), bw = ART.basilica.width * k * 0.9, bh = ART.basilica.height * k * 0.9;
     g.globalAlpha = a; g.drawImage(tingir(ART.basilica, mixc(PAL.morro, [30, 20, 40], 0.5)), Math.round(v.w * 0.55 - bw / 2), Math.round(horiz + 2 - bh), bw, bh); g.globalAlpha = 1;
@@ -1317,6 +1363,23 @@ function msg(s, x, y, cor, tam) {
   ctx.fillStyle = 'rgba(6,8,12,0.7)'; ctx.fillRect(x - w / 2 - 8, y - 6, w + 16, tam + 12);
   txt(s, x, y, cor, tam, 'c');
 }
+// aviso de cidade: "BEM-VINDO A ..." ao chegar e "VOLTE SEMPRE A ..." ao sair (placa azul que desce do topo)
+function hudCidade(v, c) {
+  const fi = c.z / SEG, ant = c._fiCid == null ? fi : c._fiCid; c._fiCid = fi;
+  if (contagem <= 0 && !demo) for (const C of CIDADES) {
+    if (!C.semEntrada && ant < C.i0 - 40 && fi >= C.i0 - 40) c.avCid = { t1: 'BEM-VINDO A', t2: C.nome, t0: tempoReal, sai: false };
+    if (ant < C.i1 && fi >= C.i1) c.avCid = { t1: 'VOLTE SEMPRE A', t2: C.nome, t0: tempoReal, sai: true };
+  }
+  const A0 = c.avCid; if (!A0) return;
+  A0.t = tempoReal - A0.t0; if (A0.t > 3.8 || A0.t < 0) { c.avCid = null; return; }
+  const dois = v.h < H, e = dois ? 0.7 : 1, entra = clamp(A0.t / 0.35, 0, 1), sai = clamp((3.8 - A0.t) / 0.35, 0, 1), f = Math.min(entra, sai);
+  const t2 = A0.t2, tam = dois ? 8 : (t2.length > 16 ? 8 : 16), bw = Math.max(200, t2.length * tam + 40) * (dois ? 0.9 : 1), bh = dois ? 34 : 44;
+  const x = v.x + v.w / 2 - bw / 2, y = v.y + (dois ? 34 : 96) - (1 - f) * 30;
+  ctx.save(); ctx.globalAlpha = f;
+  caminhoArred(ctx, x, y, bw, bh, 8); ctx.fillStyle = A0.sai ? '#5a2a7a' : '#0b3d91'; ctx.fill(); ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 2; ctx.stroke();
+  txt(A0.t1, v.x + v.w / 2, y + 6, '#ffe04a', 8, 'c', false); txt(t2, v.x + v.w / 2, y + (dois ? 18 : 20), '#fff', tam, 'c');
+  ctx.restore();
+}
 function hud(v, c, idx) {
   const dois = v.h < H, e = dois ? 0.62 : 1, m = dois ? 4 : 8, pos = posicao(c), tot = corredores.length;
   ctx.fillStyle = 'rgba(6,8,12,0.72)'; ctx.fillRect(v.x + m - 4, v.y + m - 4, dois ? 86 : 118, dois ? 34 : 50);
@@ -1358,6 +1421,7 @@ function hud(v, c, idx) {
     txt('RADAR ' + (dm >= 1000 ? (dm / 1000).toFixed(1) + ' KM' : dm + ' M'), cx, ry2 + rr + 3, acima ? '#ff5a4a' : '#ffd23a', 8, 'c');
     if (acima && Math.floor(tempoReal * 4) % 2) txt('REDUZA!', cx, ry2 + rr + 15, '#ff5a4a', 8, 'c');
   }
+  hudCidade(v, c);
   if (c.multaT > 0 && c.multaInfo) { const mp = multaPena(c.multaInfo[0], c.multaInfo[1]); msg('MULTA ' + mp[1] + '! ' + c.multaInfo[0] + ' KM/H NUMA ' + c.multaInfo[1] + ' • +' + mp[0] + ' S', cx, v.y + v.h * 0.42, '#ff5a4a', 8); }
   else if (c.tomboT > 0) msg('TOMBO! +' + PENA_TOMBO + ' S NO TEMPO', cx, v.y + v.h * 0.42, '#ff9a3a', 8);
   if (contagem > 0) {
@@ -1459,9 +1523,9 @@ function telaAbertura() {
   };
 }
 const MENU = [
-  ['VIAGEM COMPLETA', 'ITAÚNA → APARECIDA • 450 KM CONTRA A TURMA', () => iniciarModo('viagem')],
-  ['TOMAR UM CAFEZINHO', 'PASSEIO CURTO PELA SERRA • 1 MINUTO', () => iniciarModo('cafe')],
-  ['CONTRA O RELÓGIO', 'SOZINHO CONTRA O SEU FANTASMA', () => iniciarModo('relogio')],
+  ['VIAGEM COMPLETA', 'ITAÚNA → APARECIDA • 15 CIDADES • ~8 MINUTOS', () => iniciarModo('viagem')],
+  ['TOMAR UM CAFEZINHO', 'PASSEIO CURTO PELA SERRA • O MAIS RÁPIDO', () => iniciarModo('cafe')],
+  ['CONTRA O RELÓGIO', 'FERNÃO DIAS • SOZINHO CONTRA O SEU FANTASMA', () => iniciarModo('relogio')],
   ['2 JOGADORES', 'TELA DIVIDIDA • O CELULAR DO AMIGO VIRA CONTROLE', () => { MODO = 'viagem'; usarViagem(VIAGENS[0]); doisJogadores(); }],
   ['RECORDES', 'RANKING E CONQUISTAS', () => irPara(telaRecordes())],
   ['OPÇÕES', 'MÚSICA, EFEITOS E VIBRAÇÃO', () => irPara(telaOpcoes())],
@@ -1470,7 +1534,11 @@ const MENU = [
   ['SOBRE', 'DESENVOLVIDO PELA COISAS 3D • INSTAGRAM E WHATSAPP', () => INFO.abrir('sobre')]
 ];
 let menuSel = params.get('cafe') === '1' ? 1 : 0;
-function iniciarModo(m) { MODO = m; usarViagem(m === 'cafe' ? VIAGENS[1] : VIAGENS[0]); irPara(telaSelecao(1)); }
+// viagem longa: pede para a tela do celular não apagar durante a corrida
+let travaTela = null;
+function telaAcesa() { try { if (navigator.wakeLock && !travaTela) navigator.wakeLock.request('screen').then(t => { travaTela = t; t.addEventListener('release', () => { travaTela = null; }); }).catch(() => {}); } catch (e) {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && estado && estado.nome === 'corrida') telaAcesa(); });
+function iniciarModo(m) { MODO = m; usarViagem(m === 'cafe' ? VIAGENS[1] : m === 'relogio' ? (VIAGENS[2] || VIAGENS[0]) : VIAGENS[0]); irPara(telaSelecao(1)); }
 function telaTitulo() {
   return {
     nome: 'titulo',
@@ -1750,7 +1818,7 @@ function xicara(x, y, e) {
 function telaCorrida() {
   return {
     nome: 'corrida',
-    entrar() { SOM.tocarMusica('jogo'); },
+    entrar() { SOM.tocarMusica('jogo'); telaAcesa(); },
     update(dt) { atualizarCorrida(dt); },
     render() {
       if (dividida()) {
@@ -1793,7 +1861,7 @@ function checarConquistas(fantasmaBatido) {
     if (h.multas >= 3) desbloquear('cnh');
     if (h.abastecidas >= 2) desbloquear('frentista');
     if (h.buzinas >= 15) desbloquear('bibi');
-    if (PEDAGIOS.length >= 2 && (h.pagou || 0) >= PEDAGIOS.length) desbloquear('patrocinador');
+    if ((h.pagou || 0) >= 2) desbloquear('patrocinador');
     if (corredores.length > 1 && pos === corredores.length) desbloquear('roia');
   }
   if (fantasmaBatido) desbloquear('fantasma');
@@ -1815,21 +1883,22 @@ function trofeu(x, y, capacete) {
 }
 
 // ============================================================ RANKING (local + online opcional)
+const TEMPORADA = 2;   // ranking zerado quando a viagem mudou (v6.0). Troque junto com o TEMPORADA do servidor/worker.js
 const RANK = {
   online: true,
-  local(modo) { return guardar.ler('rank_' + modo, []); },
+  local(modo) { return guardar.ler('rank' + TEMPORADA + '_' + modo, []); },
   entra(modo, t) { const l = RANK.local(modo); return l.length < 10 || t < l[l.length - 1].t; },
-  add(modo, e) { const l = RANK.local(modo); l.push(e); l.sort((a, b) => a.t - b.t); guardar.gravar('rank_' + modo, l.slice(0, 10)); return RANK.enviar(modo, e); },
+  add(modo, e) { const l = RANK.local(modo); l.push(e); l.sort((a, b) => a.t - b.t); guardar.gravar('rank' + TEMPORADA + '_' + modo, l.slice(0, 10)); return RANK.enviar(modo, e); },
   // manda o tempo para o ranking global (o Worker grava no brmc/ranking.json do repositório)
   enviar(modo, e) {
     if (!RANKING_GLOBAL || !navigator.onLine) return Promise.resolve(null);
     return fetch(RANKING_GLOBAL + '/enviar', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ modo, nome: e.n, piloto: e.p, tempo: Math.round(e.t * 10) / 10, multas: e.m || 0 }) }).then(r => r.json()).catch(() => null);
+      body: JSON.stringify({ temporada: TEMPORADA, modo, nome: e.n, piloto: e.p, tempo: Math.round(e.t * 10) / 10, multas: e.m || 0 }) }).then(r => r.json()).catch(() => null);
   },
   buscar(modo) {
     const ler = u => fetch(u, { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
     const arq = () => ler('ranking.json?t=' + Date.now());
-    return (RANKING_GLOBAL ? ler(RANKING_GLOBAL + '/ranking').catch(arq) : arq()).then(d => (d[modo] || []).slice().sort((a, b) => a.t - b.t));
+    return (RANKING_GLOBAL ? ler(RANKING_GLOBAL + '/ranking').catch(arq) : arq()).then(d => d.temporada === TEMPORADA ? (d[modo] || []).slice().sort((a, b) => a.t - b.t) : []);
   }
 };
 const elNome = document.getElementById('nome-modal'), inNome = document.getElementById('nome-input');
@@ -2327,7 +2396,7 @@ function telaEspera(sub) {
 function telaCorridaCliente() {
   return {
     nome: 'corrida',
-    entrar() { SOM.tocarMusica('jogo'); },
+    entrar() { SOM.tocarMusica('jogo'); telaAcesa(); },
     update(dt) {
       preverCliente(dt); atualizarRadio(dt); atualizarParticulas(dt);
       const h = meuFoco(); if (!h) return;
@@ -2431,7 +2500,7 @@ function iniciar() {
 }
 // modo offline: guarda o jogo no aparelho (funciona sem internet depois da 1ª visita)
 if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-window.BRMC = { simular(s) { for (let i = 0; i < s * 60; i++) { juntarEntrada(); estado.update(STEP); guardarAnterior(); } }, get estado() { return estado; }, get trafego() { return trafego; }, get entradas() { return entrada; }, buzinar(c) { buzinar(c); }, get corredores() { return corredores; },
+window.BRMC = { simular(s) { for (let i = 0; i < s * 60; i++) { juntarEntrada(); estado.update(STEP); guardarAnterior(); } }, get estado() { return estado; }, get trafego() { return trafego; }, get entradas() { return entrada; }, get cidades() { return CIDADES; }, buzinar(c) { buzinar(c); }, get corredores() { return corredores; },
   get humanos() { return humanos; }, get tempo() { return tempoCorrida; }, get radio() { return radio; }, get postos() { return POSTOS; }, get pedagios() { return PEDAGIOS; }, get radares() { return RADARES; }, get clima() { return CLIMA; }, set clima(c) { CLIMA = c; }, get modo() { return MODO; }, modoJogo: m => iniciarModo(m), cartao: () => gerarCartao(humanos[0], 1, 'TESTE').then(b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); })), buzinar: () => buzinar(humanos[0]), get trafego() { return trafego; }, get entrada() { return entrada; }, get viagem() { return VIAGEM; }, desenharAvisos, dist: () => [DIST, START_I * SEG, FIM_Z, CONS()], entrada: fontes };
 iniciar();
 })();

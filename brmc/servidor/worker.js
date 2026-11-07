@@ -15,6 +15,7 @@
 const PILOTOS = ['jellison', 'leosao', 'jefao', 'lucas', 'fabinho', 'pescoco', 'henrique', 'cezar', 'cleimar', 'mazinho', 'samuca', 'alan', 'ramon', 'adriano', 'samuel'];
 const MODOS = ['viagem', 'cafe', 'relogio'];
 const MAX_POR_MODO = 100;
+const TEMPORADA = 2;   // ao mudar a pista, aumente aqui e no jogo (jogo.js): o ranking recomeça do zero
 const ORIGENS = [/^https:\/\/coisas3d\.github\.io$/, /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
 
 let cache = null, cacheT = 0;              // ranking em memória por alguns segundos
@@ -41,7 +42,7 @@ function gh(env, caminho, opt = {}) {
     headers: { Authorization: 'Bearer ' + c.token, Accept: 'application/vnd.github+json', 'User-Agent': 'brmc-ranking', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json' }
   }));
 }
-const vazio = () => ({ atualizado: null, viagem: [], cafe: [], relogio: [] });
+const vazio = () => ({ temporada: TEMPORADA, atualizado: null, viagem: [], cafe: [], relogio: [] });
 
 async function lerArquivo(env) {
   const c = cfg(env);
@@ -50,6 +51,7 @@ async function lerArquivo(env) {
   if (!r.ok) throw new Error('GitHub GET ' + r.status);
   const j = await r.json();
   let dados; try { dados = JSON.parse(b64dec(j.content)); } catch (e) { dados = vazio(); }
+  if (dados.temporada !== TEMPORADA) dados = vazio();   // temporada nova: zera o ranking
   for (const m of MODOS) if (!Array.isArray(dados[m])) dados[m] = [];
   return { dados, sha: j.sha };
 }
@@ -68,6 +70,7 @@ const fmt = t => { const m = Math.floor(t / 60), s = (t % 60).toFixed(1); return
 async function receber(req, env) {
   let e; try { e = await req.json(); } catch (x) { return json(req, { ok: false, erro: 'json' }, 400); }
   const modo = e.modo, nome = limparNome(e.nome), p = e.piloto, t = Math.round(Number(e.tempo) * 10) / 10, m = Math.max(0, Math.min(99, parseInt(e.multas, 10) || 0));
+  if (Number(e.temporada) !== TEMPORADA) return json(req, { ok: false, erro: 'versao antiga do jogo' }, 409);
   if (!MODOS.includes(modo) || !PILOTOS.includes(p) || !nome || !chave(nome) || !(t >= 20 && t <= 4 * 3600)) return json(req, { ok: false, erro: 'dados' }, 400);
   const ip = req.headers.get('CF-Connecting-IP') || '?', agora = Date.now();
   if (agora - (ultimoEnvio.get(ip) || 0) < 15000) return json(req, { ok: false, erro: 'calma' }, 429);
