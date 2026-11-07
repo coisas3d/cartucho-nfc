@@ -6,6 +6,7 @@ window.INFO = (function () {
 
   // ===== HISTÓRICO DE VERSÕES (a primeira da lista é a versão atual do jogo) =====
   const VERSOES = [
+    ['6.0', ['Viagem completa muito mais longa: cerca de 8 minutos, com 15 cidades, 5 postos, 3 pedágios e 9 radares.', 'Largada saindo do posto de gasolina, dentro de Itaúna (com a Matriz de Sant\'Ana e a capela no morro).', 'Placas e avisos de BEM-VINDO e VOLTE SEMPRE em cada cidade, com as cidades do lado certo da estrada.', 'Marcos das cidades: Cristo na serra de Itatiaiuçu, Rei do Futebol em Três Corações, Parque das Águas em São Lourenço, Maria Fumaça em Passa Quatro, santuário em Cachoeira Paulista e Frei Galvão em Guaratinguetá.', 'Contra o Relógio agora é um trecho de 3 minutos da Fernão Dias.', 'Pilotos do jogo desviam melhor do trânsito.', 'Ranking zerado (nova temporada) para todos os modos.']],
     ['5.7', ['Nova opção de pilotagem: DIREÇÃO POR INCLINAÇÃO. Incline o celular como um guidão para desviar; acelerar, frear e buzinar continuam nos botões.', 'P1 liga em OPÇÕES → DIREÇÃO. O Jogador 2 liga no próprio celular (botão DIREÇÃO na escolha do piloto ou no controle).']],
     ['5.6', ['Multas mais leves: até 20% acima do limite +3 s, até 50% acima +7 s, mais de 50% acima +15 s (gravíssima).']],
     ['5.5', ['Física de batida corrigida: ninguém atravessa mais carros e caminhões (a área de colisão agora tem o tamanho real do veículo), e o trânsito freia para as motos na frente.', 'Música começa já no aviso de abertura.', 'Adriano: MT-09 a 215 km/h e a pior economia do clube.', 'Pilotos do jogo também buzinam, principalmente os Rôias.', 'Caminhoneiro buzinado tem 50% de chance de fechar a ultrapassagem.', 'Tombo agora soma +3 s no tempo.', 'Multa pela gravidade do excesso de velocidade.']],
@@ -34,14 +35,21 @@ window.INFO = (function () {
       '<b>Teclado (P2 no mesmo computador):</b> A / D desviar, W acelerar, S frear, E buzinar.'
     ])) +
     sec('🏁 Modos de jogo', lista([
-      '<b>Viagem completa:</b> Itaúna → Aparecida, 450 km contra os 15 membros do clube.',
+      '<b>Viagem completa:</b> Itaúna → Aparecida contra os 15 membros do clube, cerca de 8 minutos. A largada é no posto de Itaúna e a turma passa por 15 cidades.',
       '<b>Tomar um cafezinho:</b> passeio curto pela serra, ótimo para uma partida rápida.',
-      '<b>Contra o relógio:</b> sozinho contra o seu "fantasma" (a sua melhor volta).',
+      '<b>Contra o relógio:</b> trecho da Fernão Dias (Itaguara → Três Corações, cerca de 3 minutos), sozinho contra o seu "fantasma" (a sua melhor volta).',
       '<b>2 jogadores:</b> você e um amigo na mesma corrida (veja abaixo).'
     ])) +
     sec('🏍️ Pilotos: Roias e McNamaras', '<p>Cada membro tem a sua moto, com velocidade, aceleração (0-100), economia e curvas diferentes.</p>' + lista([
       '<b>ROIA:</b> não estica a moto (anda a 92% da máxima), gasta menos gasolina e faz curva melhor.',
       '<b>McNAMARA:</b> vai no talo (100% da máxima), mas bebe mais e precisa parar mais vezes.'
+    ])) +
+    sec('🏙️ Cidades do caminho', lista([
+      'A largada é no <b>posto de Itaúna</b>: saia do pátio com cuidado e entre na estrada.',
+      'Ao chegar perto de cada cidade aparece <b>BEM-VINDO A…</b> e, na saída, <b>VOLTE SEMPRE A…</b>.',
+      'As cidades aparecem do lado em que ficam na estrada de verdade, ou dos dois lados quando a pista passa por dentro.',
+      'Fique de olho nos marcos: a Matriz de Sant\'Ana em Itaúna, o Cristo na serra de Itatiaiuçu, o monumento ao Rei do Futebol em Três Corações, o Parque das Águas em São Lourenço, a Maria Fumaça em Passa Quatro, o santuário de Cachoeira Paulista, a terra de Frei Galvão em Guaratinguetá e a Basílica de Aparecida.',
+      'Dentro das cidades tem <b>radar de 60 km/h</b>!'
     ])) +
     sec('⛽ Combustível e postos', lista([
       'Fique de olho no marcador de gasolina (E–F) no canto da tela.',

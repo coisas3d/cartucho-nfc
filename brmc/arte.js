@@ -190,6 +190,166 @@ window.ARTE = (function () {
     return c;
   }
 
+
+  // ============================================================ CIDADES DA VIAGEM (marcos de cada cidade)
+  const ret = (g, cor, x, y, w, h) => { g.fillStyle = cor; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+  const tri = (g, cor, x1, y1, x2, y2, x3, y3) => { g.fillStyle = cor; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.lineTo(x3, y3); g.closePath(); g.fill(); };
+  const janelas = (g, x, y, w, h, R, cor) => { for (let yy = y; yy < y + h - 10; yy += 14) for (let xx = x; xx < x + w - 8; xx += 12) ret(g, R() < 0.25 ? '#ffe7a0' : (cor || '#3a4a5c'), xx, yy, 7, 9); };
+  // placa azul de entrada/saída da cidade ("BEM-VINDO A" / "VOLTE SEMPRE")
+  function portalCidade(t1, nome, saida) {
+    const w = 300, h = 96, [c, g] = mk(w, h + 86);
+    ret(g, '#7a8088', 24, h - 4, 10, 90); ret(g, '#7a8088', w - 34, h - 4, 10, 90);
+    ret(g, saida ? '#5a2a7a' : '#0b3d91', 0, 0, w, h); g.strokeStyle = '#f0f0f0'; g.lineWidth = 4; g.strokeRect(6, 6, w - 12, h - 12);
+    txt(g, t1, w / 2, 16, '#ffe04a', 8, 'c', false);
+    txt(g, nome, w / 2, 40, '#ffffff', nome.length > 14 ? 16 : 24, 'c', false);
+    txt(g, saida ? 'BOA VIAGEM!' : 'MINAS GERAIS', w / 2, 74, '#cfe0ff', 8, 'c', false);
+    return c;
+  }
+  // placa marrom de atrativo turístico
+  function placaMarrom(linhas) {
+    const w = 300, h = 100, [c, g] = mk(w, h + 86);
+    ret(g, '#7a8088', 24, h - 4, 10, 90); ret(g, '#7a8088', w - 34, h - 4, 10, 90);
+    ret(g, '#6b3a1e', 0, 0, w, h); g.strokeStyle = '#f0f0f0'; g.lineWidth = 4; g.strokeRect(6, 6, w - 12, h - 12);
+    const ls = linhas.filter(Boolean); ls.forEach((l, i) => txt(g, l, w / 2, h / 2 - ls.length * 12 + i * 24 + 2, '#fff', 16, 'c', false));
+    return c;
+  }
+  // casinhas coloridas de cidade do interior
+  function casa(seed) {
+    const R = rng(seed), w = 70 + Math.floor(R() * 40), h = 46 + Math.floor(R() * 20), [c, g] = mk(w, h + 30);
+    const cores = ['#f2e6c8', '#e8b8a0', '#a8d0e0', '#f0d070', '#c8e0b0', '#f4f0e8', '#e0a8c0'];
+    ret(g, cores[Math.floor(R() * cores.length)], 0, 30, w, h); ret(g, 'rgba(0,0,0,0.15)', w - 8, 30, 8, h);
+    tri(g, '#a84a2a', -6, 32, w / 2, 0, w + 6, 32); tri(g, '#c25a34', 4, 30, w / 2, 6, w - 4, 30);
+    ret(g, '#6a4a2a', w / 2 - 7, 30 + h - 26, 14, 26);
+    for (const x of [8, w - 24]) { ret(g, '#3a5a8a', x, 44, 16, 14); ret(g, '#fff', x + 7, 44, 2, 14); }
+    return c;
+  }
+  // igreja matriz mineira genérica (fachada branca, duas torres, frontão)
+  function igreja(seed, cor) {
+    const R = rng(seed), w = 170, h = 230, [c, g] = mk(w, h); const fx = cor || '#f4f0e6', tr = ['#2a6aa0', '#c08a2a', '#2a7a4a'][Math.floor(R() * 3)];
+    ret(g, fx, 30, 90, 110, 140); ret(g, fx, 0, 60, 40, 170); ret(g, fx, 130, 60, 40, 170);
+    ret(g, 'rgba(0,0,0,0.12)', 130, 60, 6, 170);
+    for (const x of [0, 130]) { ret(g, tr, x - 3, 56, 46, 6); tri(g, tr, x - 2, 58, x + 20, 18, x + 42, 58); ret(g, '#222', x + 13, 74, 14, 22); g.fillStyle = '#e8c860'; g.beginPath(); g.arc(x + 20, 82, 4, 0, 7); g.fill(); ret(g, '#ddd', x + 19, 8, 2, 12); ret(g, '#ddd', x + 15, 12, 10, 2); }
+    tri(g, fx, 26, 92, 85, 44, 144, 92); g.strokeStyle = tr; g.lineWidth = 4; g.beginPath(); g.moveTo(26, 92); g.lineTo(85, 44); g.lineTo(144, 92); g.stroke();
+    ret(g, '#ddd', 83, 24, 4, 22); ret(g, '#ddd', 77, 30, 16, 3);
+    g.fillStyle = '#5a3a1e'; g.beginPath(); g.moveTo(66, 230); g.lineTo(66, 170); g.arc(85, 170, 19, Math.PI, 0); g.lineTo(104, 230); g.fill();
+    for (const x of [44, 112]) { ret(g, '#3a5a8a', x, 120, 14, 24); }
+    g.fillStyle = '#3a5a8a'; g.beginPath(); g.arc(85, 112, 9, 0, 7); g.fill();
+    ret(g, tr, 30, 226, 110, 4);
+    return c;
+  }
+  // ITAÚNA: Matriz de Sant'Ana (maior, torres com cúpula, escadaria e adro)
+  function matrizSantana() {
+    const w = 260, h = 300, [c, g] = mk(w, h); const fx = '#f6f2e8', tr = '#3a6aa8', ou = '#d8b048';
+    ret(g, '#bdb6a8', 0, 268, w, 32); for (let i = 0; i < 4; i++) ret(g, i % 2 ? '#cfc8ba' : '#e2dccf', 40 + i * 8, 268 + i * 8, 180 - i * 16, 8);
+    ret(g, fx, 70, 110, 120, 160); ret(g, fx, 20, 70, 54, 200); ret(g, fx, 186, 70, 54, 200); ret(g, 'rgba(0,0,0,0.12)', 232, 70, 8, 200);
+    for (const x of [20, 186]) {
+      ret(g, tr, x - 4, 66, 62, 7); ret(g, fx, x + 6, 40, 42, 28); ret(g, '#222', x + 18, 46, 18, 20);
+      g.fillStyle = tr; g.beginPath(); g.ellipse(x + 27, 40, 24, 22, 0, Math.PI, 0); g.fill(); ret(g, ou, x + 25, 6, 4, 14); ret(g, ou, x + 20, 10, 14, 3);
+      for (let y = 90; y < 250; y += 46) ret(g, '#3a5a8a', x + 19, y, 16, 26);
+    }
+    tri(g, fx, 66, 112, 130, 58, 194, 112); g.strokeStyle = ou; g.lineWidth = 5; g.beginPath(); g.moveTo(66, 112); g.lineTo(130, 58); g.lineTo(194, 112); g.stroke();
+    ret(g, ou, 128, 30, 5, 30); ret(g, ou, 120, 38, 21, 4);
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(130, 92, 12, 0, 7); g.fill(); g.strokeStyle = '#333'; g.lineWidth = 2; g.stroke(); ret(g, '#333', 129, 84, 2, 9); ret(g, '#333', 129, 91, 7, 2);
+    g.fillStyle = '#5a3a1e'; g.beginPath(); g.moveTo(108, 268); g.lineTo(108, 200); g.arc(130, 200, 22, Math.PI, 0); g.lineTo(152, 268); g.fill();
+    for (const x of [82, 166]) { ret(g, '#3a5a8a', x - 6, 150, 14, 30); }
+    ret(g, ou, 66, 112, 128, 4); ret(g, ou, 20, 262, 220, 6);
+    return c;
+  }
+  // morro com capela no alto (Capela do Rosário) - vai no horizonte
+  function capelaMorro() {
+    const w = 260, h = 130, [c, g] = mk(w, h);
+    g.fillStyle = '#4a7a3a'; g.beginPath(); g.moveTo(0, h); g.quadraticCurveTo(130, -10, w, h); g.fill();
+    g.fillStyle = '#3a6a2e'; g.beginPath(); g.moveTo(40, h); g.quadraticCurveTo(170, 20, w, h); g.fill();
+    ret(g, '#f6f2e8', 112, 36, 36, 26); tri(g, '#b04a2a', 108, 38, 130, 22, 152, 38); ret(g, '#f6f2e8', 140, 18, 12, 44); tri(g, '#b04a2a', 138, 20, 146, 6, 154, 20);
+    ret(g, '#5a3a1e', 124, 48, 10, 14); ret(g, '#ddd', 145, 0, 2, 7);
+    return c;
+  }
+  // ITATIAIUÇU: serra com o Cristo de braços abertos no alto - vai no horizonte
+  function cristoSerra() {
+    const w = 380, h = 210, [c, g] = mk(w, h);
+    g.translate(0, 28); g.fillStyle = '#3e6a3a'; g.beginPath(); g.moveTo(0, h); g.lineTo(70, 90); g.lineTo(150, 60); g.lineTo(200, 52); g.lineTo(250, 70); g.lineTo(320, 110); g.lineTo(w, h); g.fill();
+    g.fillStyle = '#4e7c44'; g.beginPath(); g.moveTo(30, h); g.lineTo(120, 100); g.lineTo(200, 74); g.lineTo(290, 120); g.lineTo(w, h); g.fill();
+    g.fillStyle = '#6a8a50'; for (let i = 0; i < 40; i++) { const x = 40 + (i * 37) % 300, y = 110 + (i * 23) % 70; g.fillRect(x, y, 6, 3); }
+    const cx = 200, base = 54; ret(g, '#d8d4cc', cx - 12, base - 16, 24, 16);          // pedestal
+    ret(g, '#f4f2ee', cx - 6, base - 66, 12, 50); ret(g, '#f4f2ee', cx - 34, base - 60, 68, 7); g.fillStyle = '#f4f2ee'; g.beginPath(); g.arc(cx, base - 72, 6, 0, 7); g.fill();
+    ret(g, '#cfccc4', cx + 2, base - 66, 4, 50); tri(g, '#f4f2ee', cx - 8, base - 16, cx, base - 40, cx + 8, base - 16);
+    return c;
+  }
+  // TRÊS CORAÇÕES: monumento ao Rei do Futebol (bola gigante com coroa)
+  function monumentoFutebol() {
+    const w = 200, h = 250, [c, g] = mk(w, h);
+    ret(g, '#9a9488', 30, 190, 140, 60); ret(g, '#b8b2a4', 40, 180, 120, 14); ret(g, '#7a7468', 160, 190, 10, 60);
+    ret(g, '#2a2a2a', 52, 206, 96, 28); txt(g, 'TERRA DO REI', 100, 210, '#e8c860', 8, 'c', false); txt(g, 'DO FUTEBOL', 100, 222, '#e8c860', 8, 'c', false);
+    const bx = 100, by = 128, r = 50; g.fillStyle = '#f4f4f4'; g.beginPath(); g.arc(bx, by, r, 0, 7); g.fill();
+    g.fillStyle = '#1a1a1a'; const pent = (x, y, rr) => { g.beginPath(); for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 5; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.fill(); };
+    pent(bx, by, 14); for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 5; pent(bx + Math.cos(a) * 36, by + Math.sin(a) * 36, 10); }
+    g.fillStyle = 'rgba(0,0,0,0.15)'; g.beginPath(); g.arc(bx + 10, by + 6, r, -0.6, 2.2); g.fill();
+    g.fillStyle = '#e8c048'; g.beginPath(); g.moveTo(66, 78); g.lineTo(70, 46); g.lineTo(84, 62); g.lineTo(100, 36); g.lineTo(116, 62); g.lineTo(130, 46); g.lineTo(134, 78); g.fill();
+    ret(g, '#c89a28', 66, 74, 68, 8); for (const x of [70, 100, 130]) { g.fillStyle = '#d02a2a'; g.beginPath(); g.arc(x, 48 + (x === 100 ? -12 : 0), 4, 0, 7); g.fill(); }
+    return c;
+  }
+  // SÃO LOURENÇO: Parque das Águas (lago, chafariz, balneário e palmeiras)
+  function parqueAguas() {
+    const w = 420, h = 230, [c, g] = mk(w, h);
+    g.fillStyle = '#3a8a4a'; g.fillRect(0, 150, w, 80);
+    g.fillStyle = '#3a7ab8'; g.beginPath(); g.ellipse(150, 190, 140, 32, 0, 0, 7); g.fill(); g.fillStyle = '#6aaee0'; g.beginPath(); g.ellipse(130, 184, 90, 14, 0, 0, 7); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.85)'; for (let i = -3; i <= 3; i++) { g.beginPath(); g.ellipse(150 + i * 6, 160 - (3 - Math.abs(i)) * 8, 3, 18 - Math.abs(i) * 3, i * 0.2, 0, 7); g.fill(); }
+    // balneário
+    ret(g, '#f2d8d0', 270, 70, 140, 90); ret(g, '#e8c4b8', 270, 60, 140, 12); tri(g, '#f2d8d0', 300, 62, 340, 30, 380, 62);
+    for (let x = 280; x < 404; x += 18) ret(g, '#fff', x, 80, 8, 70); ret(g, '#5a7aa0', 330, 120, 20, 40); ret(g, '#c0a090', 270, 156, 140, 6);
+    // palmeiras
+    for (const x of [20, 250, 412]) { ret(g, '#8a6a40', x - 3, 70, 6, 90); g.fillStyle = '#2a7a3a'; for (let a = 0; a < 7; a++) { g.beginPath(); g.ellipse(x + Math.cos(a) * 16, 68 + Math.sin(a) * 6, 18, 5, a, 0, 7); g.fill(); } }
+    ret(g, '#6b3a1e', 40, 120, 90, 26); txt(g, 'PARQUE', 85, 124, '#fff', 8, 'c', false); txt(g, 'DAS ÁGUAS', 85, 134, '#fff', 8, 'c', false); ret(g, '#7a8088', 82, 146, 6, 14);
+    return c;
+  }
+  // PASSA QUATRO: estação ferroviária com a Maria Fumaça
+  function estacaoTrem() {
+    const w = 460, h = 220, [c, g] = mk(w, h);
+    ret(g, '#7a6a5a', 0, 204, w, 6); ret(g, '#5a4a3a', 0, 212, w, 4); for (let x = 0; x < w; x += 14) ret(g, '#6a4a2a', x, 210, 8, 8);
+    // estação amarela colonial
+    ret(g, '#f0d070', 250, 90, 200, 100); ret(g, '#c8a040', 250, 186, 200, 8); tri(g, '#a84a2a', 236, 94, 350, 50, 464, 94);
+    for (let x = 262; x < 440; x += 34) { ret(g, '#3a6a3a', x, 120, 18, 40); ret(g, '#fff', x - 2, 118, 22, 3); }
+    ret(g, '#3a3a3a', 300, 72, 100, 16); txt(g, 'PASSA QUATRO', 350, 76, '#fff', 8, 'c', false);
+    // locomotiva
+    ret(g, '#1a1a1a', 30, 130, 150, 60); g.fillStyle = '#1a1a1a'; g.beginPath(); g.ellipse(105, 132, 76, 20, 0, Math.PI, 0); g.fill();
+    ret(g, '#222', 150, 90, 50, 100); ret(g, '#3a5a8a', 160, 100, 30, 26); ret(g, '#c02a2a', 146, 86, 58, 8);
+    ret(g, '#222', 50, 92, 18, 40); ret(g, '#c02a2a', 46, 88, 26, 6); ret(g, '#c8a040', 90, 108, 14, 22);
+    ret(g, '#c02a2a', 20, 176, 190, 6); for (const x of [56, 96, 136, 176]) { g.fillStyle = '#c02a2a'; g.beginPath(); g.arc(x, 192, 15, 0, 7); g.fill(); g.fillStyle = '#222'; g.beginPath(); g.arc(x, 192, 6, 0, 7); g.fill(); }
+    g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(26, 140, 7, 0, 7); g.fill();
+    // fumaça
+    for (let i = 0; i < 6; i++) { g.fillStyle = 'rgba(235,235,235,' + (0.85 - i * 0.12) + ')'; g.beginPath(); g.arc(60 + i * 16, 78 - i * 12, 12 + i * 4, 0, 7); g.fill(); }
+    return c;
+  }
+  // CACHOEIRA PAULISTA: grande santuário moderno com cruz alta
+  function santuario() {
+    const w = 360, h = 260, [c, g] = mk(w, h);
+    ret(g, '#d8d4cc', 0, 230, w, 30);
+    tri(g, '#e8e6e0', 20, 232, 180, 70, 340, 232); tri(g, '#cfccc4', 180, 70, 340, 232, 260, 232);
+    g.fillStyle = '#7ab0d8'; g.beginPath(); g.moveTo(120, 232); g.lineTo(180, 120); g.lineTo(240, 232); g.fill();
+    for (let y = 140; y < 232; y += 16) ret(g, 'rgba(255,255,255,0.35)', 150 - (y - 140) * 0.3, y, 60 + (y - 140) * 0.6, 2);
+    ret(g, '#f4f2ee', 172, 0, 16, 110); ret(g, '#f4f2ee', 146, 26, 68, 14); ret(g, '#d8d4cc', 184, 0, 4, 110);
+    return c;
+  }
+  // GUARATINGUETÁ: catedral com torre única (Terra de Frei Galvão)
+  function catedral() {
+    const w = 200, h = 280, [c, g] = mk(w, h); const fx = '#efe6d2', tr = '#8a4a2a';
+    ret(g, fx, 20, 130, 160, 150); tri(g, fx, 14, 134, 100, 84, 186, 134); g.strokeStyle = tr; g.lineWidth = 4; g.beginPath(); g.moveTo(14, 134); g.lineTo(100, 84); g.lineTo(186, 134); g.stroke();
+    ret(g, fx, 78, 30, 44, 110); tri(g, tr, 74, 34, 100, 0, 126, 34); ret(g, '#222', 90, 50, 20, 26); ret(g, '#ddd', 99, -4, 3, 10);
+    g.fillStyle = '#5a3a1e'; g.beginPath(); g.moveTo(84, 280); g.lineTo(84, 220); g.arc(100, 220, 16, Math.PI, 0); g.lineTo(116, 280); g.fill();
+    for (const x of [40, 146]) { ret(g, '#3a5a8a', x, 170, 14, 30); } g.fillStyle = '#3a5a8a'; g.beginPath(); g.arc(100, 160, 10, 0, 7); g.fill();
+    return c;
+  }
+  // POSTO DE LARGADA (Itaúna): cobertura larga, 3 ilhas de bombas e conveniência
+  function postoLargada(emb) {
+    const w = 520, h = 220, [c, g] = mk(w, h);
+    ret(g, '#d8d4c8', 330, 90, 190, 130); ret(g, '#3a4a5c', 346, 130, 156, 60); ret(g, '#ff6a00', 330, 90, 190, 20); txt(g, 'CONVENIÊNCIA', 425, 96, '#111', 8, 'c', false);
+    ret(g, '#141414', 0, 20, 360, 34); ret(g, '#ff6a00', 0, 50, 360, 8); txt(g, 'POSTO BRMC • ITAÚNA', 180, 30, '#fff', 16, 'c', false);
+    for (const x of [24, 176, 330]) ret(g, '#e8e8e8', x, 58, 12, 162);
+    for (const x of [70, 150, 230]) { ret(g, '#111', x, 150, 30, 70); ret(g, '#ff6a00', x + 2, 152, 26, 66); ret(g, '#111', x + 6, 160, 18, 12); ret(g, '#7dff7d', x + 8, 164, 14, 4); }
+    ret(g, '#141414', 470, 0, 40, 90); if (emb) g.drawImage(emb, 472, 4, 36, 36); txt(g, 'BRMC', 490, 48, '#ffe04a', 8, 'c', false);
+    return c;
+  }
+
   // ------------------------------------------------------------ camadas de fundo (máscaras em branco; o jogo tinge com a cor da hora)
   function silhueta(w, h, seed, picos, rug) {
     // cordilheira: picos triangulares sobrepostos (parece montanha, não nuvem)
@@ -328,5 +488,6 @@ window.ARTE = (function () {
   }
 
   return { FONTE, mk, rng, txt, arvore, eucalipto, arbusto, cupim, poste, marcoKm, placaVerde, outdoor, predio, cerca, vaca,
-    arco, pedagio, passarela, posto, silhueta, skyline, basilica, nuvens, motoTopo, seg7, numero7, tacometro, marcadorComb, pedagioPremium, cabine };
+    arco, pedagio, passarela, posto, silhueta, skyline, basilica, nuvens, motoTopo, seg7, numero7, tacometro, marcadorComb, pedagioPremium, cabine,
+    portalCidade, placaMarrom, casa, igreja, matrizSantana, capelaMorro, cristoSerra, monumentoFutebol, parqueAguas, estacaoTrem, santuario, catedral, postoLargada };
 })();
