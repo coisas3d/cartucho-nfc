@@ -103,12 +103,12 @@ window.DADOS = (function () {
       // Fernão Dias (pista dupla)
       { n: 550, c: 2, m: -10, z: 'campo', t: 'D', placa: ['BR-381', 'FERNÃO DIAS', 'SÃO PAULO'], fala: 'fernao' },
       { n: 460, c: -2, m: 14, z: 'eucalipto', t: 'D' },
-      { n: 240, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'ITAGUARA', lado: 'e', porte: 'pequena', marcos: [['igrejas', 0.5, -5.0, 1.3]] },
+      { n: 240, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'ITAGUARA', lado: 'e', porte: 'pequena', marcos: [['igreja2', 0.45, -4.6, 1.8], ['cachoeira', 0.8, -4.5, 1.9], ['placa:CACHOEIRA|DA PATACA', 0.62, 1.6, 0.9], ['placa:MATRIZ N. SRA.|DAS DORES', 0.3, 1.6, 0.9]] },
       { n: 160, c: 0, m: 0, z: 'pedagio', t: 'D', pedagio: true },
       { n: 550, c: 2, m: -14, z: 'campo', t: 'D', radar: 110 },
       { n: 530, c: -2, m: 10, z: 'eucalipto', t: 'D', posto: true },
       { n: 580, c: 3, m: -12, z: 'campo', t: 'D' },
-      { n: 240, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CARMÓPOLIS DE MINAS', lado: 'd', porte: 'pequena', marcos: [['igrejas', 0.5, 2.8, 1.3]] },
+      { n: 240, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CARMÓPOLIS DE MINAS', lado: 'd', porte: 'pequena', marcos: [['igreja3', 0.5, 2.8, 1.3], ['placa:IGREJA N. SRA.|DO CARMO', 0.3, 1.6, 0.9]] },
       { n: 600, c: -3, m: 18, z: 'campo', t: 'D' },
       { n: 160, c: 0, m: 0, z: 'pedagio', t: 'D', pedagio: true },
       { n: 580, c: 2, m: -16, z: 'eucalipto', t: 'D', radar: 110 },
@@ -122,12 +122,12 @@ window.DADOS = (function () {
       // Sul de Minas (via simples)
       { n: 530, c: 3, m: 10, z: 'campo', t: 'S', fala: 'simples' },
       { n: 460, c: -4, m: -10, z: 'campo', t: 'S' },
-      { n: 240, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'CAMPANHA', lado: 'd', porte: 'pequena', marcos: [['igrejas', 0.5, 2.4, 1.3]] },
+      { n: 240, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'CAMPANHA', lado: 'd', porte: 'pequena', marcos: [['catedralColonial', 0.5, 2.6, 1.4], ['casaroes', 0.75, 2.9, 1.4], ['casaroes', 0.25, 2.9, 1.4], ['placa:CIDADE HISTÓRICA|CATEDRAL 1787', 0.12, 1.55, 0.9]] },
       { n: 530, c: 4, m: 14, z: 'eucalipto', t: 'S', posto: true },
       { n: 500, c: -3, m: -8, z: 'campo', t: 'S', radar: 80 },
       { n: 320, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'SÃO LOURENÇO', lado: 'ambos', porte: 'grande', radar: 60, marcos: [['parque', 0.5, -3.0, 1.5]] },
       { n: 500, c: 3, m: 10, z: 'campo', t: 'S' },
-      { n: 220, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'POUSO ALTO', lado: 'e', porte: 'pequena', marcos: [['igrejas', 0.5, -2.4, 1.3]] },
+      { n: 220, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'POUSO ALTO', lado: 'e', porte: 'pequena', horiz: ['hotel', 'e'], marcos: [['igrejas', 0.5, -2.4, 1.3], ['placa:POUSO DOS|BANDEIRANTES', 0.3, 1.55, 0.9]] },
       { n: 500, c: -4, m: -10, z: 'campo', t: 'S', posto: true },
       { n: 440, c: 3, m: 8, z: 'eucalipto', t: 'S' },
       { n: 300, c: 0, m: 0, z: 'cidade', t: 'S', cidade: 'PASSA QUATRO', lado: 'ambos', porte: 'pequena', marcos: [['estacao', 0.5, 3.0, 1.4]] },
@@ -139,15 +139,15 @@ window.DADOS = (function () {
       { n: 180, c: -6, m: -22, z: 'serra', t: 'S' },
       { n: 160, c: 4, m: -16, z: 'serra', t: 'S' },
       // Via Dutra (pista dupla)
-      { n: 280, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CRUZEIRO', lado: 'ambos', porte: 'grande', placa: ['CRUZEIRO', 'BR-116 DUTRA', ''], fala: 'dutra' },
+      { n: 280, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CRUZEIRO', lado: 'ambos', porte: 'grande', placa: ['CRUZEIRO', 'BR-116 DUTRA', ''], fala: 'dutra', horiz: ['santa', 'd'], marcos: [['basilicaRelogios', 0.5, 2.8, 1.4], ['placa:CAPITAL DA|REVOLUÇÃO DE 1932', 0.3, 1.6, 0.9]] },
       { n: 550, c: 2, m: 0, z: 'campo', t: 'D', posto: true },
       { n: 280, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CACHOEIRA PAULISTA', lado: 'd', porte: 'pequena', marcos: [['santuario', 0.5, 3.2, 1.6]] },
       { n: 580, c: -2, m: 0, z: 'campo', t: 'D', radar: 110 },
-      { n: 260, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'LORENA', lado: 'e', porte: 'grande' },
+      { n: 260, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'LORENA', lado: 'e', porte: 'grande', marcos: [['palmeiras', 0.35, -4.5, 1.9], ['igreja2', 0.65, -4.6, 1.9], ['placa:BASÍLICA DE|SÃO BENEDITO', 0.5, 1.6, 0.9]] },
       { n: 550, c: 2, m: 0, z: 'campo', t: 'D' },
       { n: 280, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'GUARATINGUETÁ', lado: 'd', porte: 'grande', marcos: [['catedral', 0.55, 3.0, 1.4], ['freigalvao', 0.25, 1.6, 0.9]] },
       { n: 440, c: -1, m: 0, z: 'campo', t: 'D' },
-      { n: 260, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'APARECIDA', lado: 'ambos', porte: 'grande', placa: ['APARECIDA', 'SANTUÁRIO', 'NACIONAL'], fala: 'aparecida' }
+      { n: 260, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'APARECIDA', lado: 'ambos', porte: 'grande', placa: ['APARECIDA', 'SANTUÁRIO', 'NACIONAL'], fala: 'aparecida', marcos: [['placa:SANTUÁRIO|NACIONAL', 0.4, 1.6, 0.9]] }
     ],
     mapa: MAPA_V1
   };
@@ -157,10 +157,10 @@ window.DADOS = (function () {
     sub: 'ITAGUARA → TRÊS CORAÇÕES • PISTA DUPLA', info: '1 POSTO • 1 PEDÁGIO • 3 RADARES • 3 CIDADES',
     largada: ['ITAGUARA', 'FERNÃO DIAS', '#146e3c'], chegada: ['TRÊS CORAÇÕES', 'FIM DO TRECHO', '#b4141e'], fim: 'TRECHO CONCLUÍDO!', ceu: [0, 1],
     trechos: [
-      { n: 200, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'ITAGUARA', lado: 'e', porte: 'pequena', semEntrada: true, marcos: [['igrejas', 0.5, -5.0, 1.3]] },
+      { n: 200, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'ITAGUARA', lado: 'e', porte: 'pequena', semEntrada: true, marcos: [['igreja2', 0.45, -4.6, 1.8], ['cachoeira', 0.8, -4.5, 1.9]] },
       { n: 840, c: 2, m: -12, z: 'campo', t: 'D', radar: 110 },
       { n: 800, c: -2, m: 10, z: 'eucalipto', t: 'D' },
-      { n: 240, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CARMÓPOLIS DE MINAS', lado: 'd', porte: 'pequena', marcos: [['igrejas', 0.5, 2.8, 1.3]] },
+      { n: 240, c: 0, m: 0, z: 'cidade', t: 'D', cidade: 'CARMÓPOLIS DE MINAS', lado: 'd', porte: 'pequena', marcos: [['igreja3', 0.5, 2.8, 1.3], ['placa:IGREJA N. SRA.|DO CARMO', 0.3, 1.6, 0.9]] },
       { n: 880, c: -3, m: 18, z: 'campo', t: 'D' },
       { n: 160, c: 0, m: 0, z: 'pedagio', t: 'D', pedagio: true },
       { n: 840, c: 2, m: -16, z: 'eucalipto', t: 'D', radar: 110 },

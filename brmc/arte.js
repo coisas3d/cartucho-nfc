@@ -7,15 +7,16 @@ window.ARTE = (function () {
   const norm = s => String(s);
 
   // texto em fonte pixel (tamanhos múltiplos de 8 ficam nítidos)
-  function txt(g, s, x, y, cor, tam, al, sombra) {
+  function txt(g, s, x, y, cor, tam, al, sombra, maxW) {
     tam = tam || 8; s = norm(s);
     const teste = window.FONTE_TESTE;
     const fonte = t => { g.font = t + 'px ' + (teste ? 'monospace' : FONTE); if ('letterSpacing' in g) g.letterSpacing = teste ? (t * 0.4) + 'px' : '0px'; };
     fonte(tam); g.textBaseline = 'top'; g.textAlign = al === 'c' ? 'center' : al === 'd' ? 'right' : 'left';
     // nunca deixa o texto sair da tela: reduz a fonte se precisar
     const W = g.canvas.width; let w = g.measureText(s).width;
-    const livre = al === 'c' ? Math.min(x, W - x) * 2 - 4 : al === 'd' ? x - 2 : W - x - 2;
-    if (w > livre && livre > 20) { const t2 = Math.max(5, Math.floor(tam * livre / w)); fonte(t2); w = g.measureText(s).width; tam = t2; }
+    let livre = al === 'c' ? Math.min(x, W - x) * 2 - 4 : al === 'd' ? x - 2 : W - x - 2;
+    if (maxW) livre = Math.min(livre, maxW);   // não deixa o texto sair da caixa
+    if (w > livre && livre > 10) { const t2 = Math.max(5, Math.floor(tam * livre / w)); fonte(t2); w = g.measureText(s).width; tam = t2; }
     if (sombra !== false) { g.fillStyle = sombra || 'rgba(0,0,0,0.85)'; g.fillText(s, Math.round(x) + Math.max(1, tam / 8), Math.round(y) + Math.max(1, tam / 8)); }
     g.fillStyle = cor; g.fillText(s, Math.round(x), Math.round(y));
     return w;
@@ -350,6 +351,87 @@ window.ARTE = (function () {
     return c;
   }
 
+
+  // ------------------------------------------------------------ CIDADES (etapa 2)
+  // ITAGUARA: Cachoeira da Pataca (queda d'água entre pedras e mata)
+  function cachoeira() {
+    const w = 260, h = 220, [c, g] = mk(w, h);
+    g.fillStyle = '#2f5a2a'; g.beginPath(); g.moveTo(0, h); g.lineTo(0, 60); g.quadraticCurveTo(60, 10, 120, 30); g.lineTo(140, 30); g.quadraticCurveTo(200, 0, w, 50); g.lineTo(w, h); g.fill();
+    ret(g, '#6a6a62', 96, 30, 22, 150); ret(g, '#7a7a70', 142, 30, 26, 150);
+    const agua = g.createLinearGradient(0, 30, 0, 190); agua.addColorStop(0, '#d8f0ff'); agua.addColorStop(1, '#8ac8f0'); g.fillStyle = agua; g.fillRect(116, 28, 28, 160);
+    for (let y = 34; y < 186; y += 10) ret(g, 'rgba(255,255,255,0.7)', 120 + (y % 20 ? 4 : 12), y, 3, 7);
+    g.fillStyle = '#5aa0d8'; g.beginPath(); g.ellipse(130, 196, 90, 18, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(255,255,255,0.8)'; g.beginPath(); g.ellipse(130, 188, 30, 8, 0, 0, 7); g.fill();
+    for (const [x, y, r] of [[40, 120, 26], [210, 110, 30], [70, 160, 20], [200, 170, 22]]) { g.fillStyle = '#3a7a34'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
+    return c;
+  }
+  // CAMPANHA: casarões coloniais de dois andares (cidade histórica)
+  function casaroes() {
+    const w = 320, h = 150, [c, g] = mk(w, h); const cores = ['#f4efe2', '#e8c8a0', '#c8dce8', '#f0e0a0'];
+    for (let i = 0; i < 4; i++) {
+      const x = i * 80, cor = cores[i], tr = ['#2a5a8a', '#7a3a2a', '#2a6a3a', '#5a3a7a'][i];
+      ret(g, cor, x, 40, 78, 110); ret(g, '#a84a2a', x - 2, 28, 82, 14); ret(g, 'rgba(0,0,0,0.12)', x + 72, 40, 6, 110);
+      for (const wx of [x + 8, x + 30, x + 52]) { ret(g, tr, wx, 52, 16, 26); ret(g, '#fff', wx - 2, 50, 20, 3); ret(g, '#333', wx - 2, 78, 20, 3); }
+      ret(g, tr, x + 30, 104, 18, 46); ret(g, tr, x + 8, 108, 14, 22); ret(g, tr, x + 56, 108, 14, 22);
+    }
+    return c;
+  }
+  // catedral colonial grande de duas torres (Campanha: Catedral de Santo Antônio, 1787)
+  function catedralColonial() {
+    const w = 240, h = 300, [c, g] = mk(w, h); const fx = '#f2ece0', tr = '#6a4a2a';
+    ret(g, fx, 60, 110, 120, 190); ret(g, fx, 10, 60, 56, 240); ret(g, fx, 174, 60, 56, 240); ret(g, 'rgba(0,0,0,0.12)', 224, 60, 6, 240);
+    for (const x of [10, 174]) { ret(g, tr, x - 4, 56, 64, 8); ret(g, fx, x + 8, 28, 40, 30); ret(g, '#222', x + 18, 34, 20, 20); tri(g, tr, x + 4, 30, x + 28, 0, x + 52, 30); for (let y = 90; y < 280; y += 50) ret(g, '#3a3a3a', x + 20, y, 16, 26); }
+    tri(g, fx, 56, 112, 120, 54, 184, 112); g.strokeStyle = tr; g.lineWidth = 5; g.beginPath(); g.moveTo(56, 112); g.lineTo(120, 54); g.lineTo(184, 112); g.stroke();
+    ret(g, '#ddd', 118, 26, 4, 30); ret(g, '#ddd', 110, 34, 20, 4);
+    g.fillStyle = '#5a3a1e'; g.beginPath(); g.moveTo(100, 300); g.lineTo(100, 230); g.arc(120, 230, 20, Math.PI, 0); g.lineTo(140, 300); g.fill();
+    for (const x of [74, 152]) ret(g, '#3a3a3a', x, 150, 14, 34); g.fillStyle = '#3a3a3a'; g.beginPath(); g.arc(120, 140, 11, 0, 7); g.fill();
+    ret(g, tr, 10, 292, 220, 8);
+    return c;
+  }
+  // POUSO ALTO: morro com o hotel antigo no alto (horizonte)
+  function morroHotel() {
+    const w = 300, h = 140, [c, g] = mk(w, h);
+    g.fillStyle = '#4a7a3a'; g.beginPath(); g.moveTo(0, h); g.quadraticCurveTo(150, -6, w, h); g.fill();
+    g.fillStyle = '#3e6c32'; g.beginPath(); g.moveTo(60, h); g.quadraticCurveTo(200, 30, w, h); g.fill();
+    ret(g, '#f4f0e6', 110, 42, 80, 30); ret(g, '#a84a2a', 106, 34, 88, 10); for (let x = 116; x < 186; x += 12) ret(g, '#3a5a8a', x, 48, 6, 8); ret(g, '#3a5a8a', 116, 60, 68, 2);
+    for (const [x, y] of [[96, 74], [204, 74], [66, 96], [236, 96]]) { g.fillStyle = '#2a5a2a'; g.beginPath(); g.arc(x, y, 12, 0, 7); g.fill(); }
+    return c;
+  }
+  // CRUZEIRO: basílica neocolonial com duas torres e relógios (a 2ª maior igreja do Vale)
+  function basilicaRelogios() {
+    const w = 260, h = 320, [c, g] = mk(w, h); const fx = '#f0e8d8', tr = '#3a5a7a', ou = '#d8b048';
+    ret(g, fx, 64, 120, 132, 200); ret(g, fx, 14, 70, 56, 250); ret(g, fx, 190, 70, 56, 250); ret(g, 'rgba(0,0,0,0.12)', 240, 70, 6, 250);
+    for (const x of [14, 190]) {
+      ret(g, tr, x - 4, 66, 64, 8); ret(g, fx, x + 6, 20, 44, 48); tri(g, tr, x + 2, 22, x + 28, -6, x + 54, 22); ret(g, ou, x + 26, -10, 4, 12);
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(x + 28, 42, 13, 0, 7); g.fill(); g.strokeStyle = '#333'; g.lineWidth = 2; g.stroke(); ret(g, '#333', x + 27, 33, 2, 10); ret(g, '#333', x + 27, 41, 8, 2);
+      for (let y = 100; y < 300; y += 52) ret(g, '#3a5a8a', x + 20, y, 16, 28);
+    }
+    tri(g, fx, 60, 122, 130, 64, 200, 122); g.strokeStyle = ou; g.lineWidth = 5; g.beginPath(); g.moveTo(60, 122); g.lineTo(130, 64); g.lineTo(200, 122); g.stroke();
+    ret(g, ou, 128, 36, 4, 30); ret(g, ou, 120, 44, 20, 4);
+    g.fillStyle = '#5a3a1e'; g.beginPath(); g.moveTo(106, 320); g.lineTo(106, 246); g.arc(130, 246, 24, Math.PI, 0); g.lineTo(154, 320); g.fill();
+    g.fillStyle = '#7ab0d8'; g.beginPath(); g.arc(130, 160, 18, 0, 7); g.fill(); g.strokeStyle = ou; g.lineWidth = 3; g.stroke();
+    return c;
+  }
+  // CRUZEIRO: mirante "A Santa" no alto da serra (imagem de Nossa Senhora) - horizonte
+  function santaMorro() {
+    const w = 320, h = 190, [c, g] = mk(w, h);
+    g.fillStyle = '#3a6236'; g.beginPath(); g.moveTo(0, h); g.lineTo(80, 100); g.lineTo(160, 70); g.lineTo(230, 90); g.lineTo(w, h); g.fill();
+    g.fillStyle = '#4a7440'; g.beginPath(); g.moveTo(40, h); g.lineTo(150, 100); g.lineTo(260, 120); g.lineTo(w, h); g.fill();
+    const cx = 160, b = 72; ret(g, '#d8d4cc', cx - 10, b - 10, 20, 10);
+    g.fillStyle = '#2a4a9a'; g.beginPath(); g.moveTo(cx - 16, b - 10); g.lineTo(cx, b - 66); g.lineTo(cx + 16, b - 10); g.fill();    // manto azul
+    g.fillStyle = '#f4f2ee'; g.beginPath(); g.moveTo(cx - 8, b - 12); g.lineTo(cx, b - 52); g.lineTo(cx + 8, b - 12); g.fill();
+    g.fillStyle = '#f0d8b8'; g.beginPath(); g.arc(cx, b - 60, 5, 0, 7); g.fill(); ret(g, '#e8c048', cx - 6, b - 70, 12, 4);   // rosto e coroa
+    return c;
+  }
+  // LORENA: Rua das Palmeiras (palmeiras imperiais)
+  function palmeiras() {
+    const w = 360, h = 240, [c, g] = mk(w, h);
+    for (let i = 0; i < 5; i++) {
+      const x = 30 + i * 75; ret(g, '#b8b0a0', x - 4, 40, 8, 200); ret(g, '#9a9284', x + 1, 40, 3, 200); ret(g, '#6a9a4a', x - 5, 34, 10, 12);
+      g.fillStyle = '#2a7a3a'; for (let a = 0; a < 9; a++) { const an = -Math.PI + a * Math.PI / 8; g.beginPath(); g.ellipse(x + Math.cos(an) * 22, 30 + Math.sin(an) * 10 + 6, 26, 5, an, 0, 7); g.fill(); }
+    }
+    return c;
+  }
+
   // ------------------------------------------------------------ camadas de fundo (máscaras em branco; o jogo tinge com a cor da hora)
   function silhueta(w, h, seed, picos, rug) {
     // cordilheira: picos triangulares sobrepostos (parece montanha, não nuvem)
@@ -489,5 +571,6 @@ window.ARTE = (function () {
 
   return { FONTE, mk, rng, txt, arvore, eucalipto, arbusto, cupim, poste, marcoKm, placaVerde, outdoor, predio, cerca, vaca,
     arco, pedagio, passarela, posto, silhueta, skyline, basilica, nuvens, motoTopo, seg7, numero7, tacometro, marcadorComb, pedagioPremium, cabine,
-    portalCidade, placaMarrom, casa, igreja, matrizSantana, capelaMorro, cristoSerra, monumentoFutebol, parqueAguas, estacaoTrem, santuario, catedral, postoLargada };
+    portalCidade, placaMarrom, casa, igreja, matrizSantana, capelaMorro, cristoSerra, monumentoFutebol, parqueAguas, estacaoTrem, santuario, catedral, postoLargada,
+    cachoeira, casaroes, catedralColonial, morroHotel, basilicaRelogios, santaMorro, palmeiras };
 })();

@@ -37,7 +37,7 @@ const guardar = {
 const curto = n => { const p = PERSONAGENS.find(q => q.nome === n); return p && p.curto ? p.curto : n.length > 12 ? n.split(' ')[0] : n; };
 const plural = (n, p) => (n || 0) + ' ' + p + ((n || 0) === 1 ? '' : 'S');
 function fmtTempo(t) { if (t == null || !isFinite(t)) return '--:--.-'; const m = Math.floor(t / 60), s = t - m * 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1); }
-const txt = (s, x, y, cor, tam, al, sombra) => A.txt(ctx, s, x, y, cor, tam, al, sombra);
+const txt = (s, x, y, cor, tam, al, sombra, maxW) => A.txt(ctx, s, x, y, cor, tam, al, sombra, maxW);
 
 // ============================================================ TELA
 const tela = document.getElementById('tela'), telaCtx = tela.getContext('2d');
@@ -191,8 +191,9 @@ function gerarArte() {
   // cidades da viagem
   ART.casas = [1, 2, 3, 4, 5, 6].map(sd => A.casa(sd * 11)); ART.igrejas = [3, 8, 14].map(sd => A.igreja(sd));
   ART.cid = { matriz: A.matrizSantana(), igrejas: ART.igrejas[0], futebol: A.monumentoFutebol(), parque: A.parqueAguas(), estacao: A.estacaoTrem(),
-    santuario: A.santuario(), catedral: A.catedral(), freigalvao: A.placaMarrom(['TERRA DE', 'FREI GALVÃO']) };
-  ART.horiz = { capela: Object.assign(A.capelaMorro(), { __id: 'capela' }), cristo: Object.assign(A.cristoSerra(), { __id: 'cristo' }) };
+    santuario: A.santuario(), catedral: A.catedral(), freigalvao: A.placaMarrom(['TERRA DE', 'FREI GALVÃO']),
+    igreja2: ART.igrejas[1], igreja3: ART.igrejas[2], cachoeira: A.cachoeira(), casaroes: A.casaroes(), catedralColonial: A.catedralColonial(), basilicaRelogios: A.basilicaRelogios(), palmeiras: A.palmeiras() };
+  ART.horiz = { capela: Object.assign(A.capelaMorro(), { __id: 'capela' }), cristo: Object.assign(A.cristoSerra(), { __id: 'cristo' }), hotel: Object.assign(A.morroHotel(), { __id: 'hotel' }), santa: Object.assign(A.santaMorro(), { __id: 'santa' }) };
   ART.postoLargada = A.postoLargada(IMG.emblema_64);
   const tag = (c, id) => { c.__id = id; return c; };
   ART.mont = tag(A.silhueta(1024, 70, 3, 3, 1), 'mont'); ART.mont2 = tag(A.silhueta(1024, 46, 9, 5, 1.4), 'mont2');
@@ -281,7 +282,7 @@ function montarViagem(v) {
         MARCOS.push({ i: m.i - 170, z: (m.i - 170) * SEG, fala: 'radar', feito: false });
       }
     } else if (m.marco) {
-      const img = ART.cid[m.marco]; if (img) addSpr(m.i, img, m.x, m.esc, true);
+      const img = m.marco.startsWith('placa:') ? memo('pm_' + m.marco, () => A.placaMarrom(m.marco.slice(6).split('|'))) : ART.cid[m.marco]; if (img) addSpr(m.i, img, m.x, m.esc, true);
       for (let j = m.i - 10; j <= m.i + 3; j++) if (segs[j]) segs[j].semPredio = m.x < 0 ? 'e' : 'd';   // abre espaço para o marco aparecer
     } else {
       if (m.placa) addSpr(m.i, A.placaVerde(m.placa), 1.5, 1, true);
@@ -877,22 +878,23 @@ function hudPedagio(v, c, dois) {
   const T = PEDAGIOS.find(p => p.estado !== 'livre' && p.estado !== 'aberto' && !c.pag[p.k]); if (!T) return;
   const e = dois ? 0.62 : 1, cx = v.x + v.w / 2, N = corredores.length, pg = corredores[T.pagador];
   if (T.estado === 'sorteio' || T.anuncio > 0) {
-    const w = 236 * e, h = 82 * e, x = cx - w / 2, y = v.y + v.h * (dois ? 0.3 : 0.37);
+    const w = 236 * e, h = 82 * e, x = cx - w / 2, y = v.y + v.h * (dois ? 0.32 : 0.41);
     ctx.fillStyle = 'rgba(8,10,14,0.92)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = '#ffd23a'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
     txt('SORTEIO DO PEDÁGIO', cx, y + 6 * e, '#ffd23a', 8, 'c', false);
     const q = T.estado === 'sorteio' ? corredores[Math.floor(tempoReal * (6 + 10 * T.sorteio)) % N] : pg, rs = 44 * e;
     const ret = IMG[q.def.retrato]; ctx.fillStyle = T.estado === 'sorteio' ? '#5ab4ff' : '#ffd23a'; ctx.fillRect(x + 10 * e - 2, y + 26 * e - 2, rs + 4, rs + 4);
     if (ret) ctx.drawImage(ret, x + 10 * e, y + 26 * e, rs, rs);
     txt(T.estado === 'sorteio' ? 'QUEM PAGA?' : 'QUEM PAGA:', x + 64 * e, y + 30 * e, '#c8c8d2', 8, 'e', false);
-    txt(T.estado === 'sorteio' ? q.nome + '?' : q.nome + '!', x + 64 * e, y + 46 * e, T.estado === 'sorteio' ? '#fff' : '#4ef03a', dois ? 8 : 16, 'e', false);
-    if (T.estado !== 'sorteio') txt('SÓ PASSA COM TODO MUNDO', x + 64 * e, y + 66 * e, '#9ad0ff', 8, 'e', false);
+    const livreT = w - 64 * e - 8;
+    txt(T.estado === 'sorteio' ? q.nome + '?' : q.nome + '!', x + 64 * e, y + 46 * e, T.estado === 'sorteio' ? '#fff' : '#4ef03a', dois ? 8 : 16, 'e', false, livreT);
+    if (T.estado !== 'sorteio') txt('SÓ PASSA COM TODO MUNDO', x + 64 * e, y + 66 * e, '#9ad0ff', 8, 'e', false, livreT);
     return;
   }
   // selo do pagador + painel de espera na cancela
   const bx = v.x + (dois ? 4 : 8), by = v.y + (dois ? 96 : 128), ret = IMG[pg.def.retrato];
   ctx.fillStyle = 'rgba(6,8,12,0.8)'; ctx.fillRect(bx - 4, by - 4, dois ? 92 : 118, dois ? 26 : 34);
   ctx.fillStyle = '#ffd23a'; ctx.fillRect(bx - 1, by - 1, (dois ? 18 : 26) + 2, (dois ? 18 : 26) + 2); if (ret) ctx.drawImage(ret, bx, by, dois ? 18 : 26, dois ? 18 : 26);
-  txt('PAGADOR', bx + (dois ? 22 : 32), by, '#ffd23a', 8, 'e', false); txt(pg.nome, bx + (dois ? 22 : 32), by + (dois ? 10 : 14), '#fff', 8, 'e', false);
+  txt('PAGADOR', bx + (dois ? 22 : 32), by, '#ffd23a', 8, 'e', false); txt(pg.nome, bx + (dois ? 22 : 32), by + (dois ? 10 : 14), '#fff', 8, 'e', false, (dois ? 92 : 118) - (dois ? 26 : 36));
   if (!chegouPedagio(c, T) && T.estado === 'esperando') return;
   const w = Math.min(v.w - 20, 300 * e + 20), h = 74 * e, x = cx - w / 2, y = v.y + v.h * (dois ? 0.42 : 0.5);
   ctx.fillStyle = 'rgba(8,10,14,0.9)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = '#ff6a00'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
@@ -900,7 +902,7 @@ function hudPedagio(v, c, dois) {
   if (T.estado === 'pagando') t1 = pg.nome + ' PAGANDO NA TAG...';
   else if (!chegouPedagio(pg, T)) t1 = 'ESPERANDO O PAGADOR: ' + pg.nome;
   else t1 = c === pg ? 'VOCÊ PAGA! ESPERE A TURMA' : pg.nome + ' ESPERA A TURMA';
-  txt(t1, cx, y + 6 * e, '#ffd23a', 8, 'c', false);
+  txt(t1, cx, y + 6 * e, '#ffd23a', 8, 'c', false, w - 12);
   const rs = Math.min(30 * e, (w - 16 - (N - 1) * 6) / N), gap = Math.min(30 * e, (w - 16 - N * rs) / Math.max(1, N - 1)), tot = N * rs + (N - 1) * gap, muitos = N > 6;
   corredores.forEach((o, i) => {
     const ox = cx - tot / 2 + i * (rs + gap), oy = y + 20 * e, ok = chegouPedagio(o, T) || presoPedagio(o), r = IMG[o.def.retrato];
@@ -1140,8 +1142,8 @@ function renderVista(vi, v, foco, idx) {
   for (const Hz of HORIZ) {   // marco no horizonte: aparece ao se aproximar e vai ficando para trás do lado certo
     const fi = foco.z / SEG; if (fi < Hz.i0 || fi > Hz.i1) continue;
     const u = (fi - Hz.i0) / (Hz.i1 - Hz.i0), a = clamp(Math.min(u / 0.15, (1 - u) / 0.1), 0, 1), img = ART.horiz[Hz.img]; if (!img) continue;
-    const esc = k * (0.42 + u * 0.38) * (Hz.img === 'cristo' ? 0.62 : 0.85), bw = img.width * esc, bh = img.height * esc, dirx = Hz.lado === 'e' ? -1 : 1;
-    const xc = v.w / 2 + dirx * v.w * (0.14 + u * 0.24);
+    const esc = k * (0.42 + u * 0.38) * (Hz.img === 'cristo' ? 0.62 : Hz.img === 'santa' ? 0.7 : 0.85), bw = img.width * esc, bh = img.height * esc, dirx = Hz.lado === 'e' ? -1 : 1;
+    const xc = v.w / 2 + dirx * v.w * (dirx > 0 ? 0.05 + u * 0.12 : 0.14 + u * 0.24);   // à direita fica mais perto do centro para não sumir atrás do velocímetro
     g.globalAlpha = a; g.drawImage(img, Math.round(xc - bw / 2), Math.round(horiz + 4 - bh), Math.round(bw), Math.round(bh));
     g.globalAlpha = a * 0.35; g.drawImage(tingir(img, PAL.morro), Math.round(xc - bw / 2), Math.round(horiz + 4 - bh), Math.round(bw), Math.round(bh)); g.globalAlpha = 1;
   }
@@ -1373,11 +1375,11 @@ function hudCidade(v, c) {
   const A0 = c.avCid; if (!A0) return;
   A0.t = tempoReal - A0.t0; if (A0.t > 3.8 || A0.t < 0) { c.avCid = null; return; }
   const dois = v.h < H, e = dois ? 0.7 : 1, entra = clamp(A0.t / 0.35, 0, 1), sai = clamp((3.8 - A0.t) / 0.35, 0, 1), f = Math.min(entra, sai);
-  const t2 = A0.t2, tam = dois ? 8 : (t2.length > 16 ? 8 : 16), bw = Math.max(200, t2.length * tam + 40) * (dois ? 0.9 : 1), bh = dois ? 34 : 44;
+  const t2 = A0.t2, tam = dois ? 8 : (t2.length > 16 ? 8 : 16), bw = Math.min(v.w - 20, Math.max(200, t2.length * tam + 40) * (dois ? 0.9 : 1)), bh = dois ? 34 : 44;
   const x = v.x + v.w / 2 - bw / 2, y = v.y + (dois ? 34 : 96) - (1 - f) * 30;
   ctx.save(); ctx.globalAlpha = f;
   caminhoArred(ctx, x, y, bw, bh, 8); ctx.fillStyle = A0.sai ? '#5a2a7a' : '#0b3d91'; ctx.fill(); ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 2; ctx.stroke();
-  txt(A0.t1, v.x + v.w / 2, y + 6, '#ffe04a', 8, 'c', false); txt(t2, v.x + v.w / 2, y + (dois ? 18 : 20), '#fff', tam, 'c');
+  txt(A0.t1, v.x + v.w / 2, y + 6, '#ffe04a', 8, 'c', false, bw - 12); txt(t2, v.x + v.w / 2, y + (dois ? 18 : 20), '#fff', tam, 'c', undefined, bw - 16);
   ctx.restore();
 }
 function hud(v, c, idx) {
@@ -1617,7 +1619,7 @@ function telaSelecao(n, cli) {   // cli = celular do P2 mostrando a escolha dele
         if (temOuro) { ctx.fillStyle = '#ffd23a'; ctx.beginPath(); ctx.arc(rx + rs - 2, ry + 2, n === 1 ? 11 : 8, 0, 7); ctx.fill(); txt('★', rx + rs - 2, ry - 3, '#7a4a00', 8, 'c', false); }
         const tx = rx + rs + (n === 1 ? 8 : 10);
         txt(cli ? 'JOGADOR 2' : n === 1 ? 'PILOTO' : 'JOGADOR ' + (j + 1), tx, ry + 2, j || cli ? '#5ab4ff' : '#ff8a2a', 8);
-        txt(p.nome, tx, ry + 16, '#fff', 16);
+        txt(p.nome, tx, ry + 16, '#fff', 16, 'e', undefined, (n === 1 ? W : v.x + v.w) - tx - 8);
         txt(p.moto, tx, ry + 40, '#c8c8d2', 8);
         txt(p.cc + ' CC • ' + p.tanque + ' L', tx, ry + 54, '#9a9aa4', 8);
         txt('PERFIL: ' + p.perfil, tx, ry + (n === 1 ? 70 : 66), p.perfil === 'ROIA' ? '#5ab4ff' : '#ff4a2a', 8);

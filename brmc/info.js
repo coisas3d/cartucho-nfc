@@ -6,6 +6,7 @@ window.INFO = (function () {
 
   // ===== HISTÓRICO DE VERSÕES (a primeira da lista é a versão atual do jogo) =====
   const VERSOES = [
+    ['6.1', ['Marcos das outras cidades: Cachoeira da Pataca e Matriz das Dores em Itaguara, Igreja do Carmo em Carmópolis, catedral de 1787 e casarões em Campanha, o morro do hotel e o Pouso dos Bandeirantes em Pouso Alto, a basílica dos relógios, o mirante da Santa e a Revolução de 1932 em Cruzeiro, a Rua das Palmeiras e a Basílica de São Benedito em Lorena.', 'Textos longos nas caixas (nome do pagador do pedágio, avisos) agora diminuem para caber, sem cortar.']],
     ['6.0', ['Viagem completa muito mais longa: cerca de 8 minutos, com 15 cidades, 5 postos, 3 pedágios e 9 radares.', 'Largada saindo do posto de gasolina, dentro de Itaúna (com a Matriz de Sant\'Ana e a capela no morro).', 'Placas e avisos de BEM-VINDO e VOLTE SEMPRE em cada cidade, com as cidades do lado certo da estrada.', 'Marcos das cidades: Cristo na serra de Itatiaiuçu, Rei do Futebol em Três Corações, Parque das Águas em São Lourenço, Maria Fumaça em Passa Quatro, santuário em Cachoeira Paulista e Frei Galvão em Guaratinguetá.', 'Contra o Relógio agora é um trecho de 3 minutos da Fernão Dias.', 'Pilotos do jogo desviam melhor do trânsito.', 'Ranking zerado (nova temporada) para todos os modos.']],
     ['5.7', ['Nova opção de pilotagem: DIREÇÃO POR INCLINAÇÃO. Incline o celular como um guidão para desviar; acelerar, frear e buzinar continuam nos botões.', 'P1 liga em OPÇÕES → DIREÇÃO. O Jogador 2 liga no próprio celular (botão DIREÇÃO na escolha do piloto ou no controle).']],
     ['5.6', ['Multas mais leves: até 20% acima do limite +3 s, até 50% acima +7 s, mais de 50% acima +15 s (gravíssima).']],
@@ -48,7 +49,7 @@ window.INFO = (function () {
       'A largada é no <b>posto de Itaúna</b>: saia do pátio com cuidado e entre na estrada.',
       'Ao chegar perto de cada cidade aparece <b>BEM-VINDO A…</b> e, na saída, <b>VOLTE SEMPRE A…</b>.',
       'As cidades aparecem do lado em que ficam na estrada de verdade, ou dos dois lados quando a pista passa por dentro.',
-      'Fique de olho nos marcos: a Matriz de Sant\'Ana em Itaúna, o Cristo na serra de Itatiaiuçu, o monumento ao Rei do Futebol em Três Corações, o Parque das Águas em São Lourenço, a Maria Fumaça em Passa Quatro, o santuário de Cachoeira Paulista, a terra de Frei Galvão em Guaratinguetá e a Basílica de Aparecida.',
+      'Fique de olho nos marcos: a Matriz de Sant\'Ana em Itaúna, a Cachoeira da Pataca em Itaguara, a catedral e os casarões de Campanha, o mirante da Santa e a basílica dos relógios em Cruzeiro, as palmeiras imperiais de Lorena, o Cristo na serra de Itatiaiuçu, o monumento ao Rei do Futebol em Três Corações, o Parque das Águas em São Lourenço, a Maria Fumaça em Passa Quatro, o santuário de Cachoeira Paulista, a terra de Frei Galvão em Guaratinguetá e a Basílica de Aparecida.',
       'Dentro das cidades tem <b>radar de 60 km/h</b>!'
     ])) +
     sec('⛽ Combustível e postos', lista([
